@@ -1,6 +1,12 @@
 package it.uspread.core
 
-class SpreadController {
+import grails.rest.RestfulController
+
+class SpreadController extends RestfulController<Spread> {
+
+	SpreadController() {
+		super(Spread)
+	}
 
     def index() { }
 }
