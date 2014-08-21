@@ -1,6 +1,8 @@
 package it.uspread.core
 
-class ReportController {
+import grails.rest.RestfulController
+
+class ReportController extends RestfulController<Message> {
 
     def index() { }
 }

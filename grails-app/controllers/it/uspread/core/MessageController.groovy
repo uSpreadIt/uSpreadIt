@@ -8,5 +8,4 @@ class MessageController extends RestfulController<Message> {
 		super(Message)
 	}
 
-    def index() { }
 }
