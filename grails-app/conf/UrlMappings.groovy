@@ -10,10 +10,10 @@ class UrlMappings {
         "/"(view:"/index")
         "500"(view:'/error')
 
-		"/rest/v1.0/spread"(resources:"spread") {
+		"/rest/v1.0/message"(resources:"message") {
 			//TODO
-			"/diffuse"(controller:"diffuse", method:"GET")
-			"/moderate"(controller:"moderate", method:"DELETE")
+			"/spread"(controller:"spread", method:"GET")
+			"/report"(controller:"report", method:"DELETE")
 		}
 	}
 }

@@ -1,6 +1,6 @@
 package it.uspread.core
 
-class DiffuseController {
+class ReportController {
 
     def index() { }
 }
