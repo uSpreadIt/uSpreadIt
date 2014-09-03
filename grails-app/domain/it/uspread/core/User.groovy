@@ -12,6 +12,10 @@ class User {
     }
 
     static constraints = {
-        email(unique: true, email: true)
+        email(unique: true, email: true, blank: false)
+    }
+
+    String toString(){
+        return null != email ? email : "<EMPTY>"
     }
 }

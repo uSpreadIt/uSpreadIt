@@ -2,8 +2,6 @@ package it.uspread.core
 
 import grails.rest.Resource
 
-
-@Resource(uri='/rest/message', formats=['json'])
 class Message {
 
 	String text
@@ -16,4 +14,16 @@ class Message {
 	static constraints = {
         author(nullable: false)
 	}
+
+    String toString(){
+        if (null != text){
+            if (30 >= text.size()){
+                return text
+            } else {
+                return text.substring(0,30) + "..."
+            }
+        } else {
+            return "<EMPTY>"
+        }
+    }
 }
