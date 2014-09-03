@@ -2,6 +2,7 @@ package it.uspread.core
 
 import grails.rest.Resource
 
+@Resource
 class Message {
 
 	String text
