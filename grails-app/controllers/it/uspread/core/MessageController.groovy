@@ -24,7 +24,6 @@ class MessageController extends RestfulController {
 		else if (sentToUser) {
 			respond Message.createCriteria().list {
 				sentTo{ eq('id', sentToUser.toLong()) }
-				spreadBy{ ne('id', sentToUser.toLong()) }
 			}
 		}
 		// Si on liste les message propagé par l'utilisateur (./message?spreadBy=user)
