@@ -11,7 +11,7 @@ class UserIntegrationSpec extends Specification {
 
     void "A user creates a message"(){
         given:"A user and his message"
-        def joe = new User(email: 'joe@gmail.com')
+        def joe = new User(username: 'joe', password: 'joe', email: 'joe@gmail.com')
         def message = new Message(text: 'hello')
         joe.addToMessages(message)
 
@@ -26,7 +26,7 @@ class UserIntegrationSpec extends Specification {
 
     void "A deleted user have his messages also deleted"() {
         given:"An existing user and his message"
-        def joe = new User(email: 'joe@gmail.com')
+        def joe = new User(username: 'joe', password: 'joe', email: 'joe@gmail.com')
         def message = new Message(text: 'hello')
         joe.addToMessages(message)
         joe.save(flush: true)
@@ -40,7 +40,7 @@ class UserIntegrationSpec extends Specification {
 
     void "Deleting a message don't delete the author"() {
         given:"An existing user and his message"
-        def joe = new User(email: 'joe@gmail.com')
+        def joe = new User(username: 'joe', password: 'joe', email: 'joe@gmail.com')
         def message = new Message(text: 'hello')
         joe.addToMessages(message)
         joe.save(flush: true)
@@ -56,12 +56,12 @@ class UserIntegrationSpec extends Specification {
     void "List messages joe sent to jim"(){
         given: "a message sent from joe to jim"
         // joe
-        def joe = new User(email: 'joe@gmail.com')
+        def joe = new User(username: 'joe', password: 'joe', email: 'joe@gmail.com')
         joe.save(flush: true)
         def message = new Message(text: 'hello jim')
         joe.addToMessages(message)
         // jim
-        def jim = new User(email: 'jim@gmail.com')
+        def jim = new User(username: 'jim', password: 'jim', email: 'jim@gmail.com')
         jim.save(flush: true)
         message.addToSentTo(jim)
 

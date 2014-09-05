@@ -13,6 +13,10 @@ class Message {
         author(nullable: false)
 	}
 
+    static mapping = {
+        author cascade: 'all'
+    }
+
     String toString(){
         if (null != text){
             if (30 >= text.size()){
