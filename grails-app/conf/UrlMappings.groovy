@@ -7,19 +7,19 @@ class UrlMappings {
             }
         }
 
-        "/"(view:"/index")
-        "500"(view:'/error')
+		"/"(view:"/index")
+		"500"(view:"/error")
 
-		// Déclaration des URL des messages
-		"/rest/message"(resources:'message') {
-			"/spread"(controller:"message", action:"spread", method: 'POST')
-			"/ignore"(controller:"message", action:"ignore", method: 'POST')
-			"/report"(controller:"message", action:"report", method: 'POST')
+		// Déclaration des URL d'accès aux messages
+		"/rest/messages"(resources:'message', excludes:["create", "edit", "patch"]) { // TODO exclure aussi le index
+			"/spread"(controller:"message", action:"spread", method:"POST")
+			"/ignore"(controller:"message", action:"ignore", method:"POST")
+			"/report"(controller:"message", action:"report", method:"POST")
 		}
+		"/rest/users/$userId/message"(controller:"message", action:"index", method:"GET")
 
-		// Déclaration des URL des utilisateurs
-		"/rest/user"(resources:'user') {
-		}
+		// Déclaration des URL d'accès aux utilisateurs
+		"/rest/users"(resources:"user", excludes:["create", "edit", "patch"])
 
 	}
 }
