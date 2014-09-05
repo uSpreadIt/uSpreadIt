@@ -115,3 +115,29 @@ log4j.main = {
            'org.hibernate',
            'net.sf.ehcache.hibernate'
 }
+
+
+// Added by the Spring Security Core plugin:
+grails.plugin.springsecurity.userLookup.userDomainClassName = 'it.uspread.core.User'
+grails.plugin.springsecurity.userLookup.authorityJoinClassName = 'it.uspread.core.UserRole'
+grails.plugin.springsecurity.authority.className = 'it.uspread.core.Role'
+grails.plugin.springsecurity.useBasicAuth = true
+grails.plugin.springsecurity.basic.realmName = "uSpread"
+grails.plugin.springsecurity.controllerAnnotations.staticRules = [
+	'/':                              ['permitAll'],
+	'/index':                         ['permitAll'],
+	'/index.gsp':                     ['permitAll'],
+	'/assets/**':                     ['permitAll'],
+	'/**/js/**':                      ['permitAll'],
+	'/**/css/**':                     ['permitAll'],
+	'/**/images/**':                  ['permitAll'],
+	'/**/favicon.ico':                ['permitAll'],
+    '/login/**':                      ['permitAll'],
+    '/logout/**':                     ['permitAll'],
+    '/**':                            ['isAuthenticated()']
+]
+grails.plugin.springsecurity.filterChain.chainMap = [
+        '/rest/**': 'JOINED_FILTERS',
+        '/**': 'JOINED_FILTERS, -basicAuthenticationFilter, -basicExceptionTranslationFilter'
+]
+
