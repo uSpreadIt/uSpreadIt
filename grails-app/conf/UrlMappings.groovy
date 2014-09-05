@@ -16,7 +16,7 @@ class UrlMappings {
 			"/ignore"(controller:"message", action:"ignore", method:"POST")
 			"/report"(controller:"message", action:"report", method:"POST")
 		}
-		"/rest/users/$userId/message"(controller:"message", action:"index", method:"GET")
+		"/rest/users/$userId/messages"(controller:"message", action:"index", method:"GET")
 
 		// Déclaration des URL d'accès aux utilisateurs
 		"/rest/users"(resources:"user", excludes:["create", "edit", "patch"])

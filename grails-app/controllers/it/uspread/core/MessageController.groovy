@@ -7,6 +7,8 @@ class MessageController extends RestfulController {
 	static scope = "singleton"
 	static responseFormats = ["json"]
 
+    def springSecurityService
+
 	MessageController() {
 		super(Message)
 	}
@@ -34,7 +36,8 @@ class MessageController extends RestfulController {
 		}
 		// Sinon cas normal d'utilisation de l'index (./message)
 		else {
-			super.index()
+            def user = (User) springSecurityService.currentUser
+            respond Message.where { author.id == user.id }.list()
 		}
 	}
 
