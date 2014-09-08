@@ -10,4 +10,19 @@ class UserController extends RestfulController {
 	UserController() {
 		super(User)
 	}
+
+	@Override
+	public Object create() {
+		// Non nécessaire pour le moment
+	}
+
+	@Override
+	public Object edit() {
+		// Non nécessaire pour le moment
+	}
+
+	@Override
+	public Object patch() {
+		// Non nécessaire pour le moment
+	}
 }

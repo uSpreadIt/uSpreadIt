@@ -7,7 +7,7 @@ class MessageController extends RestfulController {
 	static scope = "singleton"
 	static responseFormats = ["json"]
 
-    def springSecurityService
+	def springSecurityService
 
 	MessageController() {
 		super(Message)
@@ -15,29 +15,29 @@ class MessageController extends RestfulController {
 
 	@Override
 	def index() {
-		def userId = params.userId
-		def sentToUser = params.sentTo
-		def spreadByUser = params.spreadBy
-		// Si on liste les messages d'un utilisateur particulier (./user/$id/message)
-		if (userId) {
-			respond Message.where { author.id == userId }.list()
+		def user = (User) springSecurityService.currentUser
+		def type = params.type
+		// Si on liste les messages de l'utilisateur (./message ou ./message?type=AUTHOR)
+		if (MessageType.AUTHOR.name().equals(type) || type == null) {
+			//TODO peut être mieux de simplement pas autoriser l'url ./message ?
+			respond Message.where { author.id == user.id }.list()
 		}
-		// Si on liste les message en attente de décision de propagation pour l'utilisateur (./message?sentTo=user)
-		else if (sentToUser) {
+		// Si on liste les message en attente de décision de propagation pour l'utilisateur (./message?type=TO_SENT)
+		else if (MessageType.TO_SENT.name().equals(type)) {
 			respond Message.createCriteria().list {
-				sentTo{ eq('id', sentToUser.toLong()) }
+				sentTo{ eq('id', user.id) }
 			}
 		}
-		// Si on liste les message propagé par l'utilisateur (./message?spreadBy=user)
-		else if (spreadByUser) {
+		// Si on liste les message propagé par l'utilisateur (./message?type=SPREADED)
+		else if (MessageType.SPREADED.name().equals(type)) {
 			respond Message.createCriteria().list {
-				spreadBy{ eq('id', spreadByUser.toLong()) }
+				spreadBy{ eq('id', user.id) }
 			}
 		}
-		// Sinon cas normal d'utilisation de l'index (./message)
+		// Sinon retourner une erreur ?
 		else {
-            def user = (User) springSecurityService.currentUser
-            respond Message.where { author.id == user.id }.list()
+			// TODO
+			render "Bloquer ça"
 		}
 	}
 
@@ -46,7 +46,8 @@ class MessageController extends RestfulController {
 	 */
 	def spread() {
 		def messageId = params.messageId
-		//TODO notion d'utilisateur de cette action et lancement de l'action
+		def user = (User) springSecurityService.currentUser
+		//TODO
 	}
 
 	/**
@@ -54,7 +55,8 @@ class MessageController extends RestfulController {
 	 */
 	def ignore() {
 		def messageId = params.messageId
-		//TODO notion d'utilisateur de cette action et lancement de l'action
+		def user = (User) springSecurityService.currentUser
+		//TODO
 	}
 
 	/**
@@ -62,6 +64,60 @@ class MessageController extends RestfulController {
 	 */
 	def report() {
 		def messageId = params.messageId
-		//TODO notion d'utilisateur de cette action et lancement de l'action
+		def type = params.type
+		def user = (User) springSecurityService.currentUser
+		//TODO
+	}
+
+	/**
+	 * Liste les messages de l'utilisateur donné (./users/$userId/messages)
+	 */
+	def indexUserMsg() {
+		def userId = params.userId
+		respond Message.where { author.id == userId }.list()
+	}
+
+	/**
+	 * Liste les messages en attente de décisoin de propagation de l'utilisateur donné (./users/$userId/messages/toSent)
+	 */
+	def indexUserMsgToSent() {
+		def userId = params.userId
+		respond Message.createCriteria().list {
+			sentTo{ eq('id', userId.toLong()) }
+		}
+	}
+
+	/**
+	 * Liste les messages propagé par l'utilisateur donné (./users/$userId/messages/spreaded)
+	 */
+	def indexUserMsgSpreaded() {
+		def userId = params.userId
+		respond Message.createCriteria().list {
+			spreadBy{ eq('id', userId.toLong()) }
+		}
+	}
+
+	/**
+	 * Liste tous les messages signalés
+	 * @return
+	 */
+	def indexMsgReported() {
+		// TODO
+		render "Au boulot"
+	}
+
+	@Override
+	public Object create() {
+		// Non nécessaire pour le moment
+	}
+
+	@Override
+	public Object edit() {
+		// Non nécessaire pour le moment
+	}
+
+	@Override
+	public Object patch() {
+		// Non nécessaire pour le moment
 	}
 }
