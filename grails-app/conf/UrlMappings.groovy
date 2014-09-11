@@ -18,8 +18,8 @@ class UrlMappings {
 		}
 
 		"/rest/users/$userId/messages"(controller:"message", action:"indexUserMsg", method:"GET")
-		"/rest/users/$userId/messages/toSent"(controller:"message", action:"indexUserMsgToSent", method:"GET")
-		"/rest/users/$userId/messages/spreaded"(controller:"message", action:"indexUserMsgSpreaded", method:"GET")
+		"/rest/users/$userId/messages/received"(controller:"message", action:"indexUserMsgReceived", method:"GET")
+		"/rest/users/$userId/messages/spread"(controller:"message", action:"indexUserMsgSpread", method:"GET")
 		"/rest/messages/reported"(controller:"message", action:"indexMsgReported", method:"GET")
 
 		// Déclaration des URL d'accès aux utilisateurs

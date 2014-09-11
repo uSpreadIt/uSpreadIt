@@ -16,20 +16,20 @@ class MessageController extends RestfulController {
 	@Override
 	def index() {
 		def user = (User) springSecurityService.currentUser
-		def type = params.type
-		// Si on liste les messages de l'utilisateur (./message ou ./message?type=AUTHOR)
-		if (MessageType.AUTHOR.name().equals(type) || type == null) {
+		def type = params.query
+		// Si on liste les messages de l'utilisateur (./message ou ./message?query=AUTHOR)
+		if (MessageQuery.AUTHOR.name().equals(type) || type == null) {
 			//TODO peut être mieux de simplement pas autoriser l'url ./message ?
 			respond Message.where { author.id == user.id }.list()
 		}
-		// Si on liste les message en attente de décision de propagation pour l'utilisateur (./message?type=TO_SENT)
-		else if (MessageType.TO_SENT.name().equals(type)) {
+		// Si on liste les message reçus par l'utilisateur (./message?query=RECEIVED)
+		else if (MessageQuery.RECEIVED.name().equals(type)) {
 			respond Message.createCriteria().list {
 				sentTo{ eq('id', user.id) }
 			}
 		}
-		// Si on liste les message propagé par l'utilisateur (./message?type=SPREADED)
-		else if (MessageType.SPREADED.name().equals(type)) {
+		// Si on liste les message propagé par l'utilisateur (./message?query=SPREAD)
+		else if (MessageQuery.SPREAD.name().equals(type)) {
 			respond Message.createCriteria().list {
 				spreadBy{ eq('id', user.id) }
 			}
@@ -70,7 +70,7 @@ class MessageController extends RestfulController {
 	}
 
 	/**
-	 * Liste les messages de l'utilisateur donné (./users/$userId/messages)
+	 * Liste les messages dont l'utilisateur donné est l'auteur (./users/$userId/messages)
 	 */
 	def indexUserMsg() {
 		def userId = params.userId
@@ -78,9 +78,9 @@ class MessageController extends RestfulController {
 	}
 
 	/**
-	 * Liste les messages en attente de décisoin de propagation de l'utilisateur donné (./users/$userId/messages/toSent)
+	 * Liste les messages reçus par l'utilisateur donné (./users/$userId/messages/received)
 	 */
-	def indexUserMsgToSent() {
+	def indexUserMsgReceived() {
 		def userId = params.userId
 		respond Message.createCriteria().list {
 			sentTo{ eq('id', userId.toLong()) }
@@ -88,9 +88,9 @@ class MessageController extends RestfulController {
 	}
 
 	/**
-	 * Liste les messages propagé par l'utilisateur donné (./users/$userId/messages/spreaded)
+	 * Liste les messages propagé par l'utilisateur donné (./users/$userId/messages/spread)
 	 */
-	def indexUserMsgSpreaded() {
+	def indexUserMsgSpread() {
 		def userId = params.userId
 		respond Message.createCriteria().list {
 			spreadBy{ eq('id', userId.toLong()) }
