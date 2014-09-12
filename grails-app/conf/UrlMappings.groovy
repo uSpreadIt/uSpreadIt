@@ -24,6 +24,7 @@ class UrlMappings {
 
 		// Déclaration des URL d'accès aux utilisateurs
 		"/rest/users"(resources:"user", excludes:["create", "edit", "patch"])
+		"/rest/users/connected"(controller:"user", action:"getUserConnected", method:"GET")
 
 	}
 }

@@ -7,22 +7,32 @@ class UserController extends RestfulController {
 	static scope = "singleton"
 	static responseFormats = ["json"]
 
+	def springSecurityService
+
 	UserController() {
 		super(User)
 	}
 
+	/**
+	 * Retourne les infos de l'utilisateur connecté
+	 */
+	def getUserConnected() {
+		def user = (User) springSecurityService.currentUser
+		respond User.where { id == user.id }.find()
+	}
+
 	@Override
-	public Object create() {
+	def create() {
 		// Non nécessaire pour le moment
 	}
 
 	@Override
-	public Object edit() {
+	def edit() {
 		// Non nécessaire pour le moment
 	}
 
 	@Override
-	public Object patch() {
+	def patch() {
 		// Non nécessaire pour le moment
 	}
 }

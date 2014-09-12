@@ -107,17 +107,17 @@ class MessageController extends RestfulController {
 	}
 
 	@Override
-	public Object create() {
+	def create() {
 		// Non nécessaire pour le moment
 	}
 
 	@Override
-	public Object edit() {
+	def edit() {
 		// Non nécessaire pour le moment
 	}
 
 	@Override
-	public Object patch() {
+	def patch() {
 		// Non nécessaire pour le moment
 	}
 }
