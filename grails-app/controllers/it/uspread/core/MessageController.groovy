@@ -2,7 +2,7 @@ package it.uspread.core
 
 import grails.rest.RestfulController
 
-class MessageController extends RestfulController {
+class MessageController extends RestfulController<Message> {
 
 	static scope = "singleton"
 	static responseFormats = ["json"]
