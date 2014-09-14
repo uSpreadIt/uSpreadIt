@@ -49,6 +49,7 @@ class MessageController extends RestfulController<Message> {
 		if(handleReadOnly()) {
             return
         }
+		//coucou
         def instance = createResource()
 		// AAAAAAAAAAA mode ultra batard pour mettre l'auteur
 		((Message)instance).author = (User) springSecurityService.currentUser
