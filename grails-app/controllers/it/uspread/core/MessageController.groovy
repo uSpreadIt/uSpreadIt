@@ -2,6 +2,9 @@ package it.uspread.core
 
 import grails.rest.RestfulController
 
+import org.codehaus.groovy.grails.web.servlet.HttpHeaders
+import org.springframework.http.HttpStatus
+
 class MessageController extends RestfulController<Message> {
 
 	static scope = "singleton"
@@ -39,6 +42,37 @@ class MessageController extends RestfulController<Message> {
 			// TODO
 			render "Bloquer ça"
 		}
+	}
+
+	@Override
+	def save() {
+		if(handleReadOnly()) {
+            return
+        }
+        def instance = createResource()
+		// AAAAAAAAAAA mode ultra batard pour mettre l'auteur
+		((Message)instance).author = (User) springSecurityService.currentUser
+        instance.validate()
+        if (instance.hasErrors()) {
+            respond instance.errors, view:'create' // STATUS CODE 422
+            return
+        }
+
+        instance.save flush:true
+
+        request.withFormat {
+            form multipartForm {
+                flash.message = message(code: 'default.created.message', args: [message(code: "${resourceName}.label".toString(), default: resourceClassName), instance.id])
+                redirect instance
+            }
+            '*' {
+                response.addHeader(HttpHeaders.LOCATION,
+                        g.createLink(
+                                resource: this.controllerName, action: 'show',id: instance.id, absolute: true,
+                                namespace: hasProperty('namespace') ? this.namespace : null ))
+                respond instance, [status: HttpStatus.CREATED]
+            }
+        }
 	}
 
 	/**
