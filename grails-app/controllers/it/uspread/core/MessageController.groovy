@@ -170,9 +170,4 @@ class MessageController extends RestfulController<Message> {
     def update() {
         //TODO à autoriser que si modérateur
     }
-
-    @Override
-    Object index(Integer max) {
-        return super.index(max)
-    }
 }
