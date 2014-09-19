@@ -155,4 +155,24 @@ class MessageController extends RestfulController<Message> {
 	def patch() {
 		// Non nécessaire pour le moment
 	}
+
+    @Override
+    def show() {
+        super.show()
+    }
+
+    @Override
+    def delete() {
+        super.delete()
+    }
+
+    @Override
+    def update() {
+        //TODO à autoriser que si modérateur
+    }
+
+    @Override
+    Object index(Integer max) {
+        return super.index(max)
+    }
 }

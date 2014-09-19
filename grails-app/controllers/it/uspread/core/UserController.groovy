@@ -21,7 +21,12 @@ class UserController extends RestfulController<User> {
 		respond User.where { id == user.id }.find()
 	}
 
-	@Override
+    @Override
+    def index(Integer max) {
+        return super.index(max)
+    }
+
+    @Override
 	def create() {
 		// Non nécessaire pour le moment
 	}
@@ -35,4 +40,24 @@ class UserController extends RestfulController<User> {
 	def patch() {
 		// Non nécessaire pour le moment
 	}
+
+    @Override
+    def save() {
+        return super.save()
+    }
+
+    @Override
+    def show() {
+        return super.show()
+    }
+
+    @Override
+    def update() {
+        return super.update()
+    }
+
+    @Override
+    def delete() {
+        return super.delete()
+    }
 }
