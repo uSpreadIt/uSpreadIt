@@ -123,7 +123,8 @@ grails.plugin.springsecurity.userLookup.authorityJoinClassName = 'it.uspread.cor
 grails.plugin.springsecurity.authority.className = 'it.uspread.core.Role'
 grails.plugin.springsecurity.useBasicAuth = true
 grails.plugin.springsecurity.basic.realmName = "uSpread"
-grails.plugin.springsecurity.controllerAnnotations.staticRules = [
+grails.plugin.springsecurity.securityConfigType = "InterceptUrlMap"
+grails.plugin.springsecurity.interceptUrlMap = [
 	'/':                              ['permitAll'],
 	'/index':                         ['permitAll'],
 	'/index.gsp':                     ['permitAll'],
@@ -134,6 +135,8 @@ grails.plugin.springsecurity.controllerAnnotations.staticRules = [
 	'/**/favicon.ico':                ['permitAll'],
     '/login/**':                      ['permitAll'],
     '/logout/**':                     ['permitAll'],
+    '/logout/**':                     ['permitAll'],
+    '/rest/signup':                   ['permitAll'],
     '/**':                            ['isAuthenticated()']
 ]
 grails.plugin.springsecurity.filterChain.chainMap = [
