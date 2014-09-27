@@ -38,7 +38,7 @@ class UserController extends RestfulController<User> {
     def deleteUserConnected(){
         def instance = (User) springSecurityService.currentUser
         if (null != instance){
-            instance.delete(flush: true)
+            deleteUser(instance)
         }
         request.withFormat {
             form multipartForm {
@@ -47,6 +47,25 @@ class UserController extends RestfulController<User> {
             }
             '*'{ render status: NO_CONTENT } // NO CONTENT STATUS CODE
         }
+    }
+
+    private deleteUser(instance) {
+        Message.createCriteria().list {
+            sentTo {
+                eq('id', instance.id)
+            }
+        }.each { ((Message) it).removeFromSentTo(instance) }
+        Message.createCriteria().list {
+            reportedBy {
+                eq('id', instance.id)
+            }
+        }.each { ((Message) it).removeFromReportedBy(instance) }
+        Message.createCriteria().list {
+            spreadBy {
+                eq('id', instance.id)
+            }
+        }.each { ((Message) it).removeFromSpreadBy(instance) }
+        instance.delete(flush: true)
     }
 
     /**
@@ -116,6 +135,24 @@ class UserController extends RestfulController<User> {
 
     @Override
     def delete() {
-        return super.delete()
+        if(handleReadOnly()) {
+            return
+        }
+
+        def instance = queryForResource(params.id)
+        if (instance == null) {
+            notFound()
+            return
+        }
+
+        deleteUser(instance)
+
+        request.withFormat {
+            form multipartForm {
+                flash.message = message(code: 'default.deleted.message', args: [message(code: "${resourceClassName}.label".toString(), default: resourceClassName), instance.id])
+                redirect action:"index", method:"GET"
+            }
+            '*'{ render status: NO_CONTENT } // NO CONTENT STATUS CODE
+        }
     }
 }

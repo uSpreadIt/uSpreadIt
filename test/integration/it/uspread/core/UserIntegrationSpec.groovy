@@ -25,8 +25,8 @@ class UserIntegrationSpec extends Specification {
 
     void "Test message creations"() {
         given: "An existing user and his message"
-        def dude = new User(username: 'chuck', password: 'chuck', email: "ChuckNoris@42.fr")
-        def yop = new User(username: 'etienne', password: 'etienne', email: "Etienne@free.fr")
+        def dude = new User(username: 'dude', password: 'dude', email: "dudeNoris@42.fr")
+        def yop = new User(username: 'yop', password: 'yop', email: "yop@free.fr")
 
         def messageNotSent = new Message(text: "Un message de dude")
         dude.addToMessages(messageNotSent)
@@ -64,43 +64,68 @@ class UserIntegrationSpec extends Specification {
         Message.exists(reportedByDude.id)
     }
 
-    void "A deleted user have his messages also deleted"() {
+    void "Deleting a user deletes the messages he wrote"() {
         given: "An existing user and his message"
-        def chuck = new User(username: 'chuck', password: 'chuck', email: "ChuckNoris@42.fr")
-        def etienne = new User(username: 'etienne', password: 'etienne', email: "Etienne@free.fr")
+        def joe = new User(username: 'joe', password: 'joe', email: 'joe@gmail.com')
+        def jim = new User(username: 'jim', password: 'jim', email: 'jim@gmail.com')
+        joe.save(flush: true)
+        jim.save(flush: true)
 
-        def messageSent = new Message(text: "Un message de chuck", sentTo: [etienne])
-        chuck.addToMessages(messageSent)
+        def messageDeJoeAJim = new Message(text: 'hello', sentTo: [jim])
+        joe.addToMessages(messageDeJoeAJim)
 
-        def messageSpread = new Message(text: "Un autre de chuck", spreadBy: [etienne])
-        chuck.addToMessages(messageSpread)
+        def messageDeJoePropageParJim = new Message(text: 'hello', spreadBy: [jim])
+        joe.addToMessages(messageDeJoePropageParJim)
 
-        def messageReported = new Message(text: "Un autre de chuck salace", reportedBy: [etienne])
-        chuck.addToMessages(messageReported)
+        def messageDeJoeSignaleParJim = new Message(text: 'hello', reportedBy: [jim])
+        joe.addToMessages(messageDeJoeSignaleParJim)
 
-        chuck.save()
+        def messageDeJimAJoe = new Message(text: "hello", sentTo: [joe])
+        jim.addToMessages(messageDeJimAJoe)
 
-        def sentToChuck = new Message(text: "Un message de Etienne", sentTo: [chuck])
-        etienne.addToMessages(sentToChuck)
+        def messageDeJimPropageParJoe = new Message(text: "hello", spreadBy: [joe])
+        jim.addToMessages(messageDeJimPropageParJoe)
 
-        def spreadByChuck = new Message(text: "Un autre de Etienne", spreadBy: [chuck])
-        etienne.addToMessages(spreadByChuck)
+        def messageDeJimSignaleParJoe = new Message(text: "hello", reportedBy: [joe])
+        jim.addToMessages(messageDeJimSignaleParJoe)
 
-        def reportedByChuck = new Message(text: "Un autre de Etienne", reportedBy: [chuck])
-        etienne.addToMessages(reportedByChuck)
+        joe.save(flush: true)
+        jim.save(flush: true)
+        when: "the message is deleted"
+        Message.createCriteria().list {
+            sentTo {
+                eq('id', joe.id)
+            }
+        }.each { ((Message)it).removeFromSentTo(joe)
+        }
+        Message.createCriteria().list {
+            reportedBy {
+                eq('id', joe.id)
+            }
+        }.each { ((Message)it).removeFromReportedBy(joe)
+        }
+        Message.createCriteria().list {
+            spreadBy {
+                eq('id', joe.id)
+            }
+        }.each { ((Message)it).removeFromSpreadBy(joe)
+        }
+        joe.delete(flush: true)
 
-        etienne.save()
+        then: "The Message is also deleted"
+        joe.id != null
+        messageDeJoeAJim.id != null
+        messageDeJoeSignaleParJim.id != null
+        messageDeJoePropageParJim.id != null
+        !User.exists(joe.id)
+        !Message.exists(messageDeJoeAJim.id)
+        !Message.exists(messageDeJoeSignaleParJim.id)
+        !Message.exists(messageDeJoePropageParJim.id)
 
-        when: "the user is deleted"
-        chuck.delete(flush: true)
-
-        then: "so is the message"
-        !Message.exists(messageSent.id)
-        !Message.exists(messageSpread.id)
-        !Message.exists(messageReported.id)
-        Message.exists(sentToChuck.id)
-        Message.exists(spreadByChuck.id)
-        Message.exists(reportedByChuck.id)
+        User.exists(jim.id)
+        Message.exists(messageDeJimAJoe.id)
+        Message.exists(messageDeJimSignaleParJoe.id)
+        Message.exists(messageDeJimPropageParJoe.id)
     }
 
     void "Deleting a message don't delete the author"() {
