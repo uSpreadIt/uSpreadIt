@@ -23,9 +23,12 @@ class UrlMappings {
 		"/rest/messages/reported"(controller:"message", action:"indexMsgReported", method:"GET")
 
 		// Déclaration des URL d'accès aux utilisateurs
-		"/rest/users"(resources:"user", excludes:["create", "edit", "patch", "save"])
+		"/rest/users"(resources:"user", excludes:["create", "edit", "patch", "save", "index"])
 		"/rest/users/connected"(controller:"user", action:"getUserConnected", method:"GET")
+        "/rest/users/connected"(controller:"user", action:"updateUserConnected", method:"PUT")
+        "/rest/users/connected"(controller:"user", action:"deleteUserConnected", method:"DELETE")
         "/rest/signup"(controller:"user", action:"save", method:"POST")
+        "/rest/userlist"(controller:"user", action:"index", method:"GET")
 
 	}
 }
