@@ -45,7 +45,23 @@ class User {
 	protected void encodePassword() {
 		password = springSecurityService?.passwordEncoder ? springSecurityService.encodePassword(password) : password
 	}
-	
+
+    def isModerator(){
+        getAuthorities().any { it.authority == Role.ROLE_MODERATOR }
+    }
+
+    /**
+     * Par sécurité : pour ne pas autoriser l'envoi dans le message json de ces champs
+     * @return
+     */
+    def clearForCreation() {
+        accountExpired = false
+        accountLocked = false
+        enabled = true
+        messages = new HashSet<Message>()
+        passwordExpired = false
+    }
+
 	String toString(){
         return null != email ? email : "<EMPTY>"
     }

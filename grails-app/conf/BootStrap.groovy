@@ -24,7 +24,7 @@ class BootStrap {
 			etienne.save()
 
 
-            def roleMod = new Role(authority: "ROLE_MODERATOR")
+            def roleMod = new Role(authority: Role.ROLE_MODERATOR)
             roleMod.save()
             mod.save()
             UserRole droitsMod = new UserRole(user: mod, role: roleMod)

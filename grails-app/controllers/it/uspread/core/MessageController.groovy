@@ -5,6 +5,9 @@ import grails.rest.RestfulController
 import org.codehaus.groovy.grails.web.servlet.HttpHeaders
 import org.springframework.http.HttpStatus
 
+import static org.springframework.http.HttpStatus.FORBIDDEN
+import static org.springframework.http.HttpStatus.NOT_FOUND
+
 class MessageController extends RestfulController<Message> {
 
 	static scope = "singleton"
@@ -50,9 +53,10 @@ class MessageController extends RestfulController<Message> {
             return
         }
 		//coucou
-        def instance = createResource()
+        Message instance = createResource()
+        instance.clearForCreation()
 		// AAAAAAAAAAA mode ultra batard pour mettre l'auteur
-		((Message)instance).author = (User) springSecurityService.currentUser
+		instance.author = (User) springSecurityService.currentUser
         instance.validate()
         if (instance.hasErrors()) {
             respond instance.errors, view:'create' // STATUS CODE 422
@@ -137,8 +141,9 @@ class MessageController extends RestfulController<Message> {
 	 * @return
 	 */
 	def indexMsgReported() {
-		// TODO
-		render "Au boulot"
+        respond Message.createCriteria().list {
+            reportedBy{ isNotNull('id') }
+        }
 	}
 
 	@Override
@@ -158,12 +163,31 @@ class MessageController extends RestfulController<Message> {
 
     @Override
     def show() {
-        super.show()
+        User user = (User) springSecurityService.currentUser
+        Message instance = queryForResource(params.id)
+        if (null != instance && instance.isUserAllowedToRead(user)){
+            super.show()
+        }
+        else {
+            notFound()
+        }
     }
 
     @Override
     def delete() {
-        super.delete()
+        Message instance = queryForResource(params.id)
+        if (null != instance){
+            User user = (User) springSecurityService.currentUser
+            if (instance.isUserAllowedToDelete(user)){
+                super.delete()
+            }
+            else {
+                notFound()
+            }
+        }
+        else {
+            notFound()
+        }
     }
 
     @Override

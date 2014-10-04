@@ -138,7 +138,8 @@ grails.plugin.springsecurity.interceptUrlMap = [
     '/rest/signup':                   ['permitAll'],
     '/rest/userlist':                 ['ROLE_MODERATOR'],
     '/rest/users/connected':          ['isAuthenticated()'],
-    '/rest/users/*':                  ['ROLE_MODERATOR'],
+    '/rest/users/**':                 ['ROLE_MODERATOR'],
+    '/rest/messages/reported':        ['ROLE_MODERATOR'],
     '/**':                            ['isAuthenticated()']
 ]
 grails.plugin.springsecurity.filterChain.chainMap = [

@@ -11,7 +11,7 @@ class UrlMappings {
 		"500"(view:"/error")
 
 		// Déclaration des URL d'accès aux messages
-		"/rest/messages"(resources:'message', excludes:["create", "edit", "patch"]) {
+		"/rest/messages"(resources:'message', excludes:["create", "edit", "patch", "update"]) {
 			"/spread"(controller:"message", action:"spread", method:"PUT")
 			"/ignore"(controller:"message", action:"ignore", method:"PUT")
 			"/report"(controller:"message", action:"report", method:"PUT")
