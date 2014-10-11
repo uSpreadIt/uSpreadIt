@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus
 
 import static org.springframework.http.HttpStatus.FORBIDDEN
 import static org.springframework.http.HttpStatus.NOT_FOUND
+import static org.springframework.http.HttpStatus.NO_CONTENT
+import static org.springframework.http.HttpStatus.OK
 
 class MessageController extends RestfulController<Message> {
 
@@ -95,7 +97,34 @@ class MessageController extends RestfulController<Message> {
 	def ignore() {
 		def messageId = params.messageId
 		def user = (User) springSecurityService.currentUser
-		//TODO
+        // On vérifie que le message est bien reçu par l'utilisateur
+        List<Message> messagesSentToCurrentUser = (List<Message>) Message.createCriteria().list {
+            sentTo{ eq('id', user.id) }
+        }
+        boolean sentToThisUser = false
+        Message message = null
+		for (Message m : messagesSentToCurrentUser){
+            if (m.id.equals(messageId.toLong())){
+                message = m
+                sentToThisUser = true
+                break
+            }
+        }
+        if (sentToThisUser){
+            message.sentTo.remove(user)
+            message.save(flush: true)
+
+            request.withFormat {
+                form multipartForm {
+                    flash.message = message(code: 'default.deleted.message', args: [message(code: "${resourceClassName}.label".toString(), default: resourceClassName), messageId])
+                    redirect action:"index", method:"GET"
+                }
+                '*'{ render status: NO_CONTENT } // NO CONTENT STATUS CODE
+            }
+        }
+        else {
+            notFound()
+        }
 	}
 
 	/**

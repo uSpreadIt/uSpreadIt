@@ -12,9 +12,9 @@ class UrlMappings {
 
 		// Déclaration des URL d'accès aux messages
 		"/rest/messages"(resources:'message', excludes:["create", "edit", "patch", "update"]) {
-			"/spread"(controller:"message", action:"spread", method:"PUT")
-			"/ignore"(controller:"message", action:"ignore", method:"PUT")
-			"/report"(controller:"message", action:"report", method:"PUT")
+			"/spread"(controller:"message", action:"spread", method:"POST")
+			"/ignore"(controller:"message", action:"ignore", method:"POST")
+			"/report"(controller:"message", action:"report", method:"POST")
 		}
 
 		"/rest/users/$userId/messages"(controller:"message", action:"indexUserMsg", method:"GET")
