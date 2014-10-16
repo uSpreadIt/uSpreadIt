@@ -98,18 +98,7 @@ class MessageController extends RestfulController<Message> {
 		def messageId = params.messageId
 		def user = (User) springSecurityService.currentUser
         // On vérifie que le message est bien reçu par l'utilisateur
-        List<Message> messagesSentToCurrentUser = (List<Message>) Message.createCriteria().list {
-            sentTo{ eq('id', user.id) }
-        }
-        boolean sentToThisUser = false
-        Message message = null
-		for (Message m : messagesSentToCurrentUser){
-            if (m.id.equals(messageId.toLong())){
-                message = m
-                sentToThisUser = true
-                break
-            }
-        }
+        def (boolean sentToThisUser, Message message) = isMessageSentToThisUser(user, messageId)
         if (sentToThisUser){
             message.sentTo.remove(user)
             message.save(flush: true)
@@ -127,14 +116,47 @@ class MessageController extends RestfulController<Message> {
         }
 	}
 
-	/**
+    private List isMessageSentToThisUser(user, messageId) {
+        List<Message> messagesSentToCurrentUser = (List<Message>) Message.createCriteria().list {
+            sentTo { eq('id', user.id) }
+        }
+        boolean sentToThisUser = false
+        Message message = null
+        for (Message m : messagesSentToCurrentUser) {
+            if (m.id.equals(messageId.toLong())) {
+                message = m
+                sentToThisUser = true
+                break
+            }
+        }
+        return [sentToThisUser, message]
+    }
+
+    /**
 	 * Signale le message dont l'id est fourni lors de l'appel
 	 */
 	def report() {
 		def messageId = params.messageId
 		def type = params.type
 		def user = (User) springSecurityService.currentUser
-		//TODO
+        // On vérifie que le message est bien reçu par l'utilisateur
+        def (boolean sentToThisUser, Message message) = isMessageSentToThisUser(user, messageId)
+        if (sentToThisUser){
+            message.sentTo.remove(user)
+            message.reportedBy.add(user)
+            message.save(flush: true)
+
+            request.withFormat {
+                form multipartForm {
+                    flash.message = message(code: 'default.deleted.message', args: [message(code: "${resourceClassName}.label".toString(), default: resourceClassName), messageId])
+                    redirect action:"index", method:"GET"
+                }
+                '*'{ render status: NO_CONTENT } // NO CONTENT STATUS CODE
+            }
+        }
+        else {
+            notFound()
+        }
 	}
 
 	/**
