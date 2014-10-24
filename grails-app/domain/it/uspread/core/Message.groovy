@@ -1,16 +1,36 @@
 package it.uspread.core
 
+/**
+ * Modèle du message
+ */
 class Message {
 
-	String text
-    User author
+	/** Auteur */
+	User author
+	/** Nombre de propagation */
 	long nbSpread
+	/** Date de création TODO gérer la dé/sérialization pour correspondre en java à ceci : "yyyy-MM-dd HH:mm:ssZ" : 2014-05-15 10:00:00-0800 */
+	Date date = new Date()
+	/** Texte du message */
+	String text
+	/** Couleur du texte (HTML code) */
+	String textColor = "#000000"
+	/** Couleur de fond du cadre (HTML code) */
+	String backgroundColor = "#FFBB33"
+	/** Type de remplissement du cadre TODO Rempalcer par une enum ? */
+	String backgroundType = "PLAIN"
+
+	// TODO meilleure endroit pour les valeurs par défaut que ci dessus ?
 
     static belongsTo = User
     static hasMany = [sentTo: User, spreadBy: User, reportedBy: User]
 
 	static constraints = {
         author(nullable: false)
+		date(nullable: false)
+		text(nullable: false)
+		textColor(nullable: false)
+		backgroundType(nullable: false)
 	}
 
     def isUserAllowedToRead(User user){
@@ -30,6 +50,7 @@ class Message {
         spreadBy = new HashSet<User>()
         reportedBy = new HashSet<User>()
         nbSpread = 0
+		date = new Date()
         id = null
     }
 

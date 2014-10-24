@@ -1,7 +1,7 @@
 package it.uspread.core;
 
 /**
- * Type de fond utilisé.
+ * Type de remplissement du cadre.
  */
 public enum BackgroundType {
     /** Fond uni */
