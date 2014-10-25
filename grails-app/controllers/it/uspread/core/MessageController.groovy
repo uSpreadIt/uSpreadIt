@@ -2,9 +2,6 @@ package it.uspread.core
 
 import grails.rest.RestfulController
 
-import org.codehaus.groovy.grails.web.servlet.HttpHeaders
-import org.springframework.http.HttpStatus
-
 import static org.springframework.http.HttpStatus.NO_CONTENT
 import grails.rest.RestfulController
 
@@ -31,8 +28,6 @@ class MessageController extends RestfulController<Message> {
 		if (MessageQuery.AUTHOR.name().equals(type) || type == null) {
 			//TODO peut être mieux de simplement pas autoriser l'url ./message ?
 			respond Message.where { author.id == user.id }.list()
-
-			respond User.list(max: spreadSize, sort: 'lastReceivedMessageDate', order: 'asc')
 		}
 		// Si on liste les message reçus par l'utilisateur (./message?query=RECEIVED)
 		else if (MessageQuery.RECEIVED.name().equals(type)) {
