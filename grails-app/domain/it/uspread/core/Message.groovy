@@ -10,7 +10,7 @@ class Message {
 	/** Nombre de propagation */
 	long nbSpread
 	/** Date de création TODO gérer la dé/sérialization pour correspondre en java à ceci : "yyyy-MM-dd HH:mm:ssZ" : 2014-05-15 10:00:00-0800 */
-	Date date = new Date()
+	Date dateCreated
 	/** Texte du message */
 	String text
 	/** Couleur du texte (HTML code) */
@@ -27,7 +27,6 @@ class Message {
 
 	static constraints = {
         author(nullable: false)
-		date(nullable: false)
 		text(nullable: false)
 		textColor(nullable: false)
 		backgroundType(nullable: false)
@@ -50,7 +49,6 @@ class Message {
         spreadBy = new HashSet<User>()
         reportedBy = new HashSet<User>()
         nbSpread = 0
-		date = new Date()
         id = null
     }
 

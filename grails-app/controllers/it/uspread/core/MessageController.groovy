@@ -1,14 +1,12 @@
 package it.uspread.core
 
-import grails.rest.RestfulController
-
-import org.codehaus.groovy.grails.web.servlet.HttpHeaders
-import org.springframework.http.HttpStatus
-
 import static org.springframework.http.HttpStatus.FORBIDDEN
 import static org.springframework.http.HttpStatus.NOT_FOUND
 import static org.springframework.http.HttpStatus.NO_CONTENT
 import static org.springframework.http.HttpStatus.OK
+import grails.rest.RestfulController
+
+import org.springframework.http.HttpStatus
 
 class MessageController extends RestfulController<Message> {
 
@@ -29,6 +27,8 @@ class MessageController extends RestfulController<Message> {
 		if (MessageQuery.AUTHOR.name().equals(type) || type == null) {
 			//TODO peut être mieux de simplement pas autoriser l'url ./message ?
 			respond Message.where { author.id == user.id }.list()
+
+			respond User.list(max: spreadSize, sort: 'lastReceivedMessageDate', order: 'asc')
 		}
 		// Si on liste les message reçus par l'utilisateur (./message?query=RECEIVED)
 		else if (MessageQuery.RECEIVED.name().equals(type)) {
@@ -49,37 +49,49 @@ class MessageController extends RestfulController<Message> {
 		}
 	}
 
+	/**
+	 * Sauvegarde de création d'un message (POST)
+	 */
 	@Override
 	def save() {
 		if(handleReadOnly()) {
             return
         }
-		//coucou
+
         Message instance = createResource()
         instance.clearForCreation()
-		// AAAAAAAAAAA mode ultra batard pour mettre l'auteur
+		// Association de l'auteur du message (Car non renseigné dans le JSON)
 		instance.author = (User) springSecurityService.currentUser
         instance.validate()
+
+		if (limitReached()) {
+			render status: 442 // TODO mettre statut spécifique a notre usage
+			return
+		}
+
+
         if (instance.hasErrors()) {
-            respond instance.errors, view:'create' // STATUS CODE 422
+            respond instance.errors // STATUS CODE 422
             return
         }
 
         instance.save flush:true
 
         request.withFormat {
-            form multipartForm {
-                flash.message = message(code: 'default.created.message', args: [message(code: "${resourceName}.label".toString(), default: resourceClassName), instance.id])
-                redirect instance
-            }
             '*' {
-                response.addHeader(HttpHeaders.LOCATION,
-                        g.createLink(
-                                resource: this.controllerName, action: 'show',id: instance.id, absolute: true,
-                                namespace: hasProperty('namespace') ? this.namespace : null ))
-                respond instance, [status: HttpStatus.CREATED]
+				render status: HttpStatus.CREATED
             }
         }
+	}
+
+	/**
+	 * QUICK TEST CREATION LIMIT : Pour le test sur les dernières 24H on limite à 2 messages max
+	 * @return
+	 */
+	def limitReached() {
+		def startDate = (new Date()).minus(1);
+		List<Message> listMessage = Message.where({ author.id == ((User) springSecurityService.currentUser).id && dateCreated > startDate }).list()
+		return listMessage.size() >= 1000
 	}
 
 	/**
@@ -199,12 +211,12 @@ class MessageController extends RestfulController<Message> {
 
 	@Override
 	def create() {
-		// Non nécessaire pour le moment
+		// Non nécessaire car méthode d'obtention de formulaire de création.
 	}
 
 	@Override
 	def edit() {
-		// Non nécessaire pour le moment
+		// Non nécessaire car méthode d'obtention de formulaire d'édition.
 	}
 
 	@Override
