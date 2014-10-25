@@ -11,6 +11,8 @@ class User {
 	boolean accountLocked
 	boolean passwordExpired
 	String email
+    Date lastReceivedMessageDate
+    boolean specialUser
 
     static hasMany = [messages: Message]
     static mappedBy = [messages: 'author']
@@ -21,6 +23,7 @@ class User {
 		username blank: false, unique: true
 		password blank: false
 		email(unique: true, email: true, blank: false)
+        lastReceivedMessageDate nullable: true
 	}
 
 	static mapping = {
@@ -52,6 +55,7 @@ class User {
 
     /**
      * Par sécurité : pour ne pas autoriser l'envoi dans le message json de ces champs
+     * TODO à supprimer lorsque le mapping aura été mis en place USPREAD-28
      * @return
      */
     def clearForCreation() {

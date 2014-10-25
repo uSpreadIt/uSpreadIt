@@ -57,6 +57,11 @@ class UserController extends RestfulController<User> {
             }
         }.each { ((Message) it).removeFromSentTo(instance) }
         Message.createCriteria().list {
+            ignoredBy {
+                eq('id', instance.id)
+            }
+        }.each { ((Message) it).removeFromIgnoredBy(instance) }
+        Message.createCriteria().list {
             reportedBy {
                 eq('id', instance.id)
             }

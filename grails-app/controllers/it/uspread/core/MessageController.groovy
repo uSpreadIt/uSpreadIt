@@ -5,13 +5,12 @@ import grails.rest.RestfulController
 import org.codehaus.groovy.grails.web.servlet.HttpHeaders
 import org.springframework.http.HttpStatus
 
-import static org.springframework.http.HttpStatus.FORBIDDEN
-import static org.springframework.http.HttpStatus.NOT_FOUND
 import static org.springframework.http.HttpStatus.NO_CONTENT
-import static org.springframework.http.HttpStatus.OK
 
 class MessageController extends RestfulController<Message> {
 
+    // TODO à paramétrer
+    private static final int SPREAD_SIZE = 10
 	static scope = "singleton"
 	static responseFormats = ["json"]
 
@@ -54,10 +53,8 @@ class MessageController extends RestfulController<Message> {
 		if(handleReadOnly()) {
             return
         }
-		//coucou
         Message instance = createResource()
         instance.clearForCreation()
-		// AAAAAAAAAAA mode ultra batard pour mettre l'auteur
 		instance.author = (User) springSecurityService.currentUser
         instance.validate()
         if (instance.hasErrors()) {
@@ -66,6 +63,9 @@ class MessageController extends RestfulController<Message> {
         }
 
         instance.save flush:true
+
+        // propagation initiale
+        spreadIt(instance, SPREAD_SIZE, true)
 
         request.withFormat {
             form multipartForm {
@@ -82,13 +82,63 @@ class MessageController extends RestfulController<Message> {
         }
 	}
 
-	/**
+    /**
+     * Propagation d'un message
+     * @param message le message à propager
+     * @param spreadSize le nombre de personnes qui recevront le message
+     * @param initialSpread pour distinguer la création d'un nouveau message de la propagation
+     */
+    private static void spreadIt(Message message, int spreadSize, boolean initialSpread) {
+        // Select spreadSize users order by lastReceivedMessageDate asc
+        List<User> recipients
+        if (initialSpread) {
+            recipients = User.findAllBySpecialUserAndIdNotLike(
+                    false, message.authorId, [max: spreadSize, sort: 'lastReceivedMessageDate', order: 'asc'])
+        } else {
+            def usersWhoReceivedThisMessage = message.ignoredBy.collect {it.id}
+            usersWhoReceivedThisMessage << message.sentTo.collect{it.id}
+            usersWhoReceivedThisMessage << message.spreadBy.collect{it.id}
+
+            recipients = User.findAllBySpecialUserAndIdNotLikeAndIdNotInList(
+                    false, message.authorId, usersWhoReceivedThisMessage, [max: spreadSize, sort: 'lastReceivedMessageDate', order: 'asc'])
+        }
+        recipients = recipients.size() >= spreadSize ? recipients[0..spreadSize - 1] : recipients
+        Date now = new Date()
+        recipients.each {
+            it.lastReceivedMessageDate = now
+            message.addToSentTo(it)
+            it.save(flush: true)
+        }
+        if (!initialSpread) {
+            message.nbSpread++
+        }
+        message.save(flush: true)
+    }
+
+    /**
 	 * Propage le message dont l'id est fourni lors de l'appel
 	 */
 	def spread() {
 		def messageId = params.messageId
 		def user = (User) springSecurityService.currentUser
-		//TODO
+        // On vérifie que le message est bien reçu par l'utilisateur
+        def (boolean sentToThisUser, Message message) = isMessageSentToThisUser(user, messageId)
+        if (sentToThisUser){
+            message.sentTo.remove(user)
+            message.spreadBy.add(user)
+            spreadIt(message, SPREAD_SIZE, false)
+
+            request.withFormat {
+                form multipartForm {
+                    flash.message = message(code: 'default.deleted.message', args: [message(code: "${resourceClassName}.label".toString(), default: resourceClassName), messageId])
+                    redirect action:"index", method:"GET"
+                }
+                '*'{ render status: NO_CONTENT } // NO CONTENT STATUS CODE
+            }
+        }
+        else {
+            notFound()
+        }
 	}
 
 	/**
@@ -101,6 +151,7 @@ class MessageController extends RestfulController<Message> {
         def (boolean sentToThisUser, Message message) = isMessageSentToThisUser(user, messageId)
         if (sentToThisUser){
             message.sentTo.remove(user)
+            message.ignoredBy.add(user)
             message.save(flush: true)
 
             request.withFormat {
@@ -137,6 +188,7 @@ class MessageController extends RestfulController<Message> {
 	 */
 	def report() {
 		def messageId = params.messageId
+        // TODO non utilisé pour l'instant
 		def type = params.type
 		def user = (User) springSecurityService.currentUser
         // On vérifie que le message est bien reçu par l'utilisateur
@@ -144,6 +196,7 @@ class MessageController extends RestfulController<Message> {
         if (sentToThisUser){
             message.sentTo.remove(user)
             message.reportedBy.add(user)
+            message.ignoredBy.add(user)
             message.save(flush: true)
 
             request.withFormat {
