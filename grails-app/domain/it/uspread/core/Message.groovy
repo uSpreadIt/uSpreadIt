@@ -23,7 +23,7 @@ class Message {
 	// TODO meilleure endroit pour les valeurs par défaut que ci dessus ?
 
     static belongsTo = User
-    static hasMany = [sentTo: User, spreadBy: User, reportedBy: User]
+    static hasMany = [sentTo: User, ignoredBy: User, spreadBy: User, reportedBy: User]
 
 	static constraints = {
         author(nullable: false)
@@ -42,10 +42,12 @@ class Message {
 
     /**
      * Par sécurité : pour ne pas autoriser l'envoi dans le message json de ces champs
+     * TODO à supprimer lorsque le mapping aura été mis en place USPREAD-28
      * @return
      */
     def clearForCreation(){
         sentTo = new HashSet<User>()
+        ignoredBy = new HashSet<User>()
         spreadBy = new HashSet<User>()
         reportedBy = new HashSet<User>()
         nbSpread = 0
