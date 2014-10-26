@@ -38,7 +38,7 @@ class JSONMarshaller {
 				output["nbSpread"] = it.nbSpread
 				output["text"] = it.text
 				output["textColor"] = it.textColor
-				output["backgroudColor"] = it.backgroundColor
+				output["backgroundColor"] = it.backgroundColor
 				output["backgroundType"] = it.backgroundType
 				return output;
 			}
