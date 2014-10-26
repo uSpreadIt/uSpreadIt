@@ -2,6 +2,7 @@ import it.uspread.core.Message
 import it.uspread.core.Role
 import it.uspread.core.User
 import it.uspread.core.UserRole
+import it.uspread.core.marshallers.JSONMarshaller
 
 class BootStrap {
 
@@ -35,6 +36,8 @@ class BootStrap {
                 new User(username: 'user'+i, password: 'user'+i, email:"user"+i+"@free.fr").save(failOnError: true)
             }
 		}
+
+		JSONMarshaller.register()
 	}
 
 	def destroy = {

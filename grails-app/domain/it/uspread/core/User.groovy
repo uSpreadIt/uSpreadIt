@@ -1,5 +1,8 @@
 package it.uspread.core
 
+/**
+ * Modèle de l'utilisateur
+ */
 class User {
 
 	transient springSecurityService
@@ -55,7 +58,7 @@ class User {
 
     /**
      * Par sécurité : pour ne pas autoriser l'envoi dans le message json de ces champs
-     * TODO à supprimer lorsque le mapping aura été mis en place USPREAD-28
+     * TODO à supprimer lorsque le mapping aura été mis en place USPREAD-48
      * @return
      */
     def clearForCreation() {

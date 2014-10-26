@@ -9,7 +9,7 @@ class Message {
 	User author
 	/** Nombre de propagation */
 	long nbSpread
-	/** Date de création TODO gérer la dé/sérialization pour correspondre en java à ceci : "yyyy-MM-dd HH:mm:ssZ" : 2014-05-15 10:00:00-0800 */
+	/** Date de création */
 	Date dateCreated
 	/** Texte du message */
 	String text
@@ -17,7 +17,7 @@ class Message {
 	String textColor = "#000000"
 	/** Couleur de fond du cadre (HTML code) */
 	String backgroundColor = "#FFBB33"
-	/** Type de remplissement du cadre TODO Rempalcer par une enum ? */
+	/** Type de remplissement du cadre (PLAIN, IMAGE, ...) */
 	String backgroundType = "PLAIN"
 
 	// TODO meilleure endroit pour les valeurs par défaut que ci dessus ?
@@ -42,7 +42,7 @@ class Message {
 
     /**
      * Par sécurité : pour ne pas autoriser l'envoi dans le message json de ces champs
-     * TODO à supprimer lorsque le mapping aura été mis en place USPREAD-28
+     * TODO à supprimer lorsque le mapping aura été mis en place USPREAD-48
      * @return
      */
     def clearForCreation(){

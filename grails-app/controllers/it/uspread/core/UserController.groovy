@@ -1,13 +1,16 @@
 package it.uspread.core
 
-import grails.rest.RestfulController
-import grails.transaction.Transactional
-import org.codehaus.groovy.grails.web.servlet.HttpHeaders
-
 import static org.springframework.http.HttpStatus.CREATED
 import static org.springframework.http.HttpStatus.NO_CONTENT
 import static org.springframework.http.HttpStatus.OK
+import grails.converters.JSON
+import grails.rest.RestfulController
+import grails.transaction.Transactional
+import it.uspread.core.marshallers.JSONMarshaller
 
+/**
+ * Controlleur des accés aux utilisateur
+ */
 class UserController extends RestfulController<User> {
 
 	static scope = "singleton"
@@ -24,99 +27,93 @@ class UserController extends RestfulController<User> {
 	 */
 	def getUserConnected() {
 		def user = (User) springSecurityService.currentUser
-        if (null != user){
-            respond User.where { id == user.id }.find()
-        }
-        else {
-            redirect(uri: '/')
-        }
+		if (null != user){
+			JSON.use(user.isModerator() ? JSONMarshaller.INTERNAL_MARSHALLER : JSONMarshaller.PUBLIC_MARSHALLER) {
+				respond User.where { id == user.id }.find()
+			}
+		}
+		else {
+			redirect(uri: '/')
+		}
 	}
 
-    /**
-     * Supprime le compte de l'user connecté
-     */
-    @Transactional
-    def deleteUserConnected(){
-        def instance = (User) springSecurityService.currentUser
-        if (null != instance){
-            deleteUser(instance)
-        }
-        request.withFormat {
-            form multipartForm {
-                flash.message = message(code: 'default.deleted.message', args: [message(code: "${resourceClassName}.label".toString(), default: resourceClassName), instance.id])
-                redirect(uri: '/')
-            }
-            '*'{ render status: NO_CONTENT } // NO CONTENT STATUS CODE
-        }
-    }
+	/**
+	 * Supprime le compte de l'user connecté
+	 */
+	@Transactional
+	def deleteUserConnected(){
+		def instance = (User) springSecurityService.currentUser
+		if (null != instance){
+			deleteUser(instance)
+		}
+		request.withFormat {
+			'*'{ render status: NO_CONTENT } // NO CONTENT STATUS CODE
+		}
+	}
 
-    private deleteUser(instance) {
-        Message.createCriteria().list {
-            sentTo {
-                eq('id', instance.id)
-            }
-        }.each { ((Message) it).removeFromSentTo(instance) }
-        Message.createCriteria().list {
-            ignoredBy {
-                eq('id', instance.id)
-            }
-        }.each { ((Message) it).removeFromIgnoredBy(instance) }
-        Message.createCriteria().list {
-            reportedBy {
-                eq('id', instance.id)
-            }
-        }.each { ((Message) it).removeFromReportedBy(instance) }
-        Message.createCriteria().list {
-            spreadBy {
-                eq('id', instance.id)
-            }
-        }.each { ((Message) it).removeFromSpreadBy(instance) }
-        instance.delete(flush: true)
-    }
+	private deleteUser(instance) {
+		Message.createCriteria().list {
+			sentTo {
+				eq('id', instance.id)
+			}
+		}.each { ((Message) it).removeFromSentTo(instance) }
+		Message.createCriteria().list {
+			ignoredBy {
+				eq('id', instance.id)
+			}
+		}.each { ((Message) it).removeFromIgnoredBy(instance) }
+		Message.createCriteria().list {
+			reportedBy {
+				eq('id', instance.id)
+			}
+		}.each { ((Message) it).removeFromReportedBy(instance) }
+		Message.createCriteria().list {
+			spreadBy {
+				eq('id', instance.id)
+			}
+		}.each { ((Message) it).removeFromSpreadBy(instance) }
+		instance.delete(flush: true)
+	}
 
-    /**
-     * Update du compte de l'user connecté
-     */
-    @Transactional
-    def updateUserConnected(){
-        def instance = (User) springSecurityService.currentUser
+	/**
+	 * Update du compte de l'user connecté
+	 */
+	@Transactional
+	def updateUserConnected(){
+		def instance = (User) springSecurityService.currentUser
 
-        instance.properties = getObjectToBind()
+		instance.properties = getObjectToBind()
 
-        if (instance.hasErrors()) {
-            respond instance.errors, view:'edit' // STATUS CODE 422
-            return
-        }
+		if (instance.hasErrors()) {
+			respond instance.errors // STATUS CODE 422
+			return
+		}
 
-        instance.save flush:true
-        request.withFormat {
-            form multipartForm {
-                flash.message = message(code: 'default.updated.message', args: [message(code: "${resourceClassName}.label".toString(), default: resourceClassName), instance.id])
-                redirect instance
-            }
-            '*'{
-                response.addHeader(HttpHeaders.LOCATION,
-                        g.createLink(
-                                resource: this.controllerName, action: 'show',id: instance.id, absolute: true,
-                                namespace: hasProperty('namespace') ? this.namespace : null ))
-                respond instance, [status: OK]
-            }
-        }
-    }
+		instance.save flush:true
+		request.withFormat {
+			'*'{
+				render([status: OK])
+			}
+		}
+	}
 
-    @Override
-    def index(Integer max) {
-        return super.index(max)
-    }
+	@Override
+	def index(Integer max) {
+		def user = (User) springSecurityService.currentUser
+		params.max = Math.min(max ?: 10, 100)
+		JSON.use(user.isModerator() ? JSONMarshaller.INTERNAL_MARSHALLER : JSONMarshaller.PUBLIC_MARSHALLER) {
+			respond listAllResources(params), model: [("${resourceName}Count".toString()): countResources()]
+		}
+	}
 
-    @Override
+	@Override
 	def create() {
-		// Non nécessaire pour le moment
+		// Non nécessaire car méthode d'obtention de formulaire de création.
 	}
 
 	@Override
 	def edit() {
-		// Non nécessaire pour le moment
+		// Non nécessaire car méthode d'obtention de formulaire d'édition.
 	}
 
 	@Override
@@ -124,66 +121,79 @@ class UserController extends RestfulController<User> {
 		// Non nécessaire pour le moment
 	}
 
-    @Override
-    def save() {
-        if(handleReadOnly()) {
-            return
-        }
-        User instance = createResource()
-        instance.clearForCreation()
-        instance.validate()
-        if (instance.hasErrors()) {
-            respond instance.errors, view:'create' // STATUS CODE 422
-            return
-        }
+	@Override
+	def save() {
+		if(handleReadOnly()) {
+			return
+		}
+		User instance = createResource()
+		instance.clearForCreation()
+		instance.validate()
+		if (instance.hasErrors()) {
+			respond instance.errors, view:'create' // STATUS CODE 422
+			return
+		}
 
-        instance.save flush:true
+		instance.save flush:true
 
-        request.withFormat {
-            form multipartForm {
-                flash.message = message(code: 'default.created.message', args: [message(code: "${resourceName}.label".toString(), default: resourceClassName), instance.id])
-                redirect instance
-            }
-            '*' {
-                response.addHeader(HttpHeaders.LOCATION,
-                        g.createLink(
-                                resource: this.controllerName, action: 'show',id: instance.id, absolute: true,
-                                namespace: hasProperty('namespace') ? this.namespace : null ))
-                respond instance, [status: CREATED]
-            }
-        }
-    }
+		request.withFormat {
+			'*' {
+				render([status: CREATED])
+			}
+		}
+	}
 
-    @Override
-    def show() {
-        return super.show()
-    }
+	@Override
+	def show() {
+		def user = (User) springSecurityService.currentUser
+		JSON.use(user.isModerator() ? JSONMarshaller.INTERNAL_MARSHALLER : JSONMarshaller.PUBLIC_MARSHALLER) {
+			respond queryForResource(params.id)
+		}
+	}
 
-    @Override
-    def update() {
-        return super.update()
-    }
+	@Override
+	def update() {
+		if(handleReadOnly()) {
+			return
+		}
 
-    @Override
-    def delete() {
-        if(handleReadOnly()) {
-            return
-        }
+		User instance = queryForResource(params.id)
+		if (instance == null) {
+			notFound()
+			return
+		}
 
-        def instance = queryForResource(params.id)
-        if (instance == null) {
-            notFound()
-            return
-        }
+		instance.properties = getObjectToBind()
 
-        deleteUser(instance)
+		if (instance.hasErrors()) {
+			respond instance.errors // STATUS CODE 422
+			return
+		}
 
-        request.withFormat {
-            form multipartForm {
-                flash.message = message(code: 'default.deleted.message', args: [message(code: "${resourceClassName}.label".toString(), default: resourceClassName), instance.id])
-                redirect action:"index", method:"GET"
-            }
-            '*'{ render status: NO_CONTENT } // NO CONTENT STATUS CODE
-        }
-    }
+		instance.save flush:true
+		request.withFormat {
+			'*'{
+				render([status: OK])
+			}
+		}
+	}
+
+	@Override
+	def delete() {
+		if(handleReadOnly()) {
+			return
+		}
+
+		def instance = queryForResource(params.id)
+		if (instance == null) {
+			notFound()
+			return
+		}
+
+		deleteUser(instance)
+
+		request.withFormat {
+			"*"{ render([status: NO_CONTENT]) } // NO CONTENT STATUS CODE
+		}
+	}
 }
