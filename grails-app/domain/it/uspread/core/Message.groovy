@@ -5,32 +5,32 @@ package it.uspread.core
  */
 class Message {
 
-	/** Auteur */
-	User author
-	/** Nombre de propagation */
-	long nbSpread
-	/** Date de création */
-	Date dateCreated
-	/** Texte du message */
-	String text
-	/** Couleur du texte (HTML code) */
-	String textColor = "#000000"
-	/** Couleur de fond du cadre (HTML code) */
-	String backgroundColor = "#FFBB33"
-	/** Type de remplissement du cadre (PLAIN, IMAGE, ...) */
-	String backgroundType = "PLAIN"
+    /** Auteur */
+    User author
+    /** Nombre de propagation */
+    long nbSpread
+    /** Date de création */
+    Date dateCreated
+    /** Texte du message */
+    String text
+    /** Couleur du texte (HTML code) */
+    String textColor = "#000000"
+    /** Couleur de fond du cadre (HTML code) */
+    String backgroundColor = "#FFBB33"
+    /** Type de remplissement du cadre (PLAIN, IMAGE, ...) */
+    String backgroundType = "PLAIN"
 
-	// TODO meilleure endroit pour les valeurs par défaut que ci dessus ?
+    // TODO meilleure endroit pour les valeurs par défaut que ci dessus ?
 
     static belongsTo = User
     static hasMany = [sentTo: User, ignoredBy: User, spreadBy: User, reportedBy: User]
 
-	static constraints = {
+    static constraints = {
         author(nullable: false)
-		text(nullable: false)
-		textColor(nullable: false)
-		backgroundType(nullable: false)
-	}
+        text(nullable: false)
+        textColor(nullable: false)
+        backgroundType(nullable: false)
+    }
 
     def isUserAllowedToRead(User user){
         return author.id == user.id || sentTo.contains(user) || spreadBy.contains(user) || user.isModerator()

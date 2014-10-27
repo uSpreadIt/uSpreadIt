@@ -5,52 +5,52 @@ package it.uspread.core
  */
 class User {
 
-	transient springSecurityService
+    transient springSecurityService
 
-	String username
-	String password
-	boolean enabled = true
-	boolean accountExpired
-	boolean accountLocked
-	boolean passwordExpired
-	String email
+    String username
+    String password
+    boolean enabled = true
+    boolean accountExpired
+    boolean accountLocked
+    boolean passwordExpired
+    String email
     Date lastReceivedMessageDate
     boolean specialUser
 
     static hasMany = [messages: Message]
     static mappedBy = [messages: 'author']
 
-	static transients = ['springSecurityService']
+    static transients = ['springSecurityService']
 
-	static constraints = {
-		username blank: false, unique: true
-		password blank: false
-		email(unique: true, email: true, blank: false)
+    static constraints = {
+        username blank: false, unique: true
+        password blank: false
+        email(unique: true, email: true, blank: false)
         lastReceivedMessageDate nullable: true
-	}
+    }
 
-	static mapping = {
-		password column: '`password`'
-		messages cascade: 'all-delete-orphan'
-	}
+    static mapping = {
+        password column: '`password`'
+        messages cascade: 'all-delete-orphan'
+    }
 
-	Set<Role> getAuthorities() {
-		UserRole.findAllByUser(this).collect { it.role }
-	}
+    Set<Role> getAuthorities() {
+        UserRole.findAllByUser(this).collect { it.role }
+    }
 
-	def beforeInsert() {
-		encodePassword()
-	}
+    def beforeInsert() {
+        encodePassword()
+    }
 
-	def beforeUpdate() {
-		if (isDirty('password')) {
-			encodePassword()
-		}
-	}
+    def beforeUpdate() {
+        if (isDirty('password')) {
+            encodePassword()
+        }
+    }
 
-	protected void encodePassword() {
-		password = springSecurityService?.passwordEncoder ? springSecurityService.encodePassword(password) : password
-	}
+    protected void encodePassword() {
+        password = springSecurityService?.passwordEncoder ? springSecurityService.encodePassword(password) : password
+    }
 
     def isModerator(){
         getAuthorities().any { it.authority == Role.ROLE_MODERATOR }
@@ -69,7 +69,7 @@ class User {
         passwordExpired = false
     }
 
-	String toString(){
+    String toString(){
         return null != email ? email : "<EMPTY>"
     }
 }

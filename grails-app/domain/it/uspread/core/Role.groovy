@@ -4,13 +4,11 @@ class Role {
 
     public static final String ROLE_MODERATOR = "ROLE_MODERATOR"
 
-	String authority
+    String authority
 
-	static mapping = {
-		cache true
-	}
+    static mapping = { cache true }
 
-	static constraints = {
-		authority blank: false, unique: true
-	}
+    static constraints = {
+        authority blank: false, unique: true
+    }
 }

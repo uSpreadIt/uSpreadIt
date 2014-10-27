@@ -96,19 +96,22 @@ class UserIntegrationSpec extends Specification {
             sentTo {
                 eq('id', joe.id)
             }
-        }.each { ((Message)it).removeFromSentTo(joe)
+        }.each {
+            ((Message)it).removeFromSentTo(joe)
         }
         Message.createCriteria().list {
             reportedBy {
                 eq('id', joe.id)
             }
-        }.each { ((Message)it).removeFromReportedBy(joe)
+        }.each {
+            ((Message)it).removeFromReportedBy(joe)
         }
         Message.createCriteria().list {
             spreadBy {
                 eq('id', joe.id)
             }
-        }.each { ((Message)it).removeFromSpreadBy(joe)
+        }.each {
+            ((Message)it).removeFromSpreadBy(joe)
         }
         joe.delete(flush: true)
 
