@@ -32,6 +32,9 @@
 
 #IDE user settings
 /.idea/workspace.xml
+/.settings
+.classpath
+.project
 
 #Fichier inutile
 web-app/WEB-INF/tld/c.tld
