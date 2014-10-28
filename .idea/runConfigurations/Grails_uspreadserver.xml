@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Grails:uspreadserver" type="GrailsRunConfigurationType" factoryName="Grails" singleton="false">
+    <module name="uSpread-Core" />
+    <setting name="vmparams" value="" />
+    <setting name="cmdLine" value="run-app" />
+    <setting name="depsClasspath" value="false" />
+    <setting name="passParentEnv" value="true" />
+    <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+    <setting name="launchBrowser" value="false" />
+    <RunnerSettings RunnerId="Run" />
+    <ConfigurationWrapper RunnerId="Run" />
+    <method />
+  </configuration>
+</component>
