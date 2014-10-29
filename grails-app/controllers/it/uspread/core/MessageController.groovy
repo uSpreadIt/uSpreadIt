@@ -122,6 +122,7 @@ class MessageController extends RestfulController<Message> {
         }
         if (!initialSpread) {
             message.nbSpread++
+            message.author.score++
         }
         message.save(flush: true)
     }

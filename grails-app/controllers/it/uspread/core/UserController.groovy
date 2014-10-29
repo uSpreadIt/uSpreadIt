@@ -14,6 +14,8 @@ class UserController extends RestfulController<User> {
 
     static scope = "singleton"
     static responseFormats = ["json"]
+    // TODO à paramétrer
+    private static final int TOP_SIZE = 50;
 
     def springSecurityService
 
@@ -193,6 +195,12 @@ class UserController extends RestfulController<User> {
 
         request.withFormat {
             "*"{ render([status: HttpStatus.NO_CONTENT]) } // NO CONTENT STATUS CODE
+        }
+    }
+
+    def topUsers() {
+        JSON.use(JSONMarshaller.PUBLIC_MARSHALLER) {
+            respond User.list([max: TOP_SIZE, sort: 'score', order: 'desc'])
         }
     }
 }

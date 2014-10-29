@@ -29,6 +29,7 @@ class UrlMappings {
         "/rest/users/connected"(controller:"user", action:"deleteUserConnected", method:"DELETE")
         "/rest/signup"(controller:"user", action:"save", method:"POST")
         "/rest/userlist"(controller:"user", action:"index", method:"GET")
+        "/rest/topusers"(controller:"user", action:"topUsers", method:"GET")
 
     }
 }

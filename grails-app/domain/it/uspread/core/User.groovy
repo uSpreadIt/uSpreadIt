@@ -16,6 +16,7 @@ class User {
     String email
     Date lastReceivedMessageDate
     boolean specialUser
+    long score
 
     static hasMany = [messages: Message]
     static mappedBy = [messages: 'author']
@@ -67,6 +68,7 @@ class User {
         enabled = true
         messages = new HashSet<Message>()
         passwordExpired = false
+        score = 0
     }
 
     String toString(){
