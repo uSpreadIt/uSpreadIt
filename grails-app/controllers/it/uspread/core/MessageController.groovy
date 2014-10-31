@@ -123,6 +123,7 @@ class MessageController extends RestfulController<Message> {
         if (!initialSpread) {
             message.nbSpread++
             message.author.score++
+            //Test rebase
         }
         message.save(flush: true)
     }
