@@ -43,3 +43,6 @@ web-app/WEB-INF/tld/fmt.tld
 !.idea/runConfigurations/
 !.idea/runConfigurations/*
 *.iml
+
+#heroku
+*.iws
