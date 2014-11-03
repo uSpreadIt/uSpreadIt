@@ -107,8 +107,8 @@ class MessageController extends RestfulController<Message> {
                     false, message.authorId, [max: spreadSize, sort: 'lastReceivedMessageDate', order: 'asc'])
         } else {
             def usersWhoReceivedThisMessage = message.ignoredBy.collect {it.id}
-            usersWhoReceivedThisMessage << message.sentTo.collect{it.id}
-            usersWhoReceivedThisMessage << message.spreadBy.collect{it.id}
+            usersWhoReceivedThisMessage.addAll(message.sentTo.collect{it.id})
+            usersWhoReceivedThisMessage.addAll(message.spreadBy.collect{it.id})
 
             recipients = User.findAllBySpecialUserAndIdNotLikeAndIdNotInList(
                     false, message.authorId, usersWhoReceivedThisMessage, [max: spreadSize, sort: 'lastReceivedMessageDate', order: 'asc'])
