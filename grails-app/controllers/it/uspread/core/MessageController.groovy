@@ -60,7 +60,8 @@ class MessageController extends RestfulController<Message> {
      */
     @Override
     def save() {
-        if(handleReadOnly()) {
+        def user = springSecurityService.currentUser
+        if(handleReadOnly() || user.isModerator()) {
             return
         }
 
@@ -73,7 +74,7 @@ class MessageController extends RestfulController<Message> {
         Message instance = createResource()
         instance.clearForCreation()
         // Association de l'auteur du message (Car non renseigné dans le JSON)
-        instance.author = (User) springSecurityService.currentUser
+        instance.author = user
         instance.validate()
 
         if (instance.hasErrors()) {
@@ -148,7 +149,7 @@ class MessageController extends RestfulController<Message> {
         def user = (User) springSecurityService.currentUser
         // On vérifie que le message est bien reçu par l'utilisateur
         def (boolean sentToThisUser, Message message) = isMessageSentToThisUser(user, messageId)
-        if (sentToThisUser){
+        if (sentToThisUser && !user.isModerator()){
             message.sentTo.remove(user)
             message.spreadBy.add(user)
             spreadIt(message, SPREAD_SIZE, false)
@@ -177,7 +178,7 @@ class MessageController extends RestfulController<Message> {
         def user = (User) springSecurityService.currentUser
         // On vérifie que le message est bien reçu par l'utilisateur
         def (boolean sentToThisUser, Message message) = isMessageSentToThisUser(user, messageId)
-        if (sentToThisUser){
+        if (sentToThisUser && !user.isModerator()){
             message.sentTo.remove(user)
             message.ignoredBy.add(user)
             message.save(flush: true)
@@ -224,7 +225,7 @@ class MessageController extends RestfulController<Message> {
         def user = (User) springSecurityService.currentUser
         // On vérifie que le message est bien reçu par l'utilisateur
         def (boolean sentToThisUser, Message message) = isMessageSentToThisUser(user, messageId)
-        if (sentToThisUser){
+        if (sentToThisUser && !user.isModerator()){
             message.sentTo.remove(user)
             message.reportedBy.add(user)
             message.ignoredBy.add(user)
