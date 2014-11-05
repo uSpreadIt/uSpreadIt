@@ -66,6 +66,10 @@ class Message {
         return null
     }
 
+    def isReported() {
+        return reportedAsSpam != 0 || reportedAsThreat != 0 || reportedAsInappropriate != 0
+    }
+
     def isUserAllowedToRead(User user){
         return author.id == user.id || sentTo.contains(user) || spreadBy.contains(user) || user.isModerator()
     }

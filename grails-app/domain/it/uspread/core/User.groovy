@@ -60,6 +60,15 @@ class User {
     }
 
     /**
+     * Indique qu'une action de modération est nécessaire pour l'utilisateur<br>
+     * Messages en attente de modération, signalement zélé...
+     * @return
+     */
+    def isModerationRequired() {
+        return messages.any() { Message msg -> msg.isReported()}
+    }
+
+    /**
      * Par sécurité : pour ne pas autoriser l'envoi dans le message json de ces champs
      * TODO à supprimer lorsque le mapping aura été mis en place USPREAD-48
      * @return

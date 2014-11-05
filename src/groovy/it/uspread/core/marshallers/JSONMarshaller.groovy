@@ -2,13 +2,14 @@ package it.uspread.core.marshallers
 
 import grails.converters.JSON
 import it.uspread.core.Message
+import it.uspread.core.ReportType
 import it.uspread.core.User
 
 import java.text.SimpleDateFormat
 
 /**
  * Configuration des conversions des objets du domaine vers le format JSON.<br>
- * Les configurations diffèrent suivant le type d'utilisateur utilisant ce service (ce qui détermine l'application cliente)
+ * Les configurations diffèrent suivant le type d'utilisateur utilisant ce service
  */
 class JSONMarshaller {
 
@@ -23,23 +24,23 @@ class JSONMarshaller {
     static void register() {
         // Configuration pour une communication avec un client simple utilisateur du service (Clients public : mobiles)
         JSON.createNamedConfig(PUBLIC_MARSHALLER) {
-            it.registerObjectMarshaller(User) {
+            it.registerObjectMarshaller(User) { User user ->
                 def output = [:]
-                output["id"] = it.id
-                output["username"] = it.username
-                output["email"] = it.email
+                output["id"] = user.id
+                output["username"] = user.username
+                output["email"] = user.email
                 return output;
             }
 
-            it.registerObjectMarshaller(Message) {
+            it.registerObjectMarshaller(Message) { Message msg ->
                 def output = [:]
-                output["id"] = it.id
-                output["creationDate"] = DATE_FORMAT.format(it.dateCreated)
-                output["nbSpread"] = it.nbSpread
-                output["text"] = it.text
-                output["textColor"] = it.textColor
-                output["backgroundColor"] = it.backgroundColor
-                output["backgroundType"] = it.backgroundType
+                output["id"] = msg.id
+                output["creationDate"] = DATE_FORMAT.format(msg.dateCreated)
+                output["nbSpread"] = msg.nbSpread
+                output["text"] = msg.text
+                output["textColor"] = msg.textColor
+                output["backgroundColor"] = msg.backgroundColor
+                output["backgroundType"] = msg.backgroundType
                 return output;
             }
         }
@@ -47,21 +48,30 @@ class JSONMarshaller {
         // Configuration pour une communication avec un client modérateur ou administrateur du service
         // (Clients interne : Outils de modération ou d'administration)
         JSON.createNamedConfig(INTERNAL_MARSHALLER) {
-            it.registerObjectMarshaller(User) {
+            it.registerObjectMarshaller(User) { User user ->
                 def output = [:]
-                output["id"] = it.id
-                output["username"] = it.username
-                output["email"] = it.email
-                output["role"] = it.isModerator() ? "MODERATOR" : "USER"
+                output["id"] = user.id
+                output["username"] = user.username
+                output["email"] = user.email
+                output["role"] = user.isModerator() ? "MODERATOR" : "USER"
+                if (!user.isModerator()) {
+                    output["reportsSent"] = user.reportsSent
+                    output["reportsReceived"] = user.reportsReceived
+                    output["moderationRequired"] = user.isModerationRequired()
+                }
                 return output;
             }
 
-            it.registerObjectMarshaller(Message) {
+            it.registerObjectMarshaller(Message) { Message msg ->
                 def output = [:]
-                output["id"] = it.id
-                output["creationDate"] = DATE_FORMAT.format(it.dateCreated)
-                output["text"] = it.text
-                output["author"] = [id: it.author.id, username: it.author.username]
+                output["id"] = msg.id
+                output["creationDate"] = DATE_FORMAT.format(msg.dateCreated)
+                output["text"] = msg.text
+                output["author"] = [id: msg.author.id, username: msg.author.username]
+                def ReportType reportType = msg.getMainReportType();
+                if (reportType != null) {
+                    output["reportType"] = reportType.name()
+                }
 
                 return output;
             }
