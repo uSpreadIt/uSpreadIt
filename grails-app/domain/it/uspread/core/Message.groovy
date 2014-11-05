@@ -22,14 +22,48 @@ class Message {
 
     // TODO meilleure endroit pour les valeurs par défaut que ci dessus ?
 
+    long reportedAsSpam
+    long reportedAsThreat
+    long reportedAsInappropriate
+
     static belongsTo = User
-    static hasMany = [sentTo: User, ignoredBy: User, spreadBy: User, reportedBy: User]
+    static hasMany = [sentTo: User, ignoredBy: User, spreadBy: User, reports: Report]
 
     static constraints = {
         author(nullable: false)
         text(nullable: false)
         textColor(nullable: false)
         backgroundType(nullable: false)
+    }
+
+    def incrementReportType(ReportType type) {
+        switch (type) {
+            case ReportType.SPAM:
+                reportedAsSpam++
+                break;
+            case ReportType.INAPPROPRIATE:
+                reportedAsInappropriate++
+                break;
+            case ReportType.THREAT:
+                reportedAsThreat++
+                break;
+        }
+    }
+
+    def getMainReportType() {
+        if ((reportedAsSpam + reportedAsThreat + reportedAsInappropriate) == 0) {
+            return null
+        }
+        if (reportedAsSpam >= reportedAsThreat && reportedAsSpam >= reportedAsInappropriate) {
+            return ReportType.SPAM
+        }
+        if (reportedAsThreat >= reportedAsSpam && reportedAsThreat >= reportedAsInappropriate) {
+            return ReportType.THREAT
+        }
+        if (reportedAsInappropriate >= reportedAsSpam && reportedAsInappropriate >= reportedAsThreat) {
+            return ReportType.INAPPROPRIATE
+        }
+        return null
     }
 
     def isUserAllowedToRead(User user){
@@ -49,7 +83,7 @@ class Message {
         sentTo = new HashSet<User>()
         ignoredBy = new HashSet<User>()
         spreadBy = new HashSet<User>()
-        reportedBy = new HashSet<User>()
+        reports = new HashSet<Report>()
         nbSpread = 0
         id = null
     }

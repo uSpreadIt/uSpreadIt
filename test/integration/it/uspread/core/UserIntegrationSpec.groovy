@@ -37,7 +37,7 @@ class UserIntegrationSpec extends Specification {
         def messageSpread = new Message(text: "Un autre de dude", spreadBy: [yop])
         dude.addToMessages(messageSpread)
 
-        def messageReported = new Message(text: "Un autre de dude salace", reportedBy: [yop])
+        def messageReported = new Message(text: "Un autre de dude salace", reports: [new Report(yop, ReportType.SPAM)])
         dude.addToMessages(messageReported)
 
 
@@ -47,7 +47,7 @@ class UserIntegrationSpec extends Specification {
         def spreadByDude = new Message(text: "Un autre de yop", spreadBy: [dude])
         yop.addToMessages(spreadByDude)
 
-        def reportedByDude = new Message(text: "Un autre de yop", reportedBy: [dude])
+        def reportedByDude = new Message(text: "Un autre de yop", reports: [new Report(dude, ReportType.SPAM)])
         yop.addToMessages(reportedByDude)
 
         when: "the user is saved"
@@ -77,7 +77,7 @@ class UserIntegrationSpec extends Specification {
         def messageDeJoePropageParJim = new Message(text: 'hello', spreadBy: [jim])
         joe.addToMessages(messageDeJoePropageParJim)
 
-        def messageDeJoeSignaleParJim = new Message(text: 'hello', reportedBy: [jim])
+        def messageDeJoeSignaleParJim = new Message(text: 'hello', reports: [new Report(jim, ReportType.SPAM)])
         joe.addToMessages(messageDeJoeSignaleParJim)
 
         def messageDeJimAJoe = new Message(text: "hello", sentTo: [joe])
@@ -86,7 +86,7 @@ class UserIntegrationSpec extends Specification {
         def messageDeJimPropageParJoe = new Message(text: "hello", spreadBy: [joe])
         jim.addToMessages(messageDeJimPropageParJoe)
 
-        def messageDeJimSignaleParJoe = new Message(text: "hello", reportedBy: [joe])
+        def messageDeJimSignaleParJoe = new Message(text: "hello", reports: [new Report(joe, ReportType.SPAM)])
         jim.addToMessages(messageDeJimSignaleParJoe)
 
         joe.save(flush: true)
@@ -99,13 +99,21 @@ class UserIntegrationSpec extends Specification {
         }.each {
             ((Message)it).removeFromSentTo(joe)
         }
+
         Message.createCriteria().list {
-            reportedBy {
-                eq('id', joe.id)
+            reports {
+                eq('reporter.id', joe.id)
             }
         }.each {
-            ((Message)it).removeFromReportedBy(joe)
+            ((Message)it).removeFromReports(new Report(joe))
         }
+
+        Report.createCriteria().list {
+            reporter {
+                eq('id', joe.id)
+            }
+        }.each{ ((Report) it).delete(flush: true) }
+
         Message.createCriteria().list {
             spreadBy {
                 eq('id', joe.id)

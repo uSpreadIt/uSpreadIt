@@ -64,10 +64,17 @@ class UserController extends RestfulController<User> {
             }
         }.each { ((Message) it).removeFromIgnoredBy(instance) }
         Message.createCriteria().list {
-            reportedBy {
+            reports {
+                eq('reporter.id', instance.id)
+            }
+        }.each {
+            ((Message)it).removeFromReports(new Report(instance))
+        }
+        Report.createCriteria().list {
+            reporter {
                 eq('id', instance.id)
             }
-        }.each { ((Message) it).removeFromReportedBy(instance) }
+        }.each{ ((Report) it).delete(flush: true) }
         Message.createCriteria().list {
             spreadBy {
                 eq('id', instance.id)

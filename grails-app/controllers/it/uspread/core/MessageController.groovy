@@ -227,10 +227,14 @@ class MessageController extends RestfulController<Message> {
         def (boolean sentToThisUser, Message message) = isMessageSentToThisUser(user, messageId)
         if (sentToThisUser && !user.isModerator()){
             message.sentTo.remove(user)
-            message.reportedBy.add(user)
+            def reportType = ReportType.valueOf(type)
+            message.reports.add(new Report(reporter: user, type: reportType))
+            message.incrementReportType(reportType)
             message.ignoredBy.add(user)
+            message.author.reportsReceived++
+            user.reportsSent++
             message.save(flush: true)
-
+            user.save(flush: true)
             request.withFormat {
                 form multipartForm {
                     flash.message = message(code: 'default.deleted.message', args: [
@@ -292,7 +296,7 @@ class MessageController extends RestfulController<Message> {
         def userConnected = (User) springSecurityService.currentUser
         JSON.use(userConnected.isModerator() ? JSONMarshaller.INTERNAL_MARSHALLER : JSONMarshaller.PUBLIC_MARSHALLER) {
             respond Message.createCriteria().list {
-                reportedBy{ isNotNull('id') }
+                reports{ isNotNull('id') }
             }
         }
     }
