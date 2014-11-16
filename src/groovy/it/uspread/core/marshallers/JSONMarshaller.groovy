@@ -29,6 +29,7 @@ class JSONMarshaller {
                 output["id"] = user.id
                 output["username"] = user.username
                 output["email"] = user.email
+                output["iosPushToken"] = user.iosPushToken
                 return output;
             }
 
@@ -53,6 +54,7 @@ class JSONMarshaller {
                 output["id"] = user.id
                 output["username"] = user.username
                 output["email"] = user.email
+                output["iosPushToken"] = user.iosPushToken
                 output["role"] = user.isModerator() ? "MODERATOR" : "USER"
                 if (!user.isModerator()) {
                     output["reportsSent"] = user.reportsSent

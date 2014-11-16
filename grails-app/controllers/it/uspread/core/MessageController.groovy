@@ -5,8 +5,11 @@ import grails.rest.RestfulController
 import grails.converters.JSON
 import grails.rest.RestfulController
 import it.uspread.core.marshallers.JSONMarshaller
-
+import org.codehaus.groovy.grails.io.support.ClassPathResource
 import org.springframework.http.HttpStatus
+
+import com.notnoop.apns.ApnsService
+import com.notnoop.apns.APNS
 
 class MessageController extends RestfulController<Message> {
 
@@ -17,6 +20,7 @@ class MessageController extends RestfulController<Message> {
     static responseFormats = ["json"]
 
     def springSecurityService
+    def APNSMessageService
 
     MessageController() {
         super(Message)
@@ -100,7 +104,7 @@ class MessageController extends RestfulController<Message> {
      * @param spreadSize le nombre de personnes qui recevront le message
      * @param initialSpread pour distinguer la création d'un nouveau message de la propagation
      */
-    private static void spreadIt(Message message, int spreadSize, boolean initialSpread) {
+    private void spreadIt(Message message, int spreadSize, boolean initialSpread) {
         // Select spreadSize users order by lastReceivedMessageDate asc
         List<User> recipients
         if (initialSpread) {
@@ -127,6 +131,7 @@ class MessageController extends RestfulController<Message> {
             //Test rebase
         }
         message.save(flush: true)
+        this.APNSMessageService.notifySentTo(recipients)
     }
 
     /**

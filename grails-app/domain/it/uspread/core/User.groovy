@@ -20,6 +20,8 @@ class User {
     long reportsSent
     long reportsReceived
 
+    String iosPushToken
+
     static hasMany = [messages: Message]
     static mappedBy = [messages: 'author']
 
@@ -30,6 +32,7 @@ class User {
         password blank: false
         email(unique: true, email: true, blank: false)
         lastReceivedMessageDate nullable: true
+        iosPushToken nullable: true
     }
 
     static mapping = {
