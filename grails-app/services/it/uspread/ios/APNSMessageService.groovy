@@ -41,7 +41,7 @@ class APNSMessageService {
 
     def notifySentTo(List<User> recipients) {
         for (User user : recipients) {
-            if (null != user.iosPushToken) {
+            if (null != user.iosPushToken && user.iosPushToken.length() > 0) {
                 push(user.iosPushToken, "New message(s) spreading")
             }
         }
