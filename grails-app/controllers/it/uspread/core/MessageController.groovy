@@ -108,14 +108,14 @@ class MessageController extends RestfulController<Message> {
         // Select spreadSize users order by lastReceivedMessageDate asc
         List<User> recipients
         if (initialSpread) {
-            recipients = User.findAllBySpecialUserAndIdNotLike(
+            recipients = User.findAllBySpecialUserAndIdNotEqual(
                     false, message.authorId, [max: spreadSize, sort: 'lastReceivedMessageDate', order: 'asc'])
         } else {
             def usersWhoReceivedThisMessage = message.ignoredBy.collect {it.id}
             usersWhoReceivedThisMessage.addAll(message.sentTo.collect{it.id})
             usersWhoReceivedThisMessage.addAll(message.spreadBy.collect{it.id})
 
-            recipients = User.findAllBySpecialUserAndIdNotLikeAndIdNotInList(
+            recipients = User.findAllBySpecialUserAndIdNotEqualAndIdNotInList(
                     false, message.authorId, usersWhoReceivedThisMessage, [max: spreadSize, sort: 'lastReceivedMessageDate', order: 'asc'])
         }
         recipients = recipients.size() >= spreadSize ? recipients[0..spreadSize - 1] : recipients

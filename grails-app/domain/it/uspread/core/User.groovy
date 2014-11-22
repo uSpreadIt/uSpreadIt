@@ -36,6 +36,7 @@ class User {
     }
 
     static mapping = {
+        table 'author'
         password column: '`password`'
         messages cascade: 'all-delete-orphan'
     }
