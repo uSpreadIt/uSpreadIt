@@ -5,11 +5,8 @@ import grails.rest.RestfulController
 import grails.converters.JSON
 import grails.rest.RestfulController
 import it.uspread.core.marshallers.JSONMarshaller
-import org.codehaus.groovy.grails.io.support.ClassPathResource
-import org.springframework.http.HttpStatus
 
-import com.notnoop.apns.ApnsService
-import com.notnoop.apns.APNS
+import org.springframework.http.HttpStatus
 
 class MessageController extends RestfulController<Message> {
 
@@ -30,15 +27,14 @@ class MessageController extends RestfulController<Message> {
     def index() {
         def user = (User) springSecurityService.currentUser
         def type = params.query
-        // Si on liste les messages de l'utilisateur (./message ou ./message?query=AUTHOR)
-        if (MessageQuery.AUTHOR.name().equals(type) || type == null) {
-            //TODO peut être mieux de simplement pas autoriser l'url ./message ?
+        // Si on liste les messages de l'utilisateur (./message?query=AUTHOR)
+        if ("AUTHOR".equals(type)) {
             JSON.use(user.isModerator() ? JSONMarshaller.INTERNAL_MARSHALLER : JSONMarshaller.PUBLIC_MARSHALLER) {
                 respond Message.where { author.id == user.id }.list()
             }
         }
         // Si on liste les message reçus par l'utilisateur (./message?query=RECEIVED)
-        else if (MessageQuery.RECEIVED.name().equals(type)) {
+        else if ("RECEIVED".equals(type)) {
             JSON.use(user.isModerator() ? JSONMarshaller.INTERNAL_MARSHALLER : JSONMarshaller.PUBLIC_MARSHALLER) {
                 respond Message.createCriteria().list {
                     sentTo{ eq('id', user.id) }
@@ -46,7 +42,7 @@ class MessageController extends RestfulController<Message> {
             }
         }
         // Si on liste les message propagé par l'utilisateur (./message?query=SPREAD)
-        else if (MessageQuery.SPREAD.name().equals(type)) {
+        else if ("SPREAD".equals(type)) {
             JSON.use(user.isModerator() ? JSONMarshaller.INTERNAL_MARSHALLER : JSONMarshaller.PUBLIC_MARSHALLER) {
                 respond Message.createCriteria().list {
                     spreadBy{ eq('id', user.id) }
@@ -70,7 +66,7 @@ class MessageController extends RestfulController<Message> {
         }
 
         // Vérification du quota
-        if (limitReached()) {
+        if (isLimitReached()) {
             render([status:550, text:"Message Quota reached"])
             return
         }
@@ -135,12 +131,23 @@ class MessageController extends RestfulController<Message> {
     }
 
     /**
+     * Pour l'utilisateur connecté indique des choses : pour le moment si le quota de message est atteint
+     * @return
+     */
+    def statut() {
+        if(((User) springSecurityService.currentUser).isModerator()) {
+            return
+        }
+        render('{"quotaReached":"'+ isLimitReached() + '"}', contentType: "application/json", encoding: "UTF-8")
+    }
+
+    /**
      * Indique si le quota de nouveau message de l'utilisateur est atteint.<br>
      * Sur les dernières 24 heures on limite à 2 messages max.
      * TODO Cette vérification devra être géré de façon atomique (possible en prenant en compte la scalabilité des serveurs ?)
      * @return true si quota atteint
      */
-    def limitReached() {
+    def isLimitReached() {
         def startDate = (new Date()).minus(1);
         def nbMessage = Message.where{ author.id == ((User) springSecurityService.currentUser).id && dateCreated > startDate }.count()
         return nbMessage >= QUOTA

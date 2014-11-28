@@ -129,6 +129,31 @@ class UserController extends RestfulController<User> {
         // Non nécessaire pour le moment
     }
 
+    def createModo() {
+        if(handleReadOnly()) {
+            return
+        }
+        User instance = createResource()
+        instance.clearForCreation()
+        instance.validate()
+        if (instance.hasErrors()) {
+            respond instance.errors, view:'create' // STATUS CODE 422
+            return
+        }
+
+        instance.save flush:true
+
+        def roleMod = new Role(authority: Role.ROLE_MODERATOR)
+        roleMod.save()
+        UserRole droitsMod = new UserRole(user: instance, role: roleMod)
+
+        request.withFormat {
+            '*' {
+                render([status: HttpStatus.CREATED])
+            }
+        }
+    }
+
     @Override
     def save() {
         if(handleReadOnly()) {

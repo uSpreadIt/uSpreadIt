@@ -16,6 +16,7 @@ class UrlMappings {
             "/ignore"(controller:"message", action:"ignore", method:"POST")
             "/report"(controller:"message", action:"report", method:"POST")
         }
+        "/rest/messages/statut"(controller:"message", action:"statut", method:"GET")
 
         "/rest/users/$userId/messages"(controller:"message", action:"indexUserMsg", method:"GET")
         "/rest/users/$userId/messages/received"(controller:"message", action:"indexUserMsgReceived", method:"GET")
@@ -28,6 +29,7 @@ class UrlMappings {
         "/rest/users/connected"(controller:"user", action:"updateUserConnected", method:"PUT")
         "/rest/users/connected"(controller:"user", action:"deleteUserConnected", method:"DELETE")
         "/rest/signup"(controller:"user", action:"save", method:"POST")
+        "/rest/users/createModo"(controller:"user", action:"createModo", method:"POST")
         "/rest/userlist"(controller:"user", action:"index", method:"GET")
         "/rest/topusers"(controller:"user", action:"topUsers", method:"GET")
 
