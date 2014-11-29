@@ -54,6 +54,7 @@ grails.project.dependency.resolution = {
         // runtime 'mysql:mysql-connector-java:5.1.29'
         // runtime 'org.postgresql:postgresql:9.3-1101-jdbc41'
         test "org.grails:grails-datastore-test-support:1.0.2-grails-2.4"
+        test "com.github.groovy-wslite:groovy-wslite:0.7.2"
 
         // TODO : supprimer après migration vers mongodb
         runtime "postgresql:postgresql:8.4-702.jdbc3"

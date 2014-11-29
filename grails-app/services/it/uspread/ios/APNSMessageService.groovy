@@ -21,6 +21,10 @@ class APNSMessageService {
                 certPath = new ClassPathResource("apns-dev.p12").getInputStream()
                 certPass = "purzqqg.2.7"
                 break
+            case Environment.TEST:
+                certPath = new ClassPathResource("apns-dev.p12").getInputStream()
+                certPass = "purzqqg.2.7"
+                break
             // TODO pour l'instant on pointe aussi sur l'environnement de dev
             case Environment.PRODUCTION:
                 certPath = new ClassPathResource("apns-dev.p12").getInputStream()
