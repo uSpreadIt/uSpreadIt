@@ -1,23 +1,17 @@
 package it.uspread.core
 
-import grails.rest.RestfulController
-
 import grails.converters.JSON
 import grails.rest.RestfulController
 import it.uspread.core.marshallers.JSONMarshaller
-
 import org.springframework.http.HttpStatus
 
 class MessageController extends RestfulController<Message> {
 
-    // TODO à paramétrer
-    private static final int SPREAD_SIZE = 10
-    private static final int QUOTA = 1000
     static scope = "singleton"
     static responseFormats = ["json"]
 
     def springSecurityService
-    def APNSMessageService
+    def messageService
 
     MessageController() {
         super(Message)
@@ -30,28 +24,24 @@ class MessageController extends RestfulController<Message> {
         // Si on liste les messages de l'utilisateur (./message?query=AUTHOR)
         if ("AUTHOR".equals(type)) {
             JSON.use(user.isModerator() ? JSONMarshaller.INTERNAL_MARSHALLER : JSONMarshaller.PUBLIC_MARSHALLER) {
-                respond Message.where { author.id == user.id }.list()
+                respond messageService.getMessagesFromThisAuthorId(user.id)
             }
         }
         // Si on liste les message reçus par l'utilisateur (./message?query=RECEIVED)
         else if ("RECEIVED".equals(type)) {
             JSON.use(user.isModerator() ? JSONMarshaller.INTERNAL_MARSHALLER : JSONMarshaller.PUBLIC_MARSHALLER) {
-                respond Message.createCriteria().list {
-                    sentTo{ eq('id', user.id) }
-                }
+                respond messageService.getMessagesSentToThisUserId(user.id)
             }
         }
         // Si on liste les message propagé par l'utilisateur (./message?query=SPREAD)
         else if ("SPREAD".equals(type)) {
             JSON.use(user.isModerator() ? JSONMarshaller.INTERNAL_MARSHALLER : JSONMarshaller.PUBLIC_MARSHALLER) {
-                respond Message.createCriteria().list {
-                    spreadBy{ eq('id', user.id) }
-                }
+                respond messageService.getMessagesSpreadByThisUserId(user.id)
             }
         }
         // Sinon retourner une code d'erreur
         else {
-            render([status:HttpStatus.BAD_REQUEST])
+            render([status: HttpStatus.BAD_REQUEST])
         }
     }
 
@@ -60,14 +50,14 @@ class MessageController extends RestfulController<Message> {
      */
     @Override
     def save() {
-        def user = springSecurityService.currentUser
-        if(handleReadOnly() || user.isModerator()) {
+        def user = (User) springSecurityService.currentUser
+        if (handleReadOnly() || user.isModerator()) {
             return
         }
 
         // Vérification du quota
-        if (isLimitReached()) {
-            render([status:550, text:"Message Quota reached"])
+        if (messageService.isMessageCreationLimitReached(user)) {
+            render([status: 550, text: "Message Quota reached"])
             return
         }
 
@@ -82,52 +72,16 @@ class MessageController extends RestfulController<Message> {
             return
         }
 
-        instance.save([flush:true])
+        instance.save([flush: true])
 
         // propagation initiale
-        spreadIt(instance, SPREAD_SIZE, true)
+        messageService.spreadIt(instance, true)
 
         request.withFormat {
             '*' {
-                render([status:HttpStatus.CREATED])
+                render([status: HttpStatus.CREATED])
             }
         }
-    }
-
-    /**
-     * Propagation d'un message
-     * @param message le message à propager
-     * @param spreadSize le nombre de personnes qui recevront le message
-     * @param initialSpread pour distinguer la création d'un nouveau message de la propagation
-     */
-    private void spreadIt(Message message, int spreadSize, boolean initialSpread) {
-        // Select spreadSize users order by lastReceivedMessageDate asc
-        List<User> recipients
-        if (initialSpread) {
-            recipients = User.findAllBySpecialUserAndIdNotEqual(
-                    false, message.authorId, [max: spreadSize, sort: 'lastReceivedMessageDate', order: 'asc'])
-        } else {
-            def usersWhoReceivedThisMessage = message.ignoredBy.collect {it.id}
-            usersWhoReceivedThisMessage.addAll(message.sentTo.collect{it.id})
-            usersWhoReceivedThisMessage.addAll(message.spreadBy.collect{it.id})
-
-            recipients = User.findAllBySpecialUserAndIdNotEqualAndIdNotInList(
-                    false, message.authorId, usersWhoReceivedThisMessage, [max: spreadSize, sort: 'lastReceivedMessageDate', order: 'asc'])
-        }
-        recipients = recipients.size() >= spreadSize ? recipients[0..spreadSize - 1] : recipients
-        Date now = new Date()
-        recipients.each {
-            it.lastReceivedMessageDate = now
-            message.addToSentTo(it)
-            it.save(flush: true)
-        }
-        if (!initialSpread) {
-            message.nbSpread++
-            message.author.score++
-            //Test rebase
-        }
-        message.save(flush: true)
-        this.APNSMessageService.notifySentTo(recipients)
     }
 
     /**
@@ -135,22 +89,11 @@ class MessageController extends RestfulController<Message> {
      * @return
      */
     def statut() {
-        if(((User) springSecurityService.currentUser).isModerator()) {
+        def user = (User) springSecurityService.currentUser
+        if (user.isModerator()) {
             return
         }
-        render('{"quotaReached":"'+ isLimitReached() + '"}', contentType: "application/json", encoding: "UTF-8")
-    }
-
-    /**
-     * Indique si le quota de nouveau message de l'utilisateur est atteint.<br>
-     * Sur les dernières 24 heures on limite à 2 messages max.
-     * TODO Cette vérification devra être géré de façon atomique (possible en prenant en compte la scalabilité des serveurs ?)
-     * @return true si quota atteint
-     */
-    def isLimitReached() {
-        def startDate = (new Date()).minus(1);
-        def nbMessage = Message.where{ author.id == ((User) springSecurityService.currentUser).id && dateCreated > startDate }.count()
-        return nbMessage >= QUOTA
+        render('{"quotaReached":"' + messageService.isMessageCreationLimitReached(user) + '"}', contentType: "application/json", encoding: "UTF-8")
     }
 
     /**
@@ -160,24 +103,20 @@ class MessageController extends RestfulController<Message> {
         def messageId = params.messageId
         def user = (User) springSecurityService.currentUser
         // On vérifie que le message est bien reçu par l'utilisateur
-        def (boolean sentToThisUser, Message message) = isMessageSentToThisUser(user, messageId)
-        if (sentToThisUser && !user.isModerator()){
-            message.sentTo.remove(user)
-            message.spreadBy.add(user)
-            spreadIt(message, SPREAD_SIZE, false)
-
+        def (boolean sentToThisUser, Message message) = messageService.isMessageSentToThisUser(user, messageId)
+        if (sentToThisUser && !user.isModerator()) {
+            messageService.userSpreadThisMessage(user, message)
             request.withFormat {
                 form multipartForm {
                     flash.message = message(code: 'default.deleted.message', args: [
-                        message(code: "${resourceClassName}.label".toString(), default: resourceClassName),
-                        messageId
+                            message(code: "${resourceClassName}.label".toString(), default: resourceClassName),
+                            messageId
                     ])
-                    redirect action:"index", method:"GET"
+                    redirect action: "index", method: "GET"
                 }
-                '*'{ render status: HttpStatus.NO_CONTENT } // NO CONTENT STATUS CODE
+                '*' { render status: HttpStatus.NO_CONTENT } // NO CONTENT STATUS CODE
             }
-        }
-        else {
+        } else {
             notFound()
         }
     }
@@ -189,42 +128,23 @@ class MessageController extends RestfulController<Message> {
         def messageId = params.messageId
         def user = (User) springSecurityService.currentUser
         // On vérifie que le message est bien reçu par l'utilisateur
-        def (boolean sentToThisUser, Message message) = isMessageSentToThisUser(user, messageId)
-        if (sentToThisUser && !user.isModerator()){
-            message.sentTo.remove(user)
-            message.ignoredBy.add(user)
-            message.save(flush: true)
+        def (boolean sentToThisUser, Message message) = messageService.isMessageSentToThisUser(user, messageId)
+        if (sentToThisUser && !user.isModerator()) {
+            messageService.userIgnoreThisMessage(user, message)
 
             request.withFormat {
                 form multipartForm {
                     flash.message = message(code: 'default.deleted.message', args: [
-                        message(code: "${resourceClassName}.label".toString(), default: resourceClassName),
-                        messageId
+                            message(code: "${resourceClassName}.label".toString(), default: resourceClassName),
+                            messageId
                     ])
-                    redirect action:"index", method:"GET"
+                    redirect action: "index", method: "GET"
                 }
-                '*'{ render status: HttpStatus.NO_CONTENT } // NO CONTENT STATUS CODE
+                '*' { render status: HttpStatus.NO_CONTENT } // NO CONTENT STATUS CODE
             }
-        }
-        else {
+        } else {
             notFound()
         }
-    }
-
-    private List isMessageSentToThisUser(user, messageId) {
-        List<Message> messagesSentToCurrentUser = (List<Message>) Message.createCriteria().list {
-            sentTo { eq('id', user.id) }
-        }
-        boolean sentToThisUser = false
-        Message message = null
-        for (Message m : messagesSentToCurrentUser) {
-            if (m.id.equals(messageId.toLong())) {
-                message = m
-                sentToThisUser = true
-                break
-            }
-        }
-        return [sentToThisUser, message]
     }
 
     /**
@@ -232,33 +152,23 @@ class MessageController extends RestfulController<Message> {
      */
     def report() {
         def messageId = params.messageId
-        // TODO non utilisé pour l'instant
-        def type = params.type
+        String type = params.type
         def user = (User) springSecurityService.currentUser
         // On vérifie que le message est bien reçu par l'utilisateur
-        def (boolean sentToThisUser, Message message) = isMessageSentToThisUser(user, messageId)
-        if (sentToThisUser && !user.isModerator()){
-            message.sentTo.remove(user)
-            def reportType = ReportType.valueOf(type)
-            message.reports.add(new Report(reporter: user, type: reportType))
-            message.incrementReportType(reportType)
-            message.ignoredBy.add(user)
-            message.author.reportsReceived++
-            user.reportsSent++
-            message.save(flush: true)
-            user.save(flush: true)
+        def (boolean sentToThisUser, Message message) = messageService.isMessageSentToThisUser(user, messageId)
+        if (sentToThisUser && !user.isModerator()) {
+            messageService.userReportThisMessage(user, message, type)
             request.withFormat {
                 form multipartForm {
                     flash.message = message(code: 'default.deleted.message', args: [
-                        message(code: "${resourceClassName}.label".toString(), default: resourceClassName),
-                        messageId
+                            message(code: "${resourceClassName}.label".toString(), default: resourceClassName),
+                            messageId
                     ])
-                    redirect action:"index", method:"GET"
+                    redirect action: "index", method: "GET"
                 }
-                '*'{ render status: HttpStatus.NO_CONTENT } // NO CONTENT STATUS CODE
+                '*' { render status: HttpStatus.NO_CONTENT } // NO CONTENT STATUS CODE
             }
-        }
-        else {
+        } else {
             notFound()
         }
     }
@@ -267,10 +177,12 @@ class MessageController extends RestfulController<Message> {
      * Liste les messages dont l'utilisateur donné est l'auteur (./users/$userId/messages)
      */
     def indexUserMsg() {
-        def userId = params.userId
+        Long userId = ((String) params.userId).toLong()
         def userConnected = (User) springSecurityService.currentUser
-        JSON.use(userConnected.isModerator() ? JSONMarshaller.INTERNAL_MARSHALLER : JSONMarshaller.PUBLIC_MARSHALLER) {
-            respond Message.where { author.id == userId }.list()
+        if (userConnected.isModerator()) {
+            JSON.use(userConnected.isModerator() ? JSONMarshaller.INTERNAL_MARSHALLER : JSONMarshaller.PUBLIC_MARSHALLER) {
+                respond messageService.getMessagesFromThisAuthorId(userId)
+            }
         }
     }
 
@@ -278,11 +190,11 @@ class MessageController extends RestfulController<Message> {
      * Liste les messages reçus par l'utilisateur donné (./users/$userId/messages/received)
      */
     def indexUserMsgReceived() {
-        def userId = params.userId
+        Long userId = ((String) params.userId).toLong()
         def userConnected = (User) springSecurityService.currentUser
-        JSON.use(userConnected.isModerator() ? JSONMarshaller.INTERNAL_MARSHALLER : JSONMarshaller.PUBLIC_MARSHALLER) {
-            respond Message.createCriteria().list {
-                sentTo{ eq('id', userId.toLong()) }
+        if (userConnected.isModerator()) {
+            JSON.use(userConnected.isModerator() ? JSONMarshaller.INTERNAL_MARSHALLER : JSONMarshaller.PUBLIC_MARSHALLER) {
+                respond messageService.getMessagesSentToThisUserId(userId)
             }
         }
     }
@@ -291,11 +203,11 @@ class MessageController extends RestfulController<Message> {
      * Liste les messages propagé par l'utilisateur donné (./users/$userId/messages/spread)
      */
     def indexUserMsgSpread() {
-        def userId = params.userId
+        Long userId = ((String) params.userId).toLong()
         def userConnected = (User) springSecurityService.currentUser
-        JSON.use(userConnected.isModerator() ? JSONMarshaller.INTERNAL_MARSHALLER : JSONMarshaller.PUBLIC_MARSHALLER) {
-            respond Message.createCriteria().list {
-                spreadBy{ eq('id', userId.toLong()) }
+        if (userConnected.isModerator()) {
+            JSON.use(userConnected.isModerator() ? JSONMarshaller.INTERNAL_MARSHALLER : JSONMarshaller.PUBLIC_MARSHALLER) {
+                respond messageService.getMessagesSpreadByThisUserId(userId)
             }
         }
     }
@@ -306,12 +218,13 @@ class MessageController extends RestfulController<Message> {
      */
     def indexMsgReported() {
         def userConnected = (User) springSecurityService.currentUser
-        JSON.use(userConnected.isModerator() ? JSONMarshaller.INTERNAL_MARSHALLER : JSONMarshaller.PUBLIC_MARSHALLER) {
-            respond Message.createCriteria().list {
-                reports{ isNotNull('id') }
+        if (userConnected.isModerator()) {
+            JSON.use(userConnected.isModerator() ? JSONMarshaller.INTERNAL_MARSHALLER : JSONMarshaller.PUBLIC_MARSHALLER) {
+                respond messageService.getReportedMessages()
             }
         }
     }
+
 
     @Override
     def create() {
@@ -332,12 +245,11 @@ class MessageController extends RestfulController<Message> {
     def show() {
         User userConnected = (User) springSecurityService.currentUser
         Message instance = queryForResource(params.id)
-        if (null != instance && instance.isUserAllowedToRead(userConnected)){
+        if (null != instance && instance.isUserAllowedToRead(userConnected)) {
             JSON.use(userConnected.isModerator() ? JSONMarshaller.INTERNAL_MARSHALLER : JSONMarshaller.PUBLIC_MARSHALLER) {
                 respond queryForResource(params.id)
             }
-        }
-        else {
+        } else {
             notFound()
         }
     }
@@ -345,16 +257,14 @@ class MessageController extends RestfulController<Message> {
     @Override
     def delete() {
         Message instance = queryForResource(params.id)
-        if (null != instance){
+        if (null != instance) {
             User user = (User) springSecurityService.currentUser
-            if (instance.isUserAllowedToDelete(user)){
+            if (instance.isUserAllowedToDelete(user)) {
                 super.delete()
-            }
-            else {
+            } else {
                 notFound()
             }
-        }
-        else {
+        } else {
             notFound()
         }
     }
@@ -363,4 +273,5 @@ class MessageController extends RestfulController<Message> {
     def update() {
         //TODO à autoriser que si modérateur
     }
+
 }

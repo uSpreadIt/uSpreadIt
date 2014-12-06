@@ -14,10 +14,9 @@ class UserController extends RestfulController<User> {
 
     static scope = "singleton"
     static responseFormats = ["json"]
-    // TODO à paramétrer
-    private static final int TOP_SIZE = 50;
 
     def springSecurityService
+    def userService
 
     UserController() {
         super(User)
@@ -30,7 +29,7 @@ class UserController extends RestfulController<User> {
         def user = (User) springSecurityService.currentUser
         if (null != user){
             JSON.use(user.isModerator() ? JSONMarshaller.INTERNAL_MARSHALLER : JSONMarshaller.PUBLIC_MARSHALLER) {
-                respond User.where { id == user.id }.find()
+                respond userService.getUserFromId(user.id)
             }
         }
         else {
@@ -41,52 +40,19 @@ class UserController extends RestfulController<User> {
     /**
      * Supprime le compte de l'user connecté
      */
-    @Transactional
     def deleteUserConnected(){
         def instance = (User) springSecurityService.currentUser
         if (null != instance){
-            deleteUser(instance)
+            userService.deleteUser(instance)
         }
         request.withFormat {
             '*'{ render status: HttpStatus.NO_CONTENT } // NO CONTENT STATUS CODE
         }
     }
 
-    private deleteUser(instance) {
-        Message.createCriteria().list {
-            sentTo {
-                eq('id', instance.id)
-            }
-        }.each { ((Message) it).removeFromSentTo(instance) }
-        Message.createCriteria().list {
-            ignoredBy {
-                eq('id', instance.id)
-            }
-        }.each { ((Message) it).removeFromIgnoredBy(instance) }
-        Message.createCriteria().list {
-            reports {
-                eq('reporter.id', instance.id)
-            }
-        }.each {
-            ((Message)it).removeFromReports(new Report(instance))
-        }
-        Report.createCriteria().list {
-            reporter {
-                eq('id', instance.id)
-            }
-        }.each{ ((Report) it).delete(flush: true) }
-        Message.createCriteria().list {
-            spreadBy {
-                eq('id', instance.id)
-            }
-        }.each { ((Message) it).removeFromSpreadBy(instance) }
-        instance.delete(flush: true)
-    }
-
     /**
      * Update du compte de l'user connecté
      */
-    @Transactional
     def updateUserConnected(){
         def instance = (User) springSecurityService.currentUser
 
@@ -223,7 +189,7 @@ class UserController extends RestfulController<User> {
             return
         }
 
-        deleteUser(instance)
+        userService.deleteUser(instance)
 
         request.withFormat {
             "*"{ render([status: HttpStatus.NO_CONTENT]) } // NO CONTENT STATUS CODE
@@ -232,7 +198,7 @@ class UserController extends RestfulController<User> {
 
     def topUsers() {
         JSON.use(JSONMarshaller.PUBLIC_MARSHALLER) {
-            respond User.list([max: TOP_SIZE, sort: 'score', order: 'desc'])
+            respond userService.getTopUsers()
         }
     }
 }
