@@ -20,19 +20,19 @@ class MessageService {
     public List<Message> getMessagesFromThisAuthorId(Long id) {
         return (List<Message>) Message.where {
             author.id == id
-        }.list()
+        }.list(sort: "dateCreated", order: "desc")
     }
 
     public List<Message> getMessagesSentToThisUserId(Long id) {
-        return (List<Message>) Message.createCriteria().list {
+        return (List<Message>) Message.createCriteria().list([sort: "dateCreated", order: "desc"], {
             sentTo { eq('id', id) }
-        }
+        })
     }
 
     public List<Message> getMessagesSpreadByThisUserId(Long id) {
-        return (List<Message>) Message.createCriteria().list {
+        return (List<Message>) Message.createCriteria().list([sort: "dateCreated", order: "desc"], {
             spreadBy { eq('id', id) }
-        }
+        })
     }
 
     public List<Message> getReportedMessages() {
