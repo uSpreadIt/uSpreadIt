@@ -1,12 +1,6 @@
 package it.uspread.core
 
-import grails.async.Promise
 import grails.transaction.Transactional
-import grails.util.Environment
-
-import static grails.async.Promises.onComplete
-import static grails.async.Promises.onError
-import static grails.async.Promises.task
 
 @Transactional
 class MessageService {
@@ -107,21 +101,7 @@ class MessageService {
     public void userSpreadThisMessage(User user, Message message) {
         message.sentTo.remove(user)
         message.spreadBy.add(user)
-        // pas d'asynchrone ailleurs qu'en prod (pour les tests)
-        if (Environment.current == Environment.PRODUCTION) {
-            Promise p = task { spreadIt(message, false) }
-            onError([p]) {
-                message.sentTo.add(user)
-                message.spreadBy.remove(user)
-                message.save(flush: true)
-            }
-            onComplete([p]) {
-
-            }
-        }
-        else {
             spreadIt(message, false)
-        }
     }
 
     public void userIgnoreThisMessage(User user, Message message) {

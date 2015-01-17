@@ -1,9 +1,5 @@
 package it.uspread.core
 
-import grails.async.Promise
-import grails.util.Environment
-
-import static grails.async.Promises.*
 import grails.converters.JSON
 import grails.rest.RestfulController
 import it.uspread.core.marshallers.JSONMarshaller
@@ -79,18 +75,7 @@ class MessageController extends RestfulController<Message> {
         instance.save([flush: true])
 
         // propagation initiale
-        // pas d'asynchrone ailleurs qu'en prod (pour les tests)
-        if (Environment.current == Environment.PRODUCTION) {
-            Promise p = task { messageService.spreadIt(instance, true) }
-            onError([p]) {
-                instance.delete()
-            }
-            onComplete([p]) {
-
-            }
-        } else {
             messageService.spreadIt(instance, true)
-        }
 
         request.withFormat {
             '*' {
