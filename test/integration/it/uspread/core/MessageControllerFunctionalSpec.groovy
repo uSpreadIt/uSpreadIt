@@ -46,8 +46,8 @@ class MessageControllerFunctionalSpec extends Specification {
             type ContentType.JSON
             json text:"hello world"
         }
-        idMessageFromUser1 = restUser2Client.get(path: "/messages?query=RECEIVED", accept: ContentType.JSON).json[0].id
-        idMessageFromUser1ToDelete = idMessageFromUser1 + 1
+        idMessageFromUser1 = restUser2Client.get(path: "/messages?query=RECEIVED", accept: ContentType.JSON).json[-1].id
+        idMessageFromUser1ToDelete = idMessageFromUser1.longValue() + 1
     }
 
     void "user 2 spread"() {
