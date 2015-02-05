@@ -14,10 +14,10 @@ class UserService {
 
     public void deleteUser(User user) {
         Message.createCriteria().list {
-            sentTo {
-                eq('id', user.id)
+            receivedBy {
+                eq('user.id', user.id)
             }
-        }.each { ((Message) it).removeFromSentTo(user) }
+        }.each { ((Message) it).removeFromReceivedBy(((Message)it).receivedBy.find { r -> r.user == user}) } // TODO peut etre réécrire la requete suite a mon edit rapid pour faire marcher avec nouveau modèle
 
         Message.createCriteria().list {
             ignoredBy {
@@ -30,7 +30,7 @@ class UserService {
                 eq('reporter.id', user.id)
             }
         }.each {
-            ((Message)it).removeFromReports(new Report(user))
+            ((Message)it).removeFromReports(new Report(user)) // FIXME ça fonctionne ça ?? si c'est le cas ça m'arangerai bien pour régler les TODO autour de la meme manière
         }
 
         Report.createCriteria().list {
@@ -41,9 +41,9 @@ class UserService {
 
         Message.createCriteria().list {
             spreadBy {
-                eq('id', user.id)
+                eq('user.id', user.id)
             }
-        }.each { ((Message) it).removeFromSpreadBy(user) }
+        }.each { ((Message) it).removeFromSpreadBy(((Message)it).spreadBy.find { s -> s.user == user}) }
 
         user.delete(flush: true)
     }

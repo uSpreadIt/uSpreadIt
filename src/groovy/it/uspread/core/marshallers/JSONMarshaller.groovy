@@ -19,7 +19,9 @@ class JSONMarshaller {
     public static final String INTERNAL_MARSHALLER = "internalApi"
 
     /** Formattage utilisé pour les dates (date, heure, minute et timezone) */
-    public static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ");
+    public static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ")
+
+    //def springSecurityService
 
     static void register() {
         // Configuration pour une communication avec un client simple utilisateur du service (Clients public : mobiles)
@@ -37,6 +39,8 @@ class JSONMarshaller {
                 def output = [:]
                 output["id"] = msg.id
                 output["creationDate"] = DATE_FORMAT.format(msg.dateCreated)
+                //output["receptionDate"] = DATE_FORMAT.format(msg.receivedBy.find({it.user == (User) springSecurityService.currentUser}).dateReception) TODO
+                //output["spreadDate"] = DATE_FORMAT.format(msg.spreadBy.find({it.user == (User) springSecurityService.currentUser}).dateSpread) TODO
                 output["nbSpread"] = msg.nbSpread
                 output["text"] = msg.text
                 output["textColor"] = msg.textColor

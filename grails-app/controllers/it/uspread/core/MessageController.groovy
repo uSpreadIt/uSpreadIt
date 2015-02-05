@@ -3,6 +3,7 @@ package it.uspread.core
 import grails.converters.JSON
 import grails.rest.RestfulController
 import it.uspread.core.marshallers.JSONMarshaller
+
 import org.springframework.http.HttpStatus
 
 class MessageController extends RestfulController<Message> {
@@ -30,7 +31,7 @@ class MessageController extends RestfulController<Message> {
         // Si on liste les message reçus par l'utilisateur (./message?query=RECEIVED)
         else if ("RECEIVED".equals(type)) {
             JSON.use(user.isModerator() ? JSONMarshaller.INTERNAL_MARSHALLER : JSONMarshaller.PUBLIC_MARSHALLER) {
-                respond messageService.getMessagesSentToThisUserId(user.id)
+                respond messageService.getMessagesReceivedByThisUserId(user.id)
             }
         }
         // Si on liste les message propagé par l'utilisateur (./message?query=SPREAD)
@@ -75,7 +76,7 @@ class MessageController extends RestfulController<Message> {
         instance.save([flush: true])
 
         // propagation initiale
-            messageService.spreadIt(instance, true)
+        messageService.spreadIt(instance, true)
 
         request.withFormat {
             '*' {
@@ -103,14 +104,14 @@ class MessageController extends RestfulController<Message> {
         def messageId = params.messageId
         def user = (User) springSecurityService.currentUser
         // On vérifie que le message est bien reçu par l'utilisateur
-        def (boolean sentToThisUser, Message message) = messageService.isMessageSentToThisUser(user, messageId)
-        if (sentToThisUser && !user.isModerator()) {
+        def (boolean receivedByThisUser, Message message) = messageService.isMessageReceivedByThisUser(user, messageId)
+        if (receivedByThisUser && !user.isModerator()) {
             messageService.userSpreadThisMessage(user, message)
             request.withFormat {
                 form multipartForm {
                     flash.message = message(code: 'default.deleted.message', args: [
-                            message(code: "${resourceClassName}.label".toString(), default: resourceClassName),
-                            messageId
+                        message(code: "${resourceClassName}.label".toString(), default: resourceClassName),
+                        messageId
                     ])
                     redirect action: "index", method: "GET"
                 }
@@ -128,15 +129,15 @@ class MessageController extends RestfulController<Message> {
         def messageId = params.messageId
         def user = (User) springSecurityService.currentUser
         // On vérifie que le message est bien reçu par l'utilisateur
-        def (boolean sentToThisUser, Message message) = messageService.isMessageSentToThisUser(user, messageId)
-        if (sentToThisUser && !user.isModerator()) {
+        def (boolean receivedByThisUser, Message message) = messageService.isMessageReceivedByThisUser(user, messageId)
+        if (receivedByThisUser && !user.isModerator()) {
             messageService.userIgnoreThisMessage(user, message)
 
             request.withFormat {
                 form multipartForm {
                     flash.message = message(code: 'default.deleted.message', args: [
-                            message(code: "${resourceClassName}.label".toString(), default: resourceClassName),
-                            messageId
+                        message(code: "${resourceClassName}.label".toString(), default: resourceClassName),
+                        messageId
                     ])
                     redirect action: "index", method: "GET"
                 }
@@ -155,14 +156,14 @@ class MessageController extends RestfulController<Message> {
         String type = params.type
         def user = (User) springSecurityService.currentUser
         // On vérifie que le message est bien reçu par l'utilisateur
-        def (boolean sentToThisUser, Message message) = messageService.isMessageSentToThisUser(user, messageId)
-        if (sentToThisUser && !user.isModerator()) {
+        def (boolean receivedByThisUser, Message message) = messageService.isMessageReceivedByThisUser(user, messageId)
+        if (receivedByThisUser && !user.isModerator()) {
             messageService.userReportThisMessage(user, message, type)
             request.withFormat {
                 form multipartForm {
                     flash.message = message(code: 'default.deleted.message', args: [
-                            message(code: "${resourceClassName}.label".toString(), default: resourceClassName),
-                            messageId
+                        message(code: "${resourceClassName}.label".toString(), default: resourceClassName),
+                        messageId
                     ])
                     redirect action: "index", method: "GET"
                 }
@@ -194,7 +195,7 @@ class MessageController extends RestfulController<Message> {
         def userConnected = (User) springSecurityService.currentUser
         if (userConnected.isModerator()) {
             JSON.use(userConnected.isModerator() ? JSONMarshaller.INTERNAL_MARSHALLER : JSONMarshaller.PUBLIC_MARSHALLER) {
-                respond messageService.getMessagesSentToThisUserId(userId)
+                respond messageService.getMessagesReceivedByThisUserId(userId)
             }
         }
     }

@@ -31,20 +31,20 @@ class UserIntegrationSpec extends Specification {
         def messageNotSent = new Message(text: "Un message de dude")
         dude.addToMessages(messageNotSent)
 
-        def messageSent = new Message(text: "Un message de dude", sentTo: [yop])
+        def messageSent = new Message(text: "Un message de dude", receivedBy: [new Reception(yop)])
         dude.addToMessages(messageSent)
 
-        def messageSpread = new Message(text: "Un autre de dude", spreadBy: [yop])
+        def messageSpread = new Message(text: "Un autre de dude", spreadBy: [new Spread(yop)])
         dude.addToMessages(messageSpread)
 
         def messageReported = new Message(text: "Un autre de dude salace", reports: [new Report(yop, ReportType.SPAM)])
         dude.addToMessages(messageReported)
 
 
-        def sentToDude = new Message(text: "Un message de yop", sentTo: [dude])
-        yop.addToMessages(sentToDude)
+        def receivedByDude = new Message(text: "Un message de yop", receivedBy: [new Reception(dude)])
+        yop.addToMessages(receivedByDude)
 
-        def spreadByDude = new Message(text: "Un autre de yop", spreadBy: [dude])
+        def spreadByDude = new Message(text: "Un autre de yop", spreadBy: [new Spread(dude)])
         yop.addToMessages(spreadByDude)
 
         def reportedByDude = new Message(text: "Un autre de yop", reports: [new Report(dude, ReportType.SPAM)])
@@ -59,7 +59,7 @@ class UserIntegrationSpec extends Specification {
         Message.exists(messageSent.id)
         Message.exists(messageSpread.id)
         Message.exists(messageReported.id)
-        Message.exists(sentToDude.id)
+        Message.exists(receivedByDude.id)
         Message.exists(spreadByDude.id)
         Message.exists(reportedByDude.id)
     }
@@ -71,19 +71,19 @@ class UserIntegrationSpec extends Specification {
         joe.save(flush: true)
         jim.save(flush: true)
 
-        def messageDeJoeAJim = new Message(text: 'hello', sentTo: [jim])
+        def messageDeJoeAJim = new Message(text: 'hello', receivedBy: [new Reception(jim)])
         joe.addToMessages(messageDeJoeAJim)
 
-        def messageDeJoePropageParJim = new Message(text: 'hello', spreadBy: [jim])
+        def messageDeJoePropageParJim = new Message(text: 'hello', spreadBy: [new Spread(jim)])
         joe.addToMessages(messageDeJoePropageParJim)
 
         def messageDeJoeSignaleParJim = new Message(text: 'hello', reports: [new Report(jim, ReportType.SPAM)])
         joe.addToMessages(messageDeJoeSignaleParJim)
 
-        def messageDeJimAJoe = new Message(text: "hello", sentTo: [joe])
+        def messageDeJimAJoe = new Message(text: "hello", receivedBy: [new Reception(joe)])
         jim.addToMessages(messageDeJimAJoe)
 
-        def messageDeJimPropageParJoe = new Message(text: "hello", spreadBy: [joe])
+        def messageDeJimPropageParJoe = new Message(text: "hello", spreadBy: [new Spread(joe)])
         jim.addToMessages(messageDeJimPropageParJoe)
 
         def messageDeJimSignaleParJoe = new Message(text: "hello", reports: [new Report(joe, ReportType.SPAM)])
@@ -93,11 +93,11 @@ class UserIntegrationSpec extends Specification {
         jim.save(flush: true)
         when: "the message is deleted"
         Message.createCriteria().list {
-            sentTo {
-                eq('id', joe.id)
+            receivedBy {
+                eq('user.id', joe.id)
             }
         }.each {
-            ((Message)it).removeFromSentTo(joe)
+            ((Message)it).removeFromReceivedBy(((Message)it).receivedBy.find { r -> r.user == joe})
         }
 
         Message.createCriteria().list {
@@ -116,10 +116,10 @@ class UserIntegrationSpec extends Specification {
 
         Message.createCriteria().list {
             spreadBy {
-                eq('id', joe.id)
+                eq('user.id', joe.id)
             }
         }.each {
-            ((Message)it).removeFromSpreadBy(joe)
+            ((Message)it).removeFromSpreadBy(((Message)it).spreadBy.find { r -> r.user == joe})
         }
         joe.delete(flush: true)
 
@@ -163,13 +163,13 @@ class UserIntegrationSpec extends Specification {
         def jim = new User(username: 'jim', password: 'jim', email: 'jim@gmail.com')
         jim.save(flush: true)
 
-        def message = new Message(text: 'hello jim', sentTo: [jim])
+        def message = new Message(text: 'hello jim', receivedBy: [new Reception(jim)])
         joe.addToMessages(message)
 
         when: "jim looks at his inbox"
         def inbox = Message.createCriteria().list {
-            sentTo {
-                eq('id', jim.id)
+            receivedBy {
+                eq('user.id', jim.id)
             }
         }
 

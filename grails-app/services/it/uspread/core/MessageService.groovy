@@ -17,15 +17,15 @@ class MessageService {
         }.list(sort: "dateCreated", order: "desc")
     }
 
-    public List<Message> getMessagesSentToThisUserId(Long id) {
+    public List<Message> getMessagesReceivedByThisUserId(Long id) {
         return (List<Message>) Message.createCriteria().list([sort: "dateCreated", order: "desc"], {
-            sentTo { eq('id', id) }
+            receivedBy { eq('user.id', id) }
         })
     }
 
     public List<Message> getMessagesSpreadByThisUserId(Long id) {
         return (List<Message>) Message.createCriteria().list([sort: "dateCreated", order: "desc"], {
-            spreadBy { eq('id', id) }
+            spreadBy { eq('user.id', id) }
         })
     }
 
@@ -60,8 +60,8 @@ class MessageService {
                     false, message.authorId, [max: SPREAD_SIZE, sort: 'lastReceivedMessageDate', order: 'asc'])
         } else {
             def usersWhoReceivedThisMessage = message.ignoredBy.collect { it.id }
-            usersWhoReceivedThisMessage.addAll(message.sentTo.collect { it.id })
-            usersWhoReceivedThisMessage.addAll(message.spreadBy.collect { it.id })
+            usersWhoReceivedThisMessage.addAll(message.receivedBy.collect { it.user.id })
+            usersWhoReceivedThisMessage.addAll(message.spreadBy.collect { it.user.id })
 
             recipients = User.findAllBySpecialUserAndIdNotEqualAndIdNotInList(
                     false, message.authorId, usersWhoReceivedThisMessage, [max: SPREAD_SIZE, sort: 'lastReceivedMessageDate', order: 'asc'])
@@ -70,7 +70,7 @@ class MessageService {
         Date now = new Date()
         recipients.each {
             it.lastReceivedMessageDate = now
-            message.addToSentTo(it)
+            message.addToReceivedBy(new Reception(it))
             it.save(flush: true)
         }
         if (!initialSpread) {
@@ -82,36 +82,36 @@ class MessageService {
         this.APNSMessageService.notifySentTo(recipients)
     }
 
-    public List isMessageSentToThisUser(user, messageId) {
-        List<Message> messagesSentToCurrentUser = (List<Message>) Message.createCriteria().list {
-            sentTo { eq('id', user.id) }
+    public List isMessageReceivedByThisUser(user, messageId) {
+        List<Message> messagesReceivedByCurrentUser = (List<Message>) Message.createCriteria().list {
+            receivedBy { eq('user.id', user.id) }
         }
-        boolean sentToThisUser = false
+        boolean receivedByThisUser = false
         Message message = null
-        for (Message m : messagesSentToCurrentUser) {
+        for (Message m : messagesReceivedByCurrentUser) {
             if (m.id.equals(messageId.toLong())) {
                 message = m
-                sentToThisUser = true
+                receivedByThisUser = true
                 break
             }
         }
-        return [sentToThisUser, message]
+        return [receivedByThisUser, message]
     }
 
     public void userSpreadThisMessage(User user, Message message) {
-        message.sentTo.remove(user)
-        message.spreadBy.add(user)
-            spreadIt(message, false)
+        message.receivedBy.remove(message.receivedBy.find {it.user == user})
+        message.spreadBy.add(new Spread(user, new Date()))
+        spreadIt(message, false)
     }
 
     public void userIgnoreThisMessage(User user, Message message) {
-        message.sentTo.remove(user)
+        message.receivedBy.remove(message.receivedBy.find {it.user == user})
         message.ignoredBy.add(user)
         message.save(flush: true)
     }
 
     public void userReportThisMessage(User user, Message message, String type) {
-        message.sentTo.remove(user)
+        message.receivedBy.remove(message.receivedBy.find {it.user == user})
         ReportType reportType = ReportType.valueOf(type)
         message.reports.add(new Report(user, reportType))
         message.incrementReportType(reportType)
