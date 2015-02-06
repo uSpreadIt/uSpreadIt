@@ -2,7 +2,9 @@ package it.uspread.core.marshallers
 
 import grails.converters.JSON
 import it.uspread.core.Message
+import it.uspread.core.Reception
 import it.uspread.core.ReportType
+import it.uspread.core.Spread
 import it.uspread.core.User
 
 import java.text.SimpleDateFormat
@@ -37,8 +39,17 @@ class JSONMarshaller {
                 def output = [:]
                 output["id"] = msg.id
                 output["creationDate"] = DATE_FORMAT.format(msg.dateCreated)
-                //output["receptionDate"] = DATE_FORMAT.format(msg.receivedBy.find({it.user == (User) springSecurityService.currentUser}).dateReception) TODO
-                //output["spreadDate"] = DATE_FORMAT.format(msg.spreadBy.find({it.user == (User) springSecurityService.currentUser}).dateSpread) TODO
+
+                Reception reception = msg.receivedBy.find({Reception r -> r.user == (User) r.user.getSpringSecurityService().currentUser})
+                if (reception != null) {
+                    output["receptionDate"] = DATE_FORMAT.format(reception.dateReception)
+                }
+
+                Spread spread = msg.spreadBy.find({Spread s -> s.user == (User) s.user.getSpringSecurityService().currentUser})
+                if (spread != null) {
+                    output["spreadDate"] = DATE_FORMAT.format(spread.dateSpread)
+                }
+
                 output["nbSpread"] = msg.nbSpread
                 output["text"] = msg.text
                 output["textColor"] = msg.textColor
