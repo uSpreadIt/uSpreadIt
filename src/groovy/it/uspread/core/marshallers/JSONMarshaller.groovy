@@ -18,10 +18,8 @@ class JSONMarshaller {
     /** Configuration de conversion vers clients interne */
     public static final String INTERNAL_MARSHALLER = "internalApi"
 
-    /** Formattage utilisé pour les dates (date, heure, minute et timezone) */
-    public static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ")
-
-    //def springSecurityService
+    /** Formattage utilisé pour les dates (date, heure, minute, milliseconde et timezone) */
+    public static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSZ")
 
     static void register() {
         // Configuration pour une communication avec un client simple utilisateur du service (Clients public : mobiles)

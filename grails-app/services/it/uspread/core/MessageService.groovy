@@ -99,19 +99,19 @@ class MessageService {
     }
 
     public void userSpreadThisMessage(User user, Message message) {
-        message.receivedBy.remove(message.receivedBy.find {it.user == user})
+        message.receivedBy.remove(new Reception(user))
         message.spreadBy.add(new Spread(user, new Date()))
         spreadIt(message, false)
     }
 
     public void userIgnoreThisMessage(User user, Message message) {
-        message.receivedBy.remove(message.receivedBy.find {it.user == user})
+        message.receivedBy.remove(new Reception(user))
         message.ignoredBy.add(user)
         message.save(flush: true)
     }
 
     public void userReportThisMessage(User user, Message message, String type) {
-        message.receivedBy.remove(message.receivedBy.find {it.user == user})
+        message.receivedBy.remove(new Reception(user))
         ReportType reportType = ReportType.valueOf(type)
         message.reports.add(new Report(user, reportType))
         message.incrementReportType(reportType)

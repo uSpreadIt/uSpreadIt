@@ -19,4 +19,19 @@ class Reception {
         user(nullable: false)
         dateReception(nullable: false)
     }
+
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (!(o instanceof Reception)) return false
+
+        Reception reception = (Reception) o
+
+        if (user != reception.user) return false
+
+        return true
+    }
+
+    int hashCode() {
+        return user.hashCode()
+    }
 }

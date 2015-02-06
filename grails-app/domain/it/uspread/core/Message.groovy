@@ -71,7 +71,7 @@ class Message {
     }
 
     def isUserAllowedToRead(User user){
-        return author.id == user.id || receivedBy.find({it.user == user}) != null || spreadBy.find({it.user == user}) != null || user.isModerator()
+        return author.id == user.id || receivedBy.contains(new Reception(user)) || spreadBy.contains(new Spread(user)) || user.isModerator()
     }
 
     def isUserAllowedToDelete(User user){

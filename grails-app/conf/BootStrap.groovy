@@ -1,4 +1,3 @@
-import it.uspread.core.Message
 import it.uspread.core.Role
 import it.uspread.core.User
 import it.uspread.core.UserRole
@@ -8,7 +7,7 @@ class BootStrap {
 
     def init = { servletContext ->
         // Vérifie si les données de test sont déjà présente
-        if (!Message.count()) {
+        if (!User.count()) {
             // Création de modérateurs
             def mod = new User(username: 'mod', password: 'mod', email:"mod@free.fr", specialUser: true)
 

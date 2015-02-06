@@ -97,7 +97,7 @@ class UserIntegrationSpec extends Specification {
                 eq('user.id', joe.id)
             }
         }.each {
-            ((Message)it).removeFromReceivedBy(((Message)it).receivedBy.find { r -> r.user == joe})
+            ((Message)it).removeFromReceivedBy(new Reception( joe))
         }
 
         Message.createCriteria().list {
@@ -119,7 +119,7 @@ class UserIntegrationSpec extends Specification {
                 eq('user.id', joe.id)
             }
         }.each {
-            ((Message)it).removeFromSpreadBy(((Message)it).spreadBy.find { r -> r.user == joe})
+            ((Message)it).removeFromSpreadBy(new Spread(joe))
         }
         joe.delete(flush: true)
 

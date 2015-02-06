@@ -17,7 +17,7 @@ class UserService {
             receivedBy {
                 eq('user.id', user.id)
             }
-        }.each { ((Message) it).removeFromReceivedBy(((Message)it).receivedBy.find { r -> r.user == user}) } // TODO peut etre réécrire la requete suite a mon edit rapid pour faire marcher avec nouveau modèle
+        }.each { ((Message) it).removeFromReceivedBy(new Reception(user)) }
 
         Message.createCriteria().list {
             ignoredBy {
@@ -30,7 +30,7 @@ class UserService {
                 eq('reporter.id', user.id)
             }
         }.each {
-            ((Message)it).removeFromReports(new Report(user)) // FIXME ça fonctionne ça ?? si c'est le cas ça m'arangerai bien pour régler les TODO autour de la meme manière
+            ((Message)it).removeFromReports(new Report(user))
         }
 
         Report.createCriteria().list {
@@ -43,7 +43,7 @@ class UserService {
             spreadBy {
                 eq('user.id', user.id)
             }
-        }.each { ((Message) it).removeFromSpreadBy(((Message)it).spreadBy.find { s -> s.user == user}) }
+        }.each { ((Message) it).removeFromSpreadBy(new Spread(user)) }
 
         user.delete(flush: true)
     }
