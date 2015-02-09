@@ -38,16 +38,16 @@ class JSONMarshaller {
             it.registerObjectMarshaller(Message) { Message msg ->
                 def output = [:]
                 output["id"] = msg.id
-                output["creationDate"] = DATE_FORMAT.format(msg.dateCreated)
+                output["dateCreation"] = DATE_FORMAT.format(msg.dateCreated)
 
                 Reception reception = msg.receivedBy.find({Reception r -> r.user == (User) r.user.getSpringSecurityService().currentUser})
                 if (reception != null) {
-                    output["receptionDate"] = DATE_FORMAT.format(reception.dateReception)
+                    output["dateReception"] = DATE_FORMAT.format(reception.dateReception)
                 }
 
                 Spread spread = msg.spreadBy.find({Spread s -> s.user == (User) s.user.getSpringSecurityService().currentUser})
                 if (spread != null) {
-                    output["spreadDate"] = DATE_FORMAT.format(spread.dateSpread)
+                    output["dateSpread"] = DATE_FORMAT.format(spread.dateSpread)
                 }
 
                 output["nbSpread"] = msg.nbSpread
@@ -80,12 +80,12 @@ class JSONMarshaller {
             it.registerObjectMarshaller(Message) { Message msg ->
                 def output = [:]
                 output["id"] = msg.id
-                output["creationDate"] = DATE_FORMAT.format(msg.dateCreated)
+                output["dateCreation"] = DATE_FORMAT.format(msg.dateCreated)
                 output["text"] = msg.text
                 output["author"] = [id: msg.author.id, username: msg.author.username]
                 def ReportType reportType = msg.getMainReportType();
                 if (reportType != null) {
-                    output["reportType"] = reportType.name()
+                    output["mainReportType"] = reportType.name()
                 }
 
                 return output;

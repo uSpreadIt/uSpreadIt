@@ -86,18 +86,6 @@ class MessageController extends RestfulController<Message> {
     }
 
     /**
-     * Pour l'utilisateur connecté indique des choses : pour le moment si le quota de message est atteint
-     * @return
-     */
-    def statut() {
-        def user = (User) springSecurityService.currentUser
-        if (user.isModerator()) {
-            return
-        }
-        render('{"quotaReached":"' + messageService.isMessageCreationLimitReached(user) + '"}', contentType: "application/json", encoding: "UTF-8")
-    }
-
-    /**
      * Propage le message dont l'id est fourni lors de l'appel
      */
     def spread() {

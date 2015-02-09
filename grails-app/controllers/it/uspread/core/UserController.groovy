@@ -2,7 +2,6 @@ package it.uspread.core
 
 import grails.converters.JSON
 import grails.rest.RestfulController
-import grails.transaction.Transactional
 import it.uspread.core.marshallers.JSONMarshaller
 
 import org.springframework.http.HttpStatus
@@ -17,6 +16,7 @@ class UserController extends RestfulController<User> {
 
     def springSecurityService
     def userService
+    def messageService
 
     UserController() {
         super(User)
@@ -95,7 +95,7 @@ class UserController extends RestfulController<User> {
         // Non nécessaire pour le moment
     }
 
-    def createModo() {
+    def createModerator() {
         if(handleReadOnly()) {
             return
         }
@@ -194,6 +194,18 @@ class UserController extends RestfulController<User> {
         request.withFormat {
             "*"{ render([status: HttpStatus.NO_CONTENT]) } // NO CONTENT STATUS CODE
         }
+    }
+
+    /**
+     * Pour l'utilisateur connecté indique des choses : pour le moment si le quota de message est atteint
+     * @return
+     */
+    def status() {
+        def user = (User) springSecurityService.currentUser
+        if (user.isModerator()) {
+            return
+        }
+        render('{"quotaReached":"' + messageService.isMessageCreationLimitReached(user) + '"}', contentType: "application/json", encoding: "UTF-8")
     }
 
     def topUsers() {
