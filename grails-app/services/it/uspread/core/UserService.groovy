@@ -46,9 +46,7 @@ class UserService {
         }.each { ((Message) it).removeFromSpreadBy(new Spread(user)) }
 
         Spread.createCriteria().list {
-            user {
-                eq('id', user.id)
-            }
+            eq('user.id', user.id)
         }.each{ ((Spread) it).delete(flush: true) }
 
         user.delete(flush: true)
