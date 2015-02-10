@@ -4,20 +4,20 @@ package it.uspread.core
 class Spread {
 
     User user
-    Date dateSpread
+    Date date
 
     Spread(User user) {
         this(user, new Date())
     }
 
-    Spread(User user, Date dateSpread) {
+    Spread(User user, Date date) {
         this.user = user
-        this.dateSpread = dateSpread
+        this.date = date
     }
 
     static constraints = {
         user(nullable: false)
-        dateSpread(nullable: false)
+        date(nullable: false)
     }
 
     boolean equals(o) {

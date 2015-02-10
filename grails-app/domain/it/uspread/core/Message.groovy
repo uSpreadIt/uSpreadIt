@@ -27,7 +27,7 @@ class Message {
     long reportedAsInappropriate
 
     static belongsTo = User
-    static hasMany = [receivedBy: Reception, ignoredBy: User, spreadBy: Spread, reports: Report]
+    static hasMany = [receivedBy: Spread, ignoredBy: User, spreadBy: Spread, reports: Report]
 
     static constraints = {
         author(nullable: false)
@@ -71,7 +71,7 @@ class Message {
     }
 
     def isUserAllowedToRead(User user){
-        return author.id == user.id || receivedBy.contains(new Reception(user)) || spreadBy.contains(new Spread(user)) || user.isModerator()
+        return author.id == user.id || receivedBy.contains(new Spread(user)) || spreadBy.contains(new Spread(user)) || user.isModerator()
     }
 
     def isUserAllowedToDelete(User user){
@@ -84,7 +84,7 @@ class Message {
      * @return
      */
     def clearForCreation(){
-        receivedBy = new HashSet<Reception>()
+        receivedBy = new HashSet<Spread>()
         ignoredBy = new HashSet<User>()
         spreadBy = new HashSet<Spread>()
         reports = new HashSet<Report>()

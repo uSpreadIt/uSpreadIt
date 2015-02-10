@@ -17,7 +17,7 @@ class UserService {
             receivedBy {
                 eq('user.id', user.id)
             }
-        }.each { ((Message) it).removeFromReceivedBy(new Reception(user)) }
+        }.each { ((Message) it).removeFromReceivedBy(new Spread(user)) }
 
         Message.createCriteria().list {
             ignoredBy {
@@ -44,6 +44,12 @@ class UserService {
                 eq('user.id', user.id)
             }
         }.each { ((Message) it).removeFromSpreadBy(new Spread(user)) }
+
+        Spread.createCriteria().list {
+            user {
+                eq('id', user.id)
+            }
+        }.each{ ((Spread) it).delete(flush: true) }
 
         user.delete(flush: true)
     }

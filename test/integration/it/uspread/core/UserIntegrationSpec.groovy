@@ -8,6 +8,8 @@ import spock.lang.*
  */
 class UserIntegrationSpec extends Specification {
 
+    def userService
+
     void "A user creates a message"() {
         given: "A user and his message"
         def joe = new User(username: 'joe', password: 'joe', email: 'joe@gmail.com')
@@ -27,11 +29,13 @@ class UserIntegrationSpec extends Specification {
         given: "An existing user and his message"
         def dude = new User(username: 'dude', password: 'dude', email: "dudeNoris@42.fr")
         def yop = new User(username: 'yop', password: 'yop', email: "yop@free.fr")
+        dude.save(flush: true)
+        yop.save(flush: true)
 
         def messageNotSent = new Message(text: "Un message de dude")
         dude.addToMessages(messageNotSent)
 
-        def messageSent = new Message(text: "Un message de dude", receivedBy: [new Reception(yop)])
+        def messageSent = new Message(text: "Un message de dude", receivedBy: [new Spread(yop)])
         dude.addToMessages(messageSent)
 
         def messageSpread = new Message(text: "Un autre de dude", spreadBy: [new Spread(yop)])
@@ -41,7 +45,7 @@ class UserIntegrationSpec extends Specification {
         dude.addToMessages(messageReported)
 
 
-        def receivedByDude = new Message(text: "Un message de yop", receivedBy: [new Reception(dude)])
+        def receivedByDude = new Message(text: "Un message de yop", receivedBy: [new Spread(dude)])
         yop.addToMessages(receivedByDude)
 
         def spreadByDude = new Message(text: "Un autre de yop", spreadBy: [new Spread(dude)])
@@ -71,7 +75,7 @@ class UserIntegrationSpec extends Specification {
         joe.save(flush: true)
         jim.save(flush: true)
 
-        def messageDeJoeAJim = new Message(text: 'hello', receivedBy: [new Reception(jim)])
+        def messageDeJoeAJim = new Message(text: 'hello', receivedBy: [new Spread(jim)])
         joe.addToMessages(messageDeJoeAJim)
 
         def messageDeJoePropageParJim = new Message(text: 'hello', spreadBy: [new Spread(jim)])
@@ -80,7 +84,7 @@ class UserIntegrationSpec extends Specification {
         def messageDeJoeSignaleParJim = new Message(text: 'hello', reports: [new Report(jim, ReportType.SPAM)])
         joe.addToMessages(messageDeJoeSignaleParJim)
 
-        def messageDeJimAJoe = new Message(text: "hello", receivedBy: [new Reception(joe)])
+        def messageDeJimAJoe = new Message(text: "hello", receivedBy: [new Spread(joe)])
         jim.addToMessages(messageDeJimAJoe)
 
         def messageDeJimPropageParJoe = new Message(text: "hello", spreadBy: [new Spread(joe)])
@@ -91,39 +95,10 @@ class UserIntegrationSpec extends Specification {
 
         joe.save(flush: true)
         jim.save(flush: true)
-        when: "the message is deleted"
-        Message.createCriteria().list {
-            receivedBy {
-                eq('user.id', joe.id)
-            }
-        }.each {
-            ((Message)it).removeFromReceivedBy(new Reception( joe))
-        }
+        when: "the user is deleted"
+        userService.deleteUser(joe)
 
-        Message.createCriteria().list {
-            reports {
-                eq('reporter.id', joe.id)
-            }
-        }.each {
-            ((Message)it).removeFromReports(new Report(joe))
-        }
-
-        Report.createCriteria().list {
-            reporter {
-                eq('id', joe.id)
-            }
-        }.each{ ((Report) it).delete(flush: true) }
-
-        Message.createCriteria().list {
-            spreadBy {
-                eq('user.id', joe.id)
-            }
-        }.each {
-            ((Message)it).removeFromSpreadBy(new Spread(joe))
-        }
-        joe.delete(flush: true)
-
-        then: "The Message is also deleted"
+        then: "his messages is also deleted"
         joe.id != null
         messageDeJoeAJim.id != null
         messageDeJoeSignaleParJim.id != null
@@ -163,7 +138,7 @@ class UserIntegrationSpec extends Specification {
         def jim = new User(username: 'jim', password: 'jim', email: 'jim@gmail.com')
         jim.save(flush: true)
 
-        def message = new Message(text: 'hello jim', receivedBy: [new Reception(jim)])
+        def message = new Message(text: 'hello jim', receivedBy: [new Spread(jim)])
         joe.addToMessages(message)
 
         when: "jim looks at his inbox"
