@@ -108,7 +108,7 @@ class MessageControllerFunctionalSpec extends Specification {
 
     void "user 1 gets his status"() {
         when: "status is got by user1"
-        Response response = restUser1Client.get(path: "/messages/statut")
+        Response response = restUser1Client.get(path: "/users/connected/status")
 
         then: "Status code is"
         response.statusCode == 200

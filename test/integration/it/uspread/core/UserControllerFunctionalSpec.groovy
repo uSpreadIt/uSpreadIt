@@ -113,7 +113,7 @@ class UserControllerFunctionalSpec extends Specification {
 
     void "Create Moderator"() {
         when: "Trying to create a mod"
-        Response response = restModClient.post(path: "/users/createModo") {
+        Response response = restModClient.post(path: "/users/moderator") {
             type ContentType.JSON
             json email:"modo@free.fr", username:"modo", password:"modo"
         }
