@@ -205,7 +205,7 @@ class UserController extends RestfulController<User> {
         if (user.isModerator()) {
             return
         }
-        render('{"quotaReached":"' + messageService.isMessageCreationLimitReached(user) + '"}', contentType: "application/json", encoding: "UTF-8")
+        render([text: '{"quotaReached":"' + messageService.isMessageCreationLimitReached(user) + '"}', contentType: "application/json", encoding: "UTF-8"])
     }
 
     def topUsers() {

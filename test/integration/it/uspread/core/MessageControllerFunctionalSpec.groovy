@@ -57,7 +57,7 @@ class MessageControllerFunctionalSpec extends Specification {
         }
 
         then: "Status code is"
-        response.statusCode == 204
+        response.statusCode == 200
     }
 
     void "user 3 ignores"() {

@@ -80,7 +80,7 @@ class MessageController extends RestfulController<Message> {
 
         request.withFormat {
             '*' {
-                render([status: HttpStatus.CREATED])
+                render([status: HttpStatus.CREATED, text:'{"id":"' + instance.id + '"}', contentType: "application/json", encoding: "UTF-8"])
             }
         }
     }
@@ -91,19 +91,14 @@ class MessageController extends RestfulController<Message> {
     def spread() {
         def messageId = params.messageId
         def user = (User) springSecurityService.currentUser
-        // On vérifie que le message est bien reçu par l'utilisateur
+        // On vérifie que le message a bien été reçu par l'utilisateur
         def (boolean receivedByThisUser, Message message) = messageService.isMessageReceivedByThisUser(user, messageId)
         if (receivedByThisUser && !user.isModerator()) {
             messageService.userSpreadThisMessage(user, message)
             request.withFormat {
-                form multipartForm {
-                    flash.message = message(code: 'default.deleted.message', args: [
-                        message(code: "${resourceClassName}.label".toString(), default: resourceClassName),
-                        messageId
-                    ])
-                    redirect action: "index", method: "GET"
+                '*' {
+                    render([status: HttpStatus.OK, text:'{"id":"' + message.id + '","nbSpread":"' + message.nbSpread + '"}', contentType: "application/json", encoding: "UTF-8"])
                 }
-                '*' { render status: HttpStatus.NO_CONTENT } // NO CONTENT STATUS CODE
             }
         } else {
             notFound()
@@ -116,20 +111,13 @@ class MessageController extends RestfulController<Message> {
     def ignore() {
         def messageId = params.messageId
         def user = (User) springSecurityService.currentUser
-        // On vérifie que le message est bien reçu par l'utilisateur
+        // On vérifie que le message a bien été reçu par l'utilisateur
         def (boolean receivedByThisUser, Message message) = messageService.isMessageReceivedByThisUser(user, messageId)
         if (receivedByThisUser && !user.isModerator()) {
             messageService.userIgnoreThisMessage(user, message)
 
             request.withFormat {
-                form multipartForm {
-                    flash.message = message(code: 'default.deleted.message', args: [
-                        message(code: "${resourceClassName}.label".toString(), default: resourceClassName),
-                        messageId
-                    ])
-                    redirect action: "index", method: "GET"
-                }
-                '*' { render status: HttpStatus.NO_CONTENT } // NO CONTENT STATUS CODE
+                '*' { render status: HttpStatus.NO_CONTENT }
             }
         } else {
             notFound()
@@ -143,18 +131,11 @@ class MessageController extends RestfulController<Message> {
         def messageId = params.messageId
         String type = params.type
         def user = (User) springSecurityService.currentUser
-        // On vérifie que le message est bien reçu par l'utilisateur
+        // On vérifie que le message a bien été reçu par l'utilisateur
         def (boolean receivedByThisUser, Message message) = messageService.isMessageReceivedByThisUser(user, messageId)
         if (receivedByThisUser && !user.isModerator()) {
             messageService.userReportThisMessage(user, message, type)
             request.withFormat {
-                form multipartForm {
-                    flash.message = message(code: 'default.deleted.message', args: [
-                        message(code: "${resourceClassName}.label".toString(), default: resourceClassName),
-                        messageId
-                    ])
-                    redirect action: "index", method: "GET"
-                }
                 '*' { render status: HttpStatus.NO_CONTENT } // NO CONTENT STATUS CODE
             }
         } else {
