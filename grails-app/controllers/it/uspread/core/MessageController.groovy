@@ -80,7 +80,7 @@ class MessageController extends RestfulController<Message> {
 
         request.withFormat {
             '*' {
-                render([status: HttpStatus.CREATED, text:'{"id":"' + instance.id + '"}', contentType: "application/json", encoding: "UTF-8"])
+                render([status: HttpStatus.CREATED, text:'{"id":"' + instance.id + '","dateCreation":"' + JSONMarshaller.DATE_FORMAT.format(instance.dateCreated) + '"}', contentType: "application/json", encoding: "UTF-8"])
             }
         }
     }
