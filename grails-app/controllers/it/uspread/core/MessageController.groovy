@@ -97,7 +97,7 @@ class MessageController extends RestfulController<Message> {
             messageService.userSpreadThisMessage(user, message)
             request.withFormat {
                 '*' {
-                    render([status: HttpStatus.OK, text:'{"id":"' + message.id + '","nbSpread":"' + message.nbSpread + '"}', contentType: "application/json", encoding: "UTF-8"])
+                    render([status: HttpStatus.OK, text:'{"id":"' + message.id + '","nbSpread":"' + message.nbSpread + '","dateSpread":"' + JSONMarshaller.DATE_FORMAT.format(((Spread)message.spreadBy.find({Spread s -> s.user == user})).date) + '"}', contentType: "application/json", encoding: "UTF-8"])
                 }
             }
         } else {
