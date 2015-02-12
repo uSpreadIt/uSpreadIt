@@ -5,6 +5,8 @@ package it.uspread.core
  */
 class Message {
 
+    transient springSecurityService
+
     /** Auteur */
     User author
     /** Nombre de propagation */
@@ -90,6 +92,32 @@ class Message {
         reports = new HashSet<Report>()
         nbSpread = 0
         id = null
+    }
+
+    /**
+     * Recherche de la date de réception du message pour l'utilisateur donné
+     * @param user Un utilisateur
+     * @return Date de réception ou null si non reçus par l'utilisateur
+     */
+    Date getDateReception(User user) {
+        Spread spread = receivedBy.find({Spread s -> s.user == user})
+        if (spread != null) {
+            return spread.date
+        }
+        return null
+    }
+
+    /**
+     * Recherche de la date de propagation du message pour l'utilisateur donné
+     * @param user Un utilisateur
+     * @return Date de propagation ou null si non reçus par l'utilisateur
+     */
+    Date getDateSpread(User user) {
+        Spread spread = spreadBy.find({Spread s -> s.user == user})
+        if (spread != null) {
+            return spread.date
+        }
+        return null
     }
 
     String toString(){

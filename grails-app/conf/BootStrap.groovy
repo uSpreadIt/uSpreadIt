@@ -24,7 +24,8 @@ class BootStrap {
         }
 
         // Configuration de la conversion Domaine->JSON
-        JSONMarshaller.register()
+        JSONMarshaller.registerPublic()
+        JSONMarshaller.registerInternal()
     }
 
     def destroy = {

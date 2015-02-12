@@ -7,7 +7,7 @@ import it.uspread.core.marshallers.JSONMarshaller
 import org.springframework.http.HttpStatus
 
 /**
- * Controlleur des accés aux utilisateur
+ * Controlleur des accés aux utilisateurs
  */
 class UserController extends RestfulController<User> {
 
@@ -28,8 +28,8 @@ class UserController extends RestfulController<User> {
     def getUserConnected() {
         def user = (User) springSecurityService.currentUser
         if (null != user){
-            JSON.use(user.isModerator() ? JSONMarshaller.INTERNAL_MARSHALLER : JSONMarshaller.PUBLIC_MARSHALLER) {
-                respond userService.getUserFromId(user.id)
+            JSON.use(user.isModerator() ? JSONMarshaller.INTERNAL : JSONMarshaller.PUBLIC_USER) {
+                respond(userService.getUserFromId(user.id))
             }
         }
         else {
@@ -46,7 +46,9 @@ class UserController extends RestfulController<User> {
             userService.deleteUser(instance)
         }
         request.withFormat {
-            '*'{ render status: HttpStatus.NO_CONTENT } // NO CONTENT STATUS CODE
+            '*'{
+                render([status: HttpStatus.NO_CONTENT])
+            }
         }
     }
 
@@ -59,7 +61,7 @@ class UserController extends RestfulController<User> {
         instance.properties = getObjectToBind()
 
         if (instance.hasErrors()) {
-            respond instance.errors // STATUS CODE 422
+            respond(instance.errors) // STATUS CODE 422
             return
         }
 
@@ -75,8 +77,8 @@ class UserController extends RestfulController<User> {
     def index(Integer max) {
         def user = (User) springSecurityService.currentUser
         params.max = Math.min(max ?: 10, 100)
-        JSON.use(user.isModerator() ? JSONMarshaller.INTERNAL_MARSHALLER : JSONMarshaller.PUBLIC_MARSHALLER) {
-            respond listAllResources(params), model: [("${resourceName}Count".toString()): countResources()]
+        JSON.use(user.isModerator() ? JSONMarshaller.INTERNAL : JSONMarshaller.PUBLIC_USER) {
+            respond(listAllResources(params), model: [("${resourceName}Count".toString()): countResources()])
         }
     }
 
@@ -103,7 +105,7 @@ class UserController extends RestfulController<User> {
         instance.clearForCreation()
         instance.validate()
         if (instance.hasErrors()) {
-            respond instance.errors, view:'create' // STATUS CODE 422
+            respond(instance.errors, view:'create') // STATUS CODE 422
             return
         }
 
@@ -129,7 +131,7 @@ class UserController extends RestfulController<User> {
         instance.clearForCreation()
         instance.validate()
         if (instance.hasErrors()) {
-            respond instance.errors, view:'create' // STATUS CODE 422
+            respond(instance.errors, view:'create') // STATUS CODE 422
             return
         }
 
@@ -145,8 +147,8 @@ class UserController extends RestfulController<User> {
     @Override
     def show() {
         def user = (User) springSecurityService.currentUser
-        JSON.use(user.isModerator() ? JSONMarshaller.INTERNAL_MARSHALLER : JSONMarshaller.PUBLIC_MARSHALLER) {
-            respond queryForResource(params.id)
+        JSON.use(user.isModerator() ? JSONMarshaller.INTERNAL : JSONMarshaller.PUBLIC_USER) {
+            respond(queryForResource(params.id))
         }
     }
 
@@ -165,7 +167,7 @@ class UserController extends RestfulController<User> {
         instance.properties = getObjectToBind()
 
         if (instance.hasErrors()) {
-            respond instance.errors // STATUS CODE 422
+            respond(instance.errors) // STATUS CODE 422
             return
         }
 
@@ -192,7 +194,9 @@ class UserController extends RestfulController<User> {
         userService.deleteUser(instance)
 
         request.withFormat {
-            "*"{ render([status: HttpStatus.NO_CONTENT]) } // NO CONTENT STATUS CODE
+            "*"{
+                render([status: HttpStatus.NO_CONTENT])
+            }
         }
     }
 
@@ -209,7 +213,7 @@ class UserController extends RestfulController<User> {
     }
 
     def topUsers() {
-        JSON.use(JSONMarshaller.PUBLIC_MARSHALLER) {
+        JSON.use(JSONMarshaller.PUBLIC_USER) {
             respond userService.getTopUsers()
         }
     }
