@@ -213,8 +213,8 @@ class UserController extends RestfulController<User> {
     }
 
     def topUsers() {
-        JSON.use(JSONMarshaller.PUBLIC_USER) {
-            respond userService.getTopUsers()
+        JSON.use(JSONMarshaller.PUBLIC_USER_SCORE) {
+            respond(userService.getTopUsers())
         }
     }
 }

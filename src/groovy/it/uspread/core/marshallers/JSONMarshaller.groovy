@@ -15,6 +15,8 @@ class JSONMarshaller {
 
     /** Configuration pour clients public : Utilisateur */
     public static final String PUBLIC_USER = "publicAPI-User"
+    /** Configuration pour clients public : Utilisateur limité aux informations pour les scores */
+    public static final String PUBLIC_USER_SCORE = "publicAPI-User-Score"
 
     /** Configuration pour clients public : Message */
     public static final String PUBLIC_MESSAGE = "publicAPI-Message"
@@ -25,7 +27,7 @@ class JSONMarshaller {
     /** Configuration pour clients public : Liste de Message limité aux informations nécessaire aux messages propagé ou écrits par l'utilisateur valeurs dynamique uniquement */
     public static final String PUBLIC_MESSAGE_LIST_DYNAMIC = "publicAPI-Message-List-Dynamic"
     /** Configuration pour clients public : Liste de Message limité aux informations nécessaire aux messages reçus par l'utilisateur */
-    public static final String PUBLIC_MESSAGE_LIST_RECEIVED = "publicAPI-Message-List-RECEIVED"
+    public static final String PUBLIC_MESSAGE_LIST_RECEIVED = "publicAPI-Message-List-Received"
     /** Configuration pour clients public : Message limité aux informations de retour d'une création */
     public static final String PUBLIC_MESSAGE_CREATION = "publicAPI-Message-Creation"
     /** Configuration pour clients public : Message limité aux informations de retour d'une propagation */
@@ -49,6 +51,15 @@ class JSONMarshaller {
                 output["username"] = user.username
                 output["email"] = user.email
                 output["iosPushToken"] = user.iosPushToken
+                return output;
+            }
+        }
+
+        // Configuration pour clients public : Utilisateur limité aux informations pour les scores
+        JSON.createNamedConfig(PUBLIC_USER_SCORE) {
+            it.registerObjectMarshaller(User) { User user ->
+                def output = [:]
+                output["username"] = user.username
                 return output;
             }
         }
