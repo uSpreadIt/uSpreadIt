@@ -2,9 +2,9 @@ package it.uspread.core.json
 
 import grails.converters.JSON
 import it.uspread.core.Message
-import it.uspread.core.ReportType
-import it.uspread.core.RoleType
 import it.uspread.core.User
+import it.uspread.core.type.ReportType
+import it.uspread.core.type.RoleType
 
 import java.text.SimpleDateFormat
 

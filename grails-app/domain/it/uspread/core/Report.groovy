@@ -1,5 +1,7 @@
 package it.uspread.core
 
+import it.uspread.core.type.ReportType
+
 class Report {
 
     User reporter

@@ -1,6 +1,7 @@
 package it.uspread.core
 
 import grails.transaction.Transactional
+import it.uspread.core.type.ReportType
 
 @Transactional
 class MessageService {

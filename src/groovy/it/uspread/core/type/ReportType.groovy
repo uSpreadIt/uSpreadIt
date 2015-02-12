@@ -1,4 +1,4 @@
-package it.uspread.core;
+package it.uspread.core.type
 
 /**
  * Type du signalement d'un message.
