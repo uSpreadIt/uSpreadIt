@@ -1,7 +1,7 @@
 import it.uspread.core.Role
 import it.uspread.core.User
 import it.uspread.core.UserRole
-import it.uspread.core.marshallers.JSONMarshaller
+import it.uspread.core.json.JSONMarshaller
 
 class BootStrap {
 
