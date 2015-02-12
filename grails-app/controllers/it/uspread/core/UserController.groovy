@@ -2,7 +2,7 @@ package it.uspread.core
 
 import grails.converters.JSON
 import grails.rest.RestfulController
-import it.uspread.core.marshallers.JSONMarshaller
+import it.uspread.core.json.JSONMarshaller
 
 import org.springframework.http.HttpStatus
 

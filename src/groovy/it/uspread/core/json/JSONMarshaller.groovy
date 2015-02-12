@@ -1,8 +1,9 @@
-package it.uspread.core.marshallers
+package it.uspread.core.json
 
 import grails.converters.JSON
 import it.uspread.core.Message
 import it.uspread.core.ReportType
+import it.uspread.core.RoleType
 import it.uspread.core.User
 
 import java.text.SimpleDateFormat
@@ -37,7 +38,7 @@ class JSONMarshaller {
     public static final String INTERNAL = "internalApi"
 
     /** Formattage utilisé pour les dates (date, heure, minute, milliseconde et timezone) */
-    public static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSZ")
+    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSZ")
 
     /**
      * Enregistrement des différentes configurations publiques.
@@ -47,10 +48,10 @@ class JSONMarshaller {
         JSON.createNamedConfig(PUBLIC_USER) {
             it.registerObjectMarshaller(User) { User user ->
                 def output = [:]
-                output["id"] = user.id
-                output["username"] = user.username
-                output["email"] = user.email
-                output["iosPushToken"] = user.iosPushToken
+                output[JSONAttribute.USER_ID] = user.id
+                output[JSONAttribute.USER_USERNAME] = user.username
+                output[JSONAttribute.USER_EMAIL] = user.email
+                output[JSONAttribute.USER_IOSPUSHTOKEN] = user.iosPushToken
                 return output;
             }
         }
@@ -59,7 +60,7 @@ class JSONMarshaller {
         JSON.createNamedConfig(PUBLIC_USER_SCORE) {
             it.registerObjectMarshaller(User) { User user ->
                 def output = [:]
-                output["username"] = user.username
+                output[JSONAttribute.USER_USERNAME] = user.username
                 return output;
             }
         }
@@ -68,23 +69,23 @@ class JSONMarshaller {
         JSON.createNamedConfig(PUBLIC_MESSAGE) {
             it.registerObjectMarshaller(Message) { Message msg ->
                 def output = [:]
-                output["id"] = msg.id
-                output["dateCreation"] = DATE_FORMAT.format(msg.dateCreated)
+                output[JSONAttribute.MESSAGE_ID] = msg.id
+                output[JSONAttribute.MESSAGE_DATECREATION] = DATE_FORMAT.format(msg.dateCreated)
 
                 Date date = msg.getDateReception(msg.getSpringSecurityService().currentUser)
                 if (date != null) {
-                    output["dateReception"] = DATE_FORMAT.format(date)
+                    output[JSONAttribute.MESSAGE_DATERECEPTION] = DATE_FORMAT.format(date)
                 }
                 date = msg.getDateSpread(msg.getSpringSecurityService().currentUser)
                 if (date != null) {
-                    output["dateSpread"] = DATE_FORMAT.format(date)
+                    output[JSONAttribute.MESSAGE_DATESPREAD] = DATE_FORMAT.format(date)
                 }
 
-                output["nbSpread"] = msg.nbSpread
-                output["text"] = msg.text
-                output["textColor"] = msg.textColor
-                output["backgroundColor"] = msg.backgroundColor
-                output["backgroundType"] = msg.backgroundType
+                output[JSONAttribute.MESSAGE_NBSPREAD] = msg.nbSpread
+                output[JSONAttribute.MESSAGE_TEXT] = msg.text
+                output[JSONAttribute.MESSAGE_TEXTCOLOR] = msg.textColor
+                output[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] = msg.backgroundColor
+                output[JSONAttribute.MESSAGE_BACKGROUNDTYPE] = msg.backgroundType
                 // TODO
                 return output;
             }
@@ -94,7 +95,7 @@ class JSONMarshaller {
         JSON.createNamedConfig(PUBLIC_MESSAGE_IMAGE) {
             it.registerObjectMarshaller(Message) { Message msg ->
                 def output = [:]
-                output["id"] = msg.id
+                output[JSONAttribute.MESSAGE_ID] = msg.id
                 // TODO
                 return output;
             }
@@ -104,23 +105,23 @@ class JSONMarshaller {
         JSON.createNamedConfig(PUBLIC_MESSAGE_LIST) {
             it.registerObjectMarshaller(Message) { Message msg ->
                 def output = [:]
-                output["id"] = msg.id
-                output["dateCreation"] = DATE_FORMAT.format(msg.dateCreated)
+                output[JSONAttribute.MESSAGE_ID] = msg.id
+                output[JSONAttribute.MESSAGE_DATECREATION] = DATE_FORMAT.format(msg.dateCreated)
 
                 Date date = msg.getDateReception(msg.getSpringSecurityService().currentUser)
                 if (date != null) {
-                    output["dateReception"] = DATE_FORMAT.format(date)
+                    output[JSONAttribute.MESSAGE_DATERECEPTION] = DATE_FORMAT.format(date)
                 }
                 date = msg.getDateSpread(msg.getSpringSecurityService().currentUser)
                 if (date != null) {
-                    output["dateSpread"] = DATE_FORMAT.format(date)
+                    output[JSONAttribute.MESSAGE_DATESPREAD] = DATE_FORMAT.format(date)
                 }
 
-                output["nbSpread"] = msg.nbSpread
-                output["text"] = msg.text
-                output["textColor"] = msg.textColor
-                output["backgroundColor"] = msg.backgroundColor
-                output["backgroundType"] = msg.backgroundType
+                output[JSONAttribute.MESSAGE_NBSPREAD] = msg.nbSpread
+                output[JSONAttribute.MESSAGE_TEXT] = msg.text
+                output[JSONAttribute.MESSAGE_TEXTCOLOR] = msg.textColor
+                output[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] = msg.backgroundColor
+                output[JSONAttribute.MESSAGE_BACKGROUNDTYPE] = msg.backgroundType
                 return output;
             }
         }
@@ -129,8 +130,8 @@ class JSONMarshaller {
         JSON.createNamedConfig(PUBLIC_MESSAGE_LIST_DYNAMIC) {
             it.registerObjectMarshaller(Message) { Message msg ->
                 def output = [:]
-                output["id"] = msg.id
-                output["nbSpread"] = msg.nbSpread
+                output[JSONAttribute.MESSAGE_ID] = msg.id
+                output[JSONAttribute.MESSAGE_NBSPREAD] = msg.nbSpread
                 return output;
             }
         }
@@ -139,22 +140,22 @@ class JSONMarshaller {
         JSON.createNamedConfig(PUBLIC_MESSAGE_LIST_RECEIVED) {
             it.registerObjectMarshaller(Message) { Message msg ->
                 def output = [:]
-                output["id"] = msg.id
-                output["dateCreation"] = DATE_FORMAT.format(msg.dateCreated)
+                output[JSONAttribute.MESSAGE_ID] = msg.id
+                output[JSONAttribute.MESSAGE_DATECREATION] = DATE_FORMAT.format(msg.dateCreated)
 
                 Date date = msg.getDateReception(msg.getSpringSecurityService().currentUser)
                 if (date != null) {
-                    output["dateReception"] = DATE_FORMAT.format(date)
+                    output[JSONAttribute.MESSAGE_DATERECEPTION] = DATE_FORMAT.format(date)
                 }
                 date = msg.getDateSpread(msg.getSpringSecurityService().currentUser)
                 if (date != null) {
-                    output["dateSpread"] = DATE_FORMAT.format(date)
+                    output[JSONAttribute.MESSAGE_DATESPREAD] = DATE_FORMAT.format(date)
                 }
 
-                output["text"] = msg.text
-                output["textColor"] = msg.textColor
-                output["backgroundColor"] = msg.backgroundColor
-                output["backgroundType"] = msg.backgroundType
+                output[JSONAttribute.MESSAGE_TEXT] = msg.text
+                output[JSONAttribute.MESSAGE_TEXTCOLOR] = msg.textColor
+                output[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] = msg.backgroundColor
+                output[JSONAttribute.MESSAGE_BACKGROUNDTYPE] = msg.backgroundType
                 return output;
             }
         }
@@ -163,8 +164,8 @@ class JSONMarshaller {
         JSON.createNamedConfig(PUBLIC_MESSAGE_CREATION) {
             it.registerObjectMarshaller(Message) { Message msg ->
                 def output = [:]
-                output["id"] = msg.id
-                output["dateCreation"] = DATE_FORMAT.format(msg.dateCreated)
+                output[JSONAttribute.MESSAGE_ID] = msg.id
+                output[JSONAttribute.MESSAGE_DATECREATION] = DATE_FORMAT.format(msg.dateCreated)
                 return output;
             }
         }
@@ -173,9 +174,9 @@ class JSONMarshaller {
         JSON.createNamedConfig(PUBLIC_MESSAGE_SPREAD) {
             it.registerObjectMarshaller(Message) { Message msg ->
                 def output = [:]
-                output["id"] = msg.id
-                output["dateSpread"] = DATE_FORMAT.format(msg.getDateSpread(msg.getSpringSecurityService().currentUser))
-                output["nbSpread"] = msg.nbSpread
+                output[JSONAttribute.MESSAGE_ID] = msg.id
+                output[JSONAttribute.MESSAGE_DATESPREAD] = DATE_FORMAT.format(msg.getDateSpread(msg.getSpringSecurityService().currentUser))
+                output[JSONAttribute.MESSAGE_NBSPREAD] = msg.nbSpread
                 return output;
             }
         }
@@ -189,28 +190,28 @@ class JSONMarshaller {
         JSON.createNamedConfig(INTERNAL) {
             it.registerObjectMarshaller(User) { User user ->
                 def output = [:]
-                output["id"] = user.id
-                output["username"] = user.username
-                output["email"] = user.email
-                output["iosPushToken"] = user.iosPushToken
-                output["role"] = user.isModerator() ? "MODERATOR" : "USER"
+                output[JSONAttribute.USER_ID] = user.id
+                output[JSONAttribute.USER_USERNAME] = user.username
+                output[JSONAttribute.USER_EMAIL] = user.email
+                output[JSONAttribute.USER_IOSPUSHTOKEN] = user.iosPushToken
+                output[JSONAttribute.USER_ROLE] = user.isModerator() ? RoleType.MODERATOR.name() : RoleType.USER.name()
                 if (!user.isModerator()) {
-                    output["reportsSent"] = user.reportsSent
-                    output["reportsReceived"] = user.reportsReceived
-                    output["moderationRequired"] = user.isModerationRequired()
+                    output[JSONAttribute.USER_REPORTSSENT] = user.reportsSent
+                    output[JSONAttribute.USER_REPORTRECEIVED] = user.reportsReceived
+                    output[JSONAttribute.USER_MODERATIONREQUIRED] = user.isModerationRequired()
                 }
                 return output;
             }
 
             it.registerObjectMarshaller(Message) { Message msg ->
                 def output = [:]
-                output["id"] = msg.id
-                output["dateCreation"] = DATE_FORMAT.format(msg.dateCreated)
-                output["text"] = msg.text
-                output["author"] = [id: msg.author.id, username: msg.author.username]
+                output[JSONAttribute.MESSAGE_ID] = msg.id
+                output[JSONAttribute.MESSAGE_DATECREATION] = DATE_FORMAT.format(msg.dateCreated)
+                output[JSONAttribute.MESSAGE_TEXT] = msg.text
+                output[JSONAttribute.MESSAGE_AUTHOR] = ["${JSONAttribute.USER_ID}": msg.author.id, "${JSONAttribute.USER_USERNAME}": msg.author.username]
                 def ReportType reportType = msg.getMainReportType();
                 if (reportType != null) {
-                    output["mainReportType"] = reportType.name()
+                    output[JSONAttribute.MESSAGE_MAINREPORTTYPE] = reportType.name()
                 }
 
                 return output;
