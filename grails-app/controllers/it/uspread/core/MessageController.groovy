@@ -36,16 +36,16 @@ class MessageController extends RestfulController<Message> {
         String query = params.query
         // TODO
 
-        // Si on liste les messages écrits par l'utilisateur
-        if ("AUTHOR".equals(query)) {
-            JSON.use(JSONMarshaller.PUBLIC_MESSAGE_LIST_AUTHOR) {
-                respond(messageService.getMessagesFromThisAuthorId(userConnected.id))
+        // Si on liste les message reçus par l'utilisateur
+        if ("RECEIVED".equals(query)) {
+            JSON.use(JSONMarshaller.PUBLIC_MESSAGE_LIST_RECEIVED) {
+                respond(messageService.getMessagesReceivedByThisUserId(userConnected.id))
             }
         }
-        // Si on liste les message reçus par l'utilisateur
-        else if ("RECEIVED".equals(query)) {
+        // Si on liste les messages écrits par l'utilisateur
+        else if ("AUTHOR".equals(query)) {
             JSON.use(JSONMarshaller.PUBLIC_MESSAGE_LIST) {
-                respond(messageService.getMessagesReceivedByThisUserId(userConnected.id))
+                respond(messageService.getMessagesFromThisAuthorId(userConnected.id))
             }
         }
         // Si on liste les message propagé par l'utilisateur

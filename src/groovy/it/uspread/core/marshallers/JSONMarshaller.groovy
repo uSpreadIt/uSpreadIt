@@ -20,12 +20,12 @@ class JSONMarshaller {
     public static final String PUBLIC_MESSAGE = "publicAPI-Message"
     /** Configuration pour clients public : Message limité à son image */
     public static final String PUBLIC_MESSAGE_IMAGE = "publicAPI-Message-Image"
-    /** Configuration pour clients public : Liste de Message limité aux informations nécessaire aux messages propagé ou reçus par l'utilisateur */
+    /** Configuration pour clients public : Liste de Message limité aux informations nécessaire aux messages propagé ou écrits par l'utilisateur */
     public static final String PUBLIC_MESSAGE_LIST = "publicAPI-Message-List"
-    /** Configuration pour clients public : Liste de Message limité aux informations nécessaire aux messages propagé ou reçus par l'utilisateur valeurs dynamique uniquement */
+    /** Configuration pour clients public : Liste de Message limité aux informations nécessaire aux messages propagé ou écrits par l'utilisateur valeurs dynamique uniquement */
     public static final String PUBLIC_MESSAGE_LIST_DYNAMIC = "publicAPI-Message-List-Dynamic"
-    /** Configuration pour clients public : Liste de Message limité aux informations nécessaire aux messages écrit par l'utilisateur */
-    public static final String PUBLIC_MESSAGE_LIST_AUTHOR = "publicAPI-Message-List-Author"
+    /** Configuration pour clients public : Liste de Message limité aux informations nécessaire aux messages reçus par l'utilisateur */
+    public static final String PUBLIC_MESSAGE_LIST_RECEIVED = "publicAPI-Message-List-RECEIVED"
     /** Configuration pour clients public : Message limité aux informations de retour d'une création */
     public static final String PUBLIC_MESSAGE_CREATION = "publicAPI-Message-Creation"
     /** Configuration pour clients public : Message limité aux informations de retour d'une propagation */
@@ -89,7 +89,7 @@ class JSONMarshaller {
             }
         }
 
-        // Configuration pour clients public : Liste de Message limité aux informations nécessaire aux messages propagé ou reçus par l'utilisateur
+        // Configuration pour clients public : Liste de Message limité aux informations nécessaire aux messages propagé ou écrits par l'utilisateur
         JSON.createNamedConfig(PUBLIC_MESSAGE_LIST) {
             it.registerObjectMarshaller(Message) { Message msg ->
                 def output = [:]
@@ -114,7 +114,7 @@ class JSONMarshaller {
             }
         }
 
-        // Configuration pour clients public : Liste de Message limité aux informations nécessaire aux messages propagé ou reçus par l'utilisateur valeurs dynamique uniquement
+        // Configuration pour clients public : Liste de Message limité aux informations nécessaire aux messages propagé ou écrits par l'utilisateur valeurs dynamique uniquement
         JSON.createNamedConfig(PUBLIC_MESSAGE_LIST_DYNAMIC) {
             it.registerObjectMarshaller(Message) { Message msg ->
                 def output = [:]
@@ -124,8 +124,8 @@ class JSONMarshaller {
             }
         }
 
-        // Configuration pour clients public : Liste de Message limité aux informations nécessaire aux messages écrit par l'utilisateur
-        JSON.createNamedConfig(PUBLIC_MESSAGE_LIST_AUTHOR) {
+        // Configuration pour clients public : Liste de Message limité aux informations nécessaire aux messages reçus par l'utilisateur
+        JSON.createNamedConfig(PUBLIC_MESSAGE_LIST_RECEIVED) {
             it.registerObjectMarshaller(Message) { Message msg ->
                 def output = [:]
                 output["id"] = msg.id
