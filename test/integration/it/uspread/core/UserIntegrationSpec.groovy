@@ -1,6 +1,7 @@
 package it.uspread.core
 
 
+import it.uspread.core.type.ReportType
 import spock.lang.*
 
 /**

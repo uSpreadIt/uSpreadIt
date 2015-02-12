@@ -3,6 +3,8 @@ package it.uspread.core
 import grails.converters.JSON
 import grails.rest.RestfulController
 import it.uspread.core.json.JSONMarshaller
+import it.uspread.core.params.MessageCriteria
+import it.uspread.core.params.QueryParams
 
 import org.springframework.http.HttpStatus
 
@@ -34,24 +36,25 @@ class MessageController extends RestfulController<Message> {
 
         // Lecture des paramètres
         String query = params.query
-        // TODO
+        boolean onlyDynamicVal = params.onlyDynamicVal != null ? new Boolean((String)params.onlyDynamicVal).booleanValue() : false
+        MessageCriteria msgCriteria = new MessageCriteria(params.count, params.date, params.op)
 
         // Si on liste les message reçus par l'utilisateur
-        if ("RECEIVED".equals(query)) {
-            JSON.use(JSONMarshaller.PUBLIC_MESSAGE_LIST_RECEIVED) {
-                respond(messageService.getMessagesReceivedByThisUserId(userConnected.id))
+        if (QueryParams.MESSAGE_RECEIVED.equals(query)) {
+            JSON.use(onlyDynamicVal ? JSONMarshaller.PUBLIC_MESSAGE_LIST_DYNAMIC : JSONMarshaller.PUBLIC_MESSAGE_LIST_RECEIVED) {
+                respond(messageService.getMessagesReceivedByThisUserId(userConnected.id, msgCriteria))
             }
         }
         // Si on liste les messages écrits par l'utilisateur
-        else if ("AUTHOR".equals(query)) {
-            JSON.use(JSONMarshaller.PUBLIC_MESSAGE_LIST) {
-                respond(messageService.getMessagesFromThisAuthorId(userConnected.id))
+        else if (QueryParams.MESSAGE_WRITED.equals(query)) {
+            JSON.use(onlyDynamicVal ? JSONMarshaller.PUBLIC_MESSAGE_LIST_DYNAMIC : JSONMarshaller.PUBLIC_MESSAGE_LIST) {
+                respond(messageService.getMessagesFromThisAuthorId(userConnected.id, msgCriteria))
             }
         }
         // Si on liste les message propagé par l'utilisateur
-        else if ("SPREAD".equals(query)) {
-            JSON.use(JSONMarshaller.PUBLIC_MESSAGE_LIST) {
-                respond(messageService.getMessagesSpreadByThisUserId(userConnected.id))
+        else if (QueryParams.MESSAGE_SPREAD.equals(query)) {
+            JSON.use(onlyDynamicVal ? JSONMarshaller.PUBLIC_MESSAGE_LIST_DYNAMIC : JSONMarshaller.PUBLIC_MESSAGE_LIST) {
+                respond(messageService.getMessagesSpreadByThisUserId(userConnected.id, msgCriteria))
             }
         }
         // Sinon retourner un code d'erreur
@@ -173,7 +176,7 @@ class MessageController extends RestfulController<Message> {
 
         if (userConnected.isModerator()) {
             JSON.use(JSONMarshaller.INTERNAL) {
-                respond(messageService.getMessagesFromThisAuthorId(userId))
+                respond(messageService.getMessagesFromThisAuthorId(userId, null))
             }
         } else {
             forbidden()
@@ -191,7 +194,7 @@ class MessageController extends RestfulController<Message> {
 
         if (userConnected.isModerator()) {
             JSON.use(JSONMarshaller.INTERNAL) {
-                respond(messageService.getMessagesReceivedByThisUserId(userId))
+                respond(messageService.getMessagesReceivedByThisUserId(userId, null))
             }
         } else {
             forbidden()
@@ -209,7 +212,7 @@ class MessageController extends RestfulController<Message> {
 
         if (userConnected.isModerator()) {
             JSON.use(JSONMarshaller.INTERNAL) {
-                respond(messageService.getMessagesSpreadByThisUserId(userId))
+                respond(messageService.getMessagesSpreadByThisUserId(userId, null))
             }
         } else {
             forbidden()

@@ -1,6 +1,7 @@
 package it.uspread.core
 
 import grails.transaction.Transactional
+import it.uspread.core.params.MessageCriteria
 import it.uspread.core.type.ReportType
 
 @Transactional
@@ -12,20 +13,60 @@ class MessageService {
     private static final int MAX_MESSAGES_PER_DAY = 1000
     private static final int SPREAD_SIZE = 10
 
-    public List<Message> getMessagesFromThisAuthorId(Long id) {
-        return (List<Message>) Message.where {
-            author.id == id
-        }.list(sort: "dateCreated", order: "desc")
+    public List<Message> getMessagesFromThisAuthorId(Long id, MessageCriteria msgCriteria) {
+        def listMap = [sort: "dateCreated", order: "desc"]
+
+        if (msgCriteria != null && msgCriteria.getCount() > 0) {
+            listMap["max"] = msgCriteria.getCount()
+        }
+
+        List<Message> listMessage;
+        // Messages avant/après une date
+        if (msgCriteria != null && (msgCriteria.getAfterDate() != null || msgCriteria.getBeforeDate() != null)) {
+            if (msgCriteria.getAfterDate() != null) {
+                listMessage = Message.where {
+                    author.id == id && dateCreated > msgCriteria.getAfterDate()
+                }.list(listMap)
+            } else {
+                listMessage = Message.where {
+                    author.id == id && dateCreated < msgCriteria.getBeforeDate()
+                }.list(listMap)
+            }
+
+            // Afin de se protéger du cas ou plusieurs message ont exactement la même date alors on les retourne tous et le client se débrouillera
+            List<Message> listMessageSameDate
+            listMessageSameDate = Message.where {
+                author.id == id && dateCreated == (msgCriteria.getAfterDate() != null ? msgCriteria.getAfterDate() : msgCriteria.getBeforeDate())
+            }.list(listMap)
+            if (listMessageSameDate.size() > 1) {
+                listMessage.addAll(listMessageSameDate)
+            }
+        }
+        // Messages sans considération de date
+        else {
+            listMessage = Message.where { author.id == id }.list(listMap)
+        }
+        return listMessage
     }
 
-    public List<Message> getMessagesReceivedByThisUserId(Long id) {
-        return (List<Message>) Message.createCriteria().list([sort: "dateCreated", order: "desc"], {
+    public List<Message> getMessagesReceivedByThisUserId(Long id, MessageCriteria msgCriteria) {
+        def listMap = [sort: "dateCreated", order: "desc"]
+        // TODO il faut trier par date de reception et ajouter les criteres de recherche qui sont dans getMessagesFromThisAuthorId
+        if (msgCriteria != null && msgCriteria.getCount() > 0) {
+            listMap["max"] = msgCriteria.getCount()
+        }
+        return (List<Message>) Message.createCriteria().list(listMap, {
             receivedBy { eq('user.id', id) }
         })
     }
 
-    public List<Message> getMessagesSpreadByThisUserId(Long id) {
-        return (List<Message>) Message.createCriteria().list([sort: "dateCreated", order: "desc"], {
+    public List<Message> getMessagesSpreadByThisUserId(Long id, MessageCriteria msgCriteria) {
+        def listMap = [sort: "dateCreated", order: "desc"]
+        // TODO il faut trier par date de spread et ajouter les criteres de recherche qui sont dans getMessagesFromThisAuthorId
+        if (msgCriteria != null && msgCriteria.getCount() > 0) {
+            listMap["max"] = msgCriteria.getCount()
+        }
+        return (List<Message>) Message.createCriteria().list(listMap, {
             spreadBy { eq('user.id', id) }
         })
     }
