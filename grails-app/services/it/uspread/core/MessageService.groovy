@@ -13,7 +13,13 @@ class MessageService {
     private static final int MAX_MESSAGES_PER_DAY = 1000
     private static final int SPREAD_SIZE = 10
 
-    public List<Message> getMessagesFromThisAuthorId(Long id, MessageCriteria msgCriteria) {
+    /**
+     * Recherche les messages écrits par un utilisateur
+     * @param id Id de l'auteur des messages
+     * @param msgCriteria Critères de recherche supplémentaires
+     * @return liste de messages
+     */
+    public List<Message> getMessagesWritedThisAuthorId(Long id, MessageCriteria msgCriteria) {
         def listMap = [sort: "dateCreated", order: "desc"]
 
         if (msgCriteria != null && msgCriteria.getCount() > 0) {
@@ -21,56 +27,125 @@ class MessageService {
         }
 
         List<Message> listMessage;
-        // Messages avant/après une date
+        // Recherche des messages avant/après une date
         if (msgCriteria != null && (msgCriteria.getAfterDate() != null || msgCriteria.getBeforeDate() != null)) {
+            // Il est important de retourner les messages strictement égaux à la date donné en critère : ceci pour garantir un système de pagination fonctionel
+            // s'il existerai plusieurs messages ayant la même date. Le client gérera
             if (msgCriteria.getAfterDate() != null) {
                 listMessage = Message.where {
-                    author.id == id && dateCreated > msgCriteria.getAfterDate()
+                    author.id == id && dateCreated >= msgCriteria.getAfterDate()
                 }.list(listMap)
             } else {
                 listMessage = Message.where {
-                    author.id == id && dateCreated < msgCriteria.getBeforeDate()
+                    author.id == id && dateCreated <= msgCriteria.getBeforeDate()
                 }.list(listMap)
             }
-
-            // Afin de se protéger du cas ou plusieurs message ont exactement la même date alors on les retourne tous et le client se débrouillera
-            List<Message> listMessageSameDate
-            listMessageSameDate = Message.where {
-                author.id == id && dateCreated == (msgCriteria.getAfterDate() != null ? msgCriteria.getAfterDate() : msgCriteria.getBeforeDate())
-            }.list(listMap)
-            if (listMessageSameDate.size() > 1) {
-                listMessage.addAll(listMessageSameDate)
-            }
         }
-        // Messages sans considération de date
+        // Recherche des messages sans considération de date
         else {
             listMessage = Message.where { author.id == id }.list(listMap)
         }
         return listMessage
     }
 
+    /**
+     * Recherche les messages reçus par un utilisateur
+     * @param id Id de l'utilisateur recevant les messages
+     * @param msgCriteria Critères de recherche supplémentaires
+     * @return liste de messages
+     */
     public List<Message> getMessagesReceivedByThisUserId(Long id, MessageCriteria msgCriteria) {
-        def listMap = [sort: "dateCreated", order: "desc"]
-        // TODO il faut trier par date de reception et ajouter les criteres de recherche qui sont dans getMessagesFromThisAuthorId
+        def listMap = [:]
         if (msgCriteria != null && msgCriteria.getCount() > 0) {
             listMap["max"] = msgCriteria.getCount()
         }
-        return (List<Message>) Message.createCriteria().list(listMap, {
-            receivedBy { eq('user.id', id) }
-        })
+
+        List<Message> listMessage;
+        // Recherche des messages avant/après une date
+        if (msgCriteria != null && (msgCriteria.getAfterDate() != null || msgCriteria.getBeforeDate() != null)) {
+            // Il est important de retourner les messages strictement égaux à la date donné en critère : ceci pour garantir un système de pagination fonctionel
+            // s'il existerai plusieurs messages ayant la même date. Le client gérera
+            if (msgCriteria.getAfterDate() != null) {
+                listMessage =  Message.createCriteria().list(listMap, {
+                    receivedBy {
+                        eq("user.id", id)
+                        ge("date", msgCriteria.getAfterDate())
+                        order("date", "desc")
+                    }
+                })
+            } else {
+                listMessage =  Message.createCriteria().list(listMap, {
+                    receivedBy {
+                        eq('user.id', id)
+                        le("date", msgCriteria.getBeforeDate())
+                        order("date", "desc")
+                    }
+                })
+            }
+        }
+        // Recherche des messages sans considération de date
+        else {
+            listMessage =  Message.createCriteria().list(listMap, {
+                receivedBy {
+                    eq("user.id", id)
+                    order("date", "desc")
+                }
+            })
+        }
+        return listMessage
     }
 
+    /**
+     * Recherche les messages propagés par un utilisateur
+     * @param id Id de l'utilisateur propagant les messages
+     * @param msgCriteria Critères de recherche supplémentaires
+     * @return liste de messages
+     */
     public List<Message> getMessagesSpreadByThisUserId(Long id, MessageCriteria msgCriteria) {
-        def listMap = [sort: "dateCreated", order: "desc"]
-        // TODO il faut trier par date de spread et ajouter les criteres de recherche qui sont dans getMessagesFromThisAuthorId
+        def listMap = [:]
         if (msgCriteria != null && msgCriteria.getCount() > 0) {
             listMap["max"] = msgCriteria.getCount()
         }
-        return (List<Message>) Message.createCriteria().list(listMap, {
-            spreadBy { eq('user.id', id) }
-        })
+
+        List<Message> listMessage;
+        // Recherche des messages avant/après une date
+        if (msgCriteria != null && (msgCriteria.getAfterDate() != null || msgCriteria.getBeforeDate() != null)) {
+            // Il est important de retourner les messages strictement égaux à la date donné en critère : ceci pour garantir un système de pagination fonctionel
+            // s'il existerai plusieurs messages ayant la même date. Le client gérera
+            if (msgCriteria.getAfterDate() != null) {
+                listMessage =  Message.createCriteria().list(listMap, {
+                    spreadBy {
+                        eq("user.id", id)
+                        ge("date", msgCriteria.getAfterDate())
+                        order("date", "desc")
+                    }
+                })
+            } else {
+                listMessage =  Message.createCriteria().list(listMap, {
+                    spreadBy {
+                        eq('user.id', id)
+                        le("date", msgCriteria.getBeforeDate())
+                        order("date", "desc")
+                    }
+                })
+            }
+        }
+        // Recherche des messages sans considération de date
+        else {
+            listMessage =  Message.createCriteria().list(listMap, {
+                spreadBy {
+                    eq("user.id", id)
+                    order("date", "desc")
+                }
+            })
+        }
+        return listMessage
     }
 
+    /**
+     * Recherche des messages signalés
+     * @return liste de messages
+     */
     public List<Message> getReportedMessages() {
         return (List<Message>) Message.createCriteria().list {
             reports { isNotNull('id') }
@@ -152,9 +227,8 @@ class MessageService {
         message.save(flush: true)
     }
 
-    public void userReportThisMessage(User user, Message message, String type) {
+    public void userReportThisMessage(User user, Message message, ReportType reportType) {
         message.receivedBy.remove(new Spread(user))
-        ReportType reportType = ReportType.valueOf(type)
         message.reports.add(new Report(user, reportType))
         message.incrementReportType(reportType)
         message.ignoredBy.add(user)

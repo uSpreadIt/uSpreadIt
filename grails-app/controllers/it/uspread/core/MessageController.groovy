@@ -5,6 +5,7 @@ import grails.rest.RestfulController
 import it.uspread.core.json.JSONMarshaller
 import it.uspread.core.params.MessageCriteria
 import it.uspread.core.params.QueryParams
+import it.uspread.core.type.ReportType
 
 import org.springframework.http.HttpStatus
 
@@ -37,6 +38,10 @@ class MessageController extends RestfulController<Message> {
         // Lecture des paramètres
         String query = params.query
         boolean onlyDynamicVal = params.onlyDynamicVal != null ? new Boolean((String)params.onlyDynamicVal).booleanValue() : false
+        // Vérifier que si le critère date est donné alors op est fourni
+        if (params.date == null && params.op != null || params.op == null && params.date != null) {
+            render([status: HttpStatus.BAD_REQUEST])
+        }
         MessageCriteria msgCriteria = new MessageCriteria(params.count, params.date, params.op)
 
         // Si on liste les message reçus par l'utilisateur
@@ -48,7 +53,7 @@ class MessageController extends RestfulController<Message> {
         // Si on liste les messages écrits par l'utilisateur
         else if (QueryParams.MESSAGE_WRITED.equals(query)) {
             JSON.use(onlyDynamicVal ? JSONMarshaller.PUBLIC_MESSAGE_LIST_DYNAMIC : JSONMarshaller.PUBLIC_MESSAGE_LIST) {
-                respond(messageService.getMessagesFromThisAuthorId(userConnected.id, msgCriteria))
+                respond(messageService.getMessagesWritedThisAuthorId(userConnected.id, msgCriteria))
             }
         }
         // Si on liste les message propagé par l'utilisateur
@@ -151,12 +156,12 @@ class MessageController extends RestfulController<Message> {
 
         // Lecture des paramètres
         def messageId = params.messageId
-        String type = params.type
+        ReportType reportType = ReportType.valueOf(params.type)
 
         // On vérifie que le message a bien été reçu par l'utilisateur
         def (boolean receivedByThisUser, Message message) = messageService.isMessageReceivedByThisUser(userConnected, messageId)
         if (receivedByThisUser && !userConnected.isModerator()) {
-            messageService.userReportThisMessage(userConnected, message, type)
+            messageService.userReportThisMessage(userConnected, message, reportType)
             request.withFormat {
                 '*' { render([status: HttpStatus.NO_CONTENT]) }
             }
@@ -176,7 +181,7 @@ class MessageController extends RestfulController<Message> {
 
         if (userConnected.isModerator()) {
             JSON.use(JSONMarshaller.INTERNAL) {
-                respond(messageService.getMessagesFromThisAuthorId(userId, null))
+                respond(messageService.getMessagesWritedThisAuthorId(userId, null))
             }
         } else {
             forbidden()
