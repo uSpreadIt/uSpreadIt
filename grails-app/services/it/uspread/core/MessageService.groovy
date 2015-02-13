@@ -29,8 +29,7 @@ class MessageService {
         List<Message> listMessage;
         // Recherche des messages avant/après une date
         if (msgCriteria != null && (msgCriteria.getAfterDate() != null || msgCriteria.getBeforeDate() != null)) {
-            // Il est important de retourner les messages strictement égaux à la date donné en critère : ceci pour garantir un système de pagination fonctionel
-            // s'il existerai plusieurs messages ayant la même date. Le client gérera
+            // Le contrat est de retourner les messages égaux à la date donné
             if (msgCriteria.getAfterDate() != null) {
                 listMessage = Message.where {
                     author.id == id && dateCreated >= msgCriteria.getAfterDate()
@@ -63,8 +62,7 @@ class MessageService {
         List<Message> listMessage;
         // Recherche des messages avant/après une date
         if (msgCriteria != null && (msgCriteria.getAfterDate() != null || msgCriteria.getBeforeDate() != null)) {
-            // Il est important de retourner les messages strictement égaux à la date donné en critère : ceci pour garantir un système de pagination fonctionel
-            // s'il existerai plusieurs messages ayant la même date. Le client gérera
+            // Le contrat est de retourner les messages égaux à la date donné
             if (msgCriteria.getAfterDate() != null) {
                 listMessage =  Message.createCriteria().list(listMap, {
                     receivedBy {
@@ -110,8 +108,7 @@ class MessageService {
         List<Message> listMessage;
         // Recherche des messages avant/après une date
         if (msgCriteria != null && (msgCriteria.getAfterDate() != null || msgCriteria.getBeforeDate() != null)) {
-            // Il est important de retourner les messages strictement égaux à la date donné en critère : ceci pour garantir un système de pagination fonctionel
-            // s'il existerai plusieurs messages ayant la même date. Le client gérera
+            // Le contrat est de retourner les messages égaux à la date donné
             if (msgCriteria.getAfterDate() != null) {
                 listMessage =  Message.createCriteria().list(listMap, {
                     spreadBy {
