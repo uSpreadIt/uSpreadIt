@@ -2,6 +2,7 @@ package it.uspread.core
 
 import grails.transaction.Transactional
 import it.uspread.core.params.MessageCriteria
+import it.uspread.core.params.QueryParams
 import it.uspread.core.type.ReportType
 
 @Transactional
@@ -27,20 +28,23 @@ class MessageService {
         }
 
         List<Message> listMessage;
-        // Recherche des messages avant/après une date
-        if (msgCriteria != null && (msgCriteria.getAfterDate() != null || msgCriteria.getBeforeDate() != null)) {
-            // Le contrat est de retourner les messages égaux à la date donné
-            if (msgCriteria.getAfterDate() != null) {
+        // Recherche des messages avec critère de date
+        if (msgCriteria != null && msgCriteria.getOperator() != null) {
+            if (QueryParams.OPERATOR_GREATER.equals(msgCriteria.getOperator())) {
                 listMessage = Message.where {
-                    author.id == id && dateCreated >= msgCriteria.getAfterDate()
+                    author.id == id && dateCreated > msgCriteria.getDate()
+                }.list(listMap)
+            } else if (QueryParams.OPERATOR_GREATER_OR_EQUALS.equals(msgCriteria.getOperator())) {
+                listMessage = Message.where {
+                    author.id == id && dateCreated >= msgCriteria.getDate()
                 }.list(listMap)
             } else {
                 listMessage = Message.where {
-                    author.id == id && dateCreated <= msgCriteria.getBeforeDate()
+                    author.id == id && dateCreated < msgCriteria.getDate()
                 }.list(listMap)
             }
         }
-        // Recherche des messages sans considération de date
+        // Recherche des messages sans critère de date
         else {
             listMessage = Message.where { author.id == id }.list(listMap)
         }
@@ -60,14 +64,21 @@ class MessageService {
         }
 
         List<Message> listMessage;
-        // Recherche des messages avant/après une date
-        if (msgCriteria != null && (msgCriteria.getAfterDate() != null || msgCriteria.getBeforeDate() != null)) {
-            // Le contrat est de retourner les messages égaux à la date donné
-            if (msgCriteria.getAfterDate() != null) {
+        // Recherche des messages avec critère de date
+        if (msgCriteria != null && msgCriteria.getOperator() != null) {
+            if (QueryParams.OPERATOR_GREATER.equals(msgCriteria.getOperator())) {
                 listMessage =  Message.createCriteria().list(listMap, {
                     receivedBy {
                         eq("user.id", id)
-                        ge("date", msgCriteria.getAfterDate())
+                        gt("date", msgCriteria.getDate())
+                        order("date", "desc")
+                    }
+                })
+            } else if (QueryParams.OPERATOR_GREATER_OR_EQUALS.equals(msgCriteria.getOperator())) {
+                listMessage =  Message.createCriteria().list(listMap, {
+                    receivedBy {
+                        eq("user.id", id)
+                        ge("date", msgCriteria.getDate())
                         order("date", "desc")
                     }
                 })
@@ -75,13 +86,13 @@ class MessageService {
                 listMessage =  Message.createCriteria().list(listMap, {
                     receivedBy {
                         eq('user.id', id)
-                        le("date", msgCriteria.getBeforeDate())
+                        lt("date", msgCriteria.getDate())
                         order("date", "desc")
                     }
                 })
             }
         }
-        // Recherche des messages sans considération de date
+        // Recherche des messages sans critère de date
         else {
             listMessage =  Message.createCriteria().list(listMap, {
                 receivedBy {
@@ -106,14 +117,21 @@ class MessageService {
         }
 
         List<Message> listMessage;
-        // Recherche des messages avant/après une date
-        if (msgCriteria != null && (msgCriteria.getAfterDate() != null || msgCriteria.getBeforeDate() != null)) {
-            // Le contrat est de retourner les messages égaux à la date donné
-            if (msgCriteria.getAfterDate() != null) {
+        // Recherche des messages avec critère de date
+        if (msgCriteria != null && msgCriteria.getOperator() != null) {
+            if (QueryParams.OPERATOR_GREATER.equals(msgCriteria.getOperator())) {
                 listMessage =  Message.createCriteria().list(listMap, {
                     spreadBy {
                         eq("user.id", id)
-                        ge("date", msgCriteria.getAfterDate())
+                        gt("date", msgCriteria.getDate())
+                        order("date", "desc")
+                    }
+                })
+            } else if (QueryParams.OPERATOR_GREATER_OR_EQUALS.equals(msgCriteria.getOperator())) {
+                listMessage =  Message.createCriteria().list(listMap, {
+                    spreadBy {
+                        eq("user.id", id)
+                        ge("date", msgCriteria.getDate())
                         order("date", "desc")
                     }
                 })
@@ -121,13 +139,13 @@ class MessageService {
                 listMessage =  Message.createCriteria().list(listMap, {
                     spreadBy {
                         eq('user.id', id)
-                        le("date", msgCriteria.getBeforeDate())
+                        lt("date", msgCriteria.getDate())
                         order("date", "desc")
                     }
                 })
             }
         }
-        // Recherche des messages sans considération de date
+        // Recherche des messages sans critère de date
         else {
             listMessage =  Message.createCriteria().list(listMap, {
                 spreadBy {

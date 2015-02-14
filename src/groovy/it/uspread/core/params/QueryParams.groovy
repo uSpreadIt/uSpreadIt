@@ -11,8 +11,9 @@ class QueryParams {
     public static final String MESSAGE_WRITED = "AUTHOR"
     public static final String MESSAGE_SPREAD = "SPREAD"
 
-    public static final String AFTER_OR_EQUALS = "after"
-    public static final String BEFORE_OR_EQUALS = "before"
+    public static final String OPERATOR_GREATER = "gt"
+    public static final String OPERATOR_GREATER_OR_EQUALS = "ge"
+    public static final String OPERATOR_LOWER = "lt"
 
     /** Formattage utilisé pour les dates paramètre de requete (date, heure, minute, milliseconde et timezone) */
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSSZ")
