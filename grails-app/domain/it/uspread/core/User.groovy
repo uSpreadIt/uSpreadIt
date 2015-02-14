@@ -72,22 +72,6 @@ class User {
         return messages.any() { Message msg -> msg.isReported()}
     }
 
-    /**
-     * Par sécurité : pour ne pas autoriser l'envoi dans le message json de ces champs
-     * TODO à supprimer lorsque le mapping aura été mis en place USPREAD-48
-     * @return
-     */
-    def clearForCreation() {
-        accountExpired = false
-        accountLocked = false
-        enabled = true
-        messages = new HashSet<Message>()
-        passwordExpired = false
-        score = 0
-        reportsSent = 0
-        reportsReceived = 0
-    }
-
     String toString(){
         return null != email ? email : "<EMPTY>"
     }

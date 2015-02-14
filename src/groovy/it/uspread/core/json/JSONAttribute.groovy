@@ -6,6 +6,7 @@ package it.uspread.core.json
 class JSONAttribute {
     public static final String USER_ID = "id"
     public static final String USER_USERNAME = "username"
+    public static final String USER_PASSWORD = "password"
     public static final String USER_EMAIL = "email"
     public static final String USER_ROLE = "role"
     public static final String USER_REPORTSSENT = "reportsSent"

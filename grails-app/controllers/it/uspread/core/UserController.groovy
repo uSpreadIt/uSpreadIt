@@ -2,6 +2,7 @@ package it.uspread.core
 
 import grails.converters.JSON
 import grails.rest.RestfulController
+import it.uspread.core.json.JSONAttribute
 import it.uspread.core.json.JSONMarshaller
 
 import org.springframework.http.HttpStatus
@@ -58,7 +59,7 @@ class UserController extends RestfulController<User> {
     def updateUserConnected(){
         def instance = (User) springSecurityService.currentUser
 
-        instance.properties = getObjectToBind()
+        updateFromRequest(instance)
 
         if (instance.hasErrors()) {
             respond(instance.errors) // STATUS CODE 422
@@ -102,7 +103,6 @@ class UserController extends RestfulController<User> {
             return
         }
         User instance = createResource()
-        instance.clearForCreation()
         instance.validate()
         if (instance.hasErrors()) {
             respond(instance.errors, view:'create') // STATUS CODE 422
@@ -128,7 +128,6 @@ class UserController extends RestfulController<User> {
             return
         }
         User instance = createResource()
-        instance.clearForCreation()
         instance.validate()
         if (instance.hasErrors()) {
             respond(instance.errors, view:'create') // STATUS CODE 422
@@ -164,7 +163,7 @@ class UserController extends RestfulController<User> {
             return
         }
 
-        instance.properties = getObjectToBind()
+        updateFromRequest(instance)
 
         if (instance.hasErrors()) {
             respond(instance.errors) // STATUS CODE 422
@@ -216,5 +215,19 @@ class UserController extends RestfulController<User> {
         JSON.use(JSONMarshaller.PUBLIC_USER_SCORE) {
             respond(userService.getTopUsers())
         }
+    }
+
+    @Override
+    protected getObjectToBind() {
+        User user = new User()
+        updateFromRequest(user)
+        return user
+    }
+
+    private void updateFromRequest(User user) {
+        user.username = request.JSON.opt(JSONAttribute.USER_USERNAME) ?: user.username
+        user.password = request.JSON.opt(JSONAttribute.USER_PASSWORD) ?: user.password
+        user.email = request.JSON.opt(JSONAttribute.USER_EMAIL) ?: user.email
+        user.iosPushToken = request.JSON.opt(JSONAttribute.USER_IOSPUSHTOKEN) ?: user.iosPushToken
     }
 }

@@ -83,20 +83,6 @@ class Message {
     }
 
     /**
-     * Par sécurité : pour ne pas autoriser l'envoi dans le message json de ces champs
-     * TODO à supprimer lorsque le mapping aura été mis en place USPREAD-48
-     * @return
-     */
-    def clearForCreation(){
-        receivedBy = new HashSet<Spread>()
-        ignoredBy = new HashSet<User>()
-        spreadBy = new HashSet<Spread>()
-        reports = new HashSet<Report>()
-        nbSpread = 0
-        id = null
-    }
-
-    /**
      * Recherche de la date de réception du message pour l'utilisateur donné
      * @param user Un utilisateur
      * @return Date de réception ou null si non reçus par l'utilisateur

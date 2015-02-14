@@ -2,6 +2,7 @@ package it.uspread.core
 
 import grails.converters.JSON
 import grails.rest.RestfulController
+import it.uspread.core.json.JSONAttribute
 import it.uspread.core.json.JSONMarshaller
 import it.uspread.core.params.MessageCriteria
 import it.uspread.core.params.QueryParams
@@ -85,7 +86,6 @@ class MessageController extends RestfulController<Message> {
         }
 
         Message instance = createResource()
-        instance.clearForCreation()
         // Association de l'auteur du message (Car non renseigné dans le JSON)
         instance.author = userConnected
         instance.validate()
@@ -289,6 +289,16 @@ class MessageController extends RestfulController<Message> {
 
     def forbidden() {
         render([status: HttpStatus.FORBIDDEN])
+    }
+
+    @Override
+    protected getObjectToBind() {
+        Message message = new Message()
+        message.text = request.JSON.opt(JSONAttribute.MESSAGE_TEXT)
+        message.textColor = request.JSON.opt(JSONAttribute.MESSAGE_TEXTCOLOR) ?: message.textColor
+        message.backgroundColor = request.JSON.opt(JSONAttribute.MESSAGE_BACKGROUNDCOLOR) ?:  message.backgroundColor
+        message.backgroundType = request.JSON.opt(JSONAttribute.MESSAGE_BACKGROUNDTYPE) ?: message.backgroundType
+        return message
     }
 
 }
