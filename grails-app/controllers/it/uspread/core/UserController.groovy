@@ -200,7 +200,7 @@ class UserController extends RestfulController<User> {
     }
 
     /**
-     * Pour l'utilisateur connecté indique des choses : pour le moment si le quota de message est atteint
+     * Retourne le status de l'utilisateur connecté
      * @return
      */
     def status() {
@@ -208,7 +208,13 @@ class UserController extends RestfulController<User> {
         if (user.isModerator()) {
             return
         }
-        render([text: '{"quotaReached":"' + messageService.isMessageCreationLimitReached(user) + '"}', contentType: "application/json", encoding: "UTF-8"])
+
+        // Lecture des paramètres
+        boolean quotaOnly = params.quotaOnly != null ? new Boolean((String)params.quotaOnly).booleanValue() : false
+
+        JSON.use(quotaOnly ? JSONMarshaller.PUBLIC_STATUS_QUOTA : JSONMarshaller.PUBLIC_STATUS) {
+            respond(messageService.getUserMessagesStatus(user, quotaOnly))
+        }
     }
 
     def topUsers() {

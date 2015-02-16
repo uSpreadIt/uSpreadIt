@@ -25,4 +25,10 @@ class JSONAttribute {
     public static final String MESSAGE_BACKGROUNDCOLOR = "backgroundColor"
     public static final String MESSAGE_BACKGROUNDTYPE = "backgroundType"
     public static final String MESSAGE_MAINREPORTTYPE = "mainReportType"
+
+    public static final String STATUS_QUOTAREACHED = "quotaReached"
+    public static final String STATUS_NBMESSAGEWRITED = "nbMessageWrited"
+    public static final String STATUS_NBMESSAGESPREAD = "nbMessageSpread"
+    public static final String STATUS_NBMESSAGEIGNORED = "nbMessageIgnored"
+    public static final String STATUS_NBMESSAGEREPORTED = "nbMessageReported"
 }

@@ -1,6 +1,7 @@
 package it.uspread.core
 
 import grails.transaction.Transactional
+import it.uspread.core.data.Status
 import it.uspread.core.params.MessageCriteria
 import it.uspread.core.params.QueryParams
 import it.uspread.core.type.ReportType
@@ -165,6 +166,23 @@ class MessageService {
         return (List<Message>) Message.createCriteria().list {
             reports { isNotNull('id') }
         }
+    }
+
+    /**
+     * Retourne les informations de status de l'utilisateur vis à vis des messages
+     * @param user
+     * @return
+     */
+    def getUserMessagesStatus(User user, boolean quotaOnly) {
+        Status status = new Status()
+        status.setQuotaReached(isMessageCreationLimitReached(user))
+        if (!quotaOnly) {
+            status.setNbMessageWrited(Message.createCriteria().count({eq("author.id", user.id)}))
+            status.setNbMessageSpread(Message.createCriteria().count({spreadBy{eq("user.id", user.id)}}))
+            status.setNbMessageIgnored(Message.createCriteria().count({ignoredBy{eq("id", user.id)}}))
+            status.setNbMessageReported(Message.createCriteria().count({reports{eq("reporter.id", user.id)}}))
+        }
+        return status
     }
 
     /**

@@ -3,6 +3,7 @@ package it.uspread.core.json
 import grails.converters.JSON
 import it.uspread.core.Message
 import it.uspread.core.User
+import it.uspread.core.data.Status
 import it.uspread.core.type.ReportType
 import it.uspread.core.type.RoleType
 
@@ -33,6 +34,11 @@ class JSONMarshaller {
     public static final String PUBLIC_MESSAGE_CREATION = "publicAPI-Message-Creation"
     /** Configuration pour clients public : Message limité aux informations de retour d'une propagation */
     public static final String PUBLIC_MESSAGE_SPREAD = "publicAPI-Message-Spread"
+
+    /** Configuration pour clients public : Statut de l'utilisateur */
+    public static final String PUBLIC_STATUS = "publicAPI-Status"
+    /** Configuration pour clients public : Statut de l'utilisateur limité aux informations de quota */
+    public static final String PUBLIC_STATUS_QUOTA = "publicAPI-Status-Quota"
 
     /** Configuration pour clients interne */
     public static final String INTERNAL = "internalApi"
@@ -177,6 +183,28 @@ class JSONMarshaller {
                 output[JSONAttribute.MESSAGE_ID] = msg.id
                 output[JSONAttribute.MESSAGE_DATESPREAD] = DATE_FORMAT.format(msg.getDateSpread(msg.getSpringSecurityService().currentUser))
                 output[JSONAttribute.MESSAGE_NBSPREAD] = msg.nbSpread
+                return output;
+            }
+        }
+
+        // Configuration pour clients public : Statut de l'utilisateur
+        JSON.createNamedConfig(PUBLIC_STATUS) {
+            it.registerObjectMarshaller(Status) { Status status ->
+                def output = [:]
+                output[JSONAttribute.STATUS_QUOTAREACHED] = status.quotaReached
+                output[JSONAttribute.STATUS_NBMESSAGEWRITED] = status.nbMessageWrited
+                output[JSONAttribute.STATUS_NBMESSAGESPREAD] = status.nbMessageSpread
+                output[JSONAttribute.STATUS_NBMESSAGEIGNORED] = status.nbMessageIgnored
+                output[JSONAttribute.STATUS_NBMESSAGEREPORTED] = status.nbMessageReported
+                return output;
+            }
+        }
+
+        // Configuration pour clients public : Statut de l'utilisateur limité à l'information de quota
+        JSON.createNamedConfig(PUBLIC_STATUS_QUOTA) {
+            it.registerObjectMarshaller(Status) { Status status ->
+                def output = [:]
+                output[JSONAttribute.STATUS_QUOTAREACHED] = status.quotaReached
                 return output;
             }
         }
