@@ -12,6 +12,8 @@ class JSONAttribute {
     public static final String USER_REPORTSSENT = "reportsSent"
     public static final String USER_REPORTRECEIVED = "reportsReceived"
     public static final String USER_MODERATIONREQUIRED = "moderationRequired"
+    public static final String USER_PUSHTOKEN = "pushToken"
+    public static final String USER_DEVICE = "device"
     public static final String USER_IOSPUSHTOKEN = "iosPushToken"
 
     public static final String MESSAGE_ID = "id"

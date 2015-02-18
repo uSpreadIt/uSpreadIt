@@ -27,6 +27,7 @@ class UrlMappings {
         "/rest/users/connected"(controller:"user", action:"getUserConnected", method:"GET")
         "/rest/users/connected"(controller:"user", action:"updateUserConnected", method:"PUT")
         "/rest/users/connected"(controller:"user", action:"deleteUserConnected", method:"DELETE")
+        "/rest/users/connected/pushtoken"(controller:"user", action:"registerPushToken", method:"POST")
         "/rest/users/connected/status"(controller:"user", action:"status", method:"GET")
 
         "/rest/users/moderator"(controller:"user", action:"createModerator", method:"POST")

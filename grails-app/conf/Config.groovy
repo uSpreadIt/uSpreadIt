@@ -152,4 +152,4 @@ grails.plugin.springsecurity.filterChain.chainMap = [
 android.gcm.api.key = 'AIzaSyBi4Hdxi28HlbtZ8RKhlF2SYumzcHPJukU'
 android.gcm.time.to.live=1209600 // 2 semaine : Nombre de seconde avant d'abandonner le message
 android.gcm.delay.'while'.idle=true
-android.gcm.retries=1
+android.gcm.retries=2

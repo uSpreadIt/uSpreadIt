@@ -11,6 +11,9 @@ class QueryParams {
     public static final String MESSAGE_WRITED = "AUTHOR"
     public static final String MESSAGE_SPREAD = "SPREAD"
 
+    public static final String DEVICE_ANDROID = "ANDROID"
+    public static final String DEVICE_IOS = "IOS"
+
     public static final String OPERATOR_GREATER = "gt"
     public static final String OPERATOR_GREATER_OR_EQUALS = "ge"
     public static final String OPERATOR_LOWER = "lt"

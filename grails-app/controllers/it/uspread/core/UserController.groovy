@@ -4,6 +4,7 @@ import grails.converters.JSON
 import grails.rest.RestfulController
 import it.uspread.core.json.JSONAttribute
 import it.uspread.core.json.JSONMarshaller
+import it.uspread.core.params.QueryParams
 
 import org.springframework.http.HttpStatus
 
@@ -217,10 +218,38 @@ class UserController extends RestfulController<User> {
         }
     }
 
+    /**
+     * Enregistrement d'un token PUSH pour l'utilisateur connecté
+     * @return
+     */
+    def registerPushToken() {
+        def user = (User) springSecurityService.currentUser
+        if (null != user && !user.isModerator()) {
+            String device = request.JSON.opt(JSONAttribute.USER_DEVICE) ?: null
+            String pushToken = request.JSON.opt(JSONAttribute.USER_PUSHTOKEN) ?: null
+            if (QueryParams.DEVICE_ANDROID.equals(device) && pushToken != null) {
+                userService.addAndroidPushToken(user, pushToken)
+                render([status: HttpStatus.OK])
+            } else if (QueryParams.DEVICE_IOS.equals(device) && pushToken != null) {
+                // TODO
+                render([status: HttpStatus.OK])
+            }
+            else {
+                render([status: HttpStatus.BAD_REQUEST])
+            }
+        } else {
+            forbidden()
+        }
+    }
+
     def topUsers() {
         JSON.use(JSONMarshaller.PUBLIC_USER_SCORE) {
             respond(userService.getTopUsers())
         }
+    }
+
+    def forbidden() {
+        render([status: HttpStatus.FORBIDDEN])
     }
 
     @Override
