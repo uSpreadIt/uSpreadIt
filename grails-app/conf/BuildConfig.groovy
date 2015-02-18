@@ -40,6 +40,8 @@ grails.project.dependency.resolution = {
         mavenLocal()
         grailsCentral()
         mavenCentral()
+        mavenRepo "https://github.com/slorber/gcm-server-repository/raw/master/releases/"
+
         // uncomment these (or add new ones) to enable remote dependency resolution from public Maven repositories
         //mavenRepo "http://repository.codehaus.org"
         //mavenRepo "http://download.java.net/maven/2/"
@@ -71,6 +73,7 @@ grails.project.dependency.resolution = {
         compile ":asset-pipeline:1.9.9"
         compile ':spring-security-core:2.0-RC4'
         //compile ':mongodb:3.0.2'
+        compile ":android-gcm:0.2"
 
         // plugins needed at runtime but not for compilation
         runtime ":hibernate4:4.3.6.1" // or ":hibernate:3.6.10.17"

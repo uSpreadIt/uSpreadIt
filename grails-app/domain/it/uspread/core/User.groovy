@@ -22,7 +22,7 @@ class User {
 
     String iosPushToken
 
-    static hasMany = [messages: Message]
+    static hasMany = [messages: Message, androidPushTokens: String]
     static mappedBy = [messages: 'author']
 
     static transients = ['springSecurityService']

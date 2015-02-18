@@ -10,6 +10,7 @@ import it.uspread.core.type.ReportType
 class MessageService {
 
     def APNSMessageService
+    def androidGcmMessageService
 
     // TODO à paramétrer
     private static final int MAX_MESSAGES_PER_DAY = 1000
@@ -229,7 +230,10 @@ class MessageService {
             //Test rebase
         }
         message.save(flush: true)
+
+        // Envoie des notifications PUSH
         this.APNSMessageService.notifySentTo(recipients)
+        androidGcmMessageService.notifyMessageSentTo(recipients)
     }
 
     public List isMessageReceivedByThisUser(user, messageId) {
@@ -269,5 +273,19 @@ class MessageService {
         user.reportsSent++
         message.save(flush: true)
         user.save(flush: true)
+    }
+
+    /**
+     * Suppression d'un message.<br>
+     * S'accompagne d'une notification PUSH pour indiquer aux utilisateurs ayant reçus ou propagé ce message qu'il doit disparaitre
+     * @param message
+     */
+    public void deleteMessage(Message message) {
+        List<User> viewer = new ArrayList<>()
+        viewer.addAll(message.receivedBy.collect { it.user.id })
+        viewer.addAll(message.spreadBy.collect { it.user.id })
+        viewer.removeAll([null])
+        message.delete(flush: true)
+        androidGcmMessageService.notifyMessageDeleteTo(viewer, message)
     }
 }

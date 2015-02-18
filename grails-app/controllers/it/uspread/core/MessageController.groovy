@@ -139,10 +139,7 @@ class MessageController extends RestfulController<Message> {
         def (boolean receivedByThisUser, Message message) = messageService.isMessageReceivedByThisUser(userConnected, messageId)
         if (receivedByThisUser && !userConnected.isModerator()) {
             messageService.userIgnoreThisMessage(userConnected, message)
-
-            request.withFormat {
-                '*' { render([status: HttpStatus.NO_CONTENT]) }
-            }
+            render([status: HttpStatus.NO_CONTENT])
         } else {
             notFound()
         }
@@ -162,9 +159,7 @@ class MessageController extends RestfulController<Message> {
         def (boolean receivedByThisUser, Message message) = messageService.isMessageReceivedByThisUser(userConnected, messageId)
         if (receivedByThisUser && !userConnected.isModerator()) {
             messageService.userReportThisMessage(userConnected, message, reportType)
-            request.withFormat {
-                '*' { render([status: HttpStatus.NO_CONTENT]) }
-            }
+            render([status: HttpStatus.NO_CONTENT])
         } else {
             notFound()
         }
@@ -269,11 +264,12 @@ class MessageController extends RestfulController<Message> {
 
     @Override
     def delete() {
-        Message instance = queryForResource(params.id)
-        if (null != instance) {
+        Message message = queryForResource(params.id)
+        if (null != message) {
             User userConnected = (User) springSecurityService.currentUser
-            if (instance.isUserAllowedToDelete(userConnected)) {
-                super.delete()
+            if (message.isUserAllowedToDelete(userConnected)) {
+                messageService.deleteMessage(message)
+                render([status: HttpStatus.NO_CONTENT])
             } else {
                 forbidden()
             }
