@@ -30,11 +30,10 @@ class AndroidGcmPushService {
             List<String> listAndroidPushtoken = user.androidPushTokens.collect()
             if (listAndroidPushtoken != null && !listAndroidPushtoken.isEmpty()) {
                 def data = [type: "SYNC", "${JSONAttribute.USER_USERNAME}": user.username]
+                def result = androidGcmService.sendMessage("New Message ${JSONAttribute.USER_USERNAME}", data, listAndroidPushtoken)
                 if (listAndroidPushtoken.size() > 1) {
-                    MulticastResult results = androidGcmService.sendMulticastCollapseMessage("New Message ${JSONAttribute.USER_USERNAME}", data, listAndroidPushtoken)
-                    analyseMultiCastResult(results, listAndroidPushtoken)
+                    analyseMultiCastResult(result, listAndroidPushtoken)
                 } else {
-                    Result result = androidGcmService.sendCollapseMessage("New Message ${JSONAttribute.USER_USERNAME}", data, listAndroidPushtoken.get(0))
                     analyseResult(result, listAndroidPushtoken.get(0))
                 }
             }
@@ -51,11 +50,10 @@ class AndroidGcmPushService {
             List<String> listAndroidPushtoken = user.androidPushTokens.collect()
             if (listAndroidPushtoken != null && !listAndroidPushtoken.isEmpty()) {
                 def data = [type: "DELETE", "${JSONAttribute.USER_USERNAME}": user.username, "${JSONAttribute.MESSAGE_ID}": message.id]
+                def result = androidGcmService.sendMessage(data, listAndroidPushtoken)
                 if (listAndroidPushtoken.size() > 1) {
-                    MulticastResult results = androidGcmService.sendMulticastInstantMessage(data, listAndroidPushtoken)
-                    analyseMultiCastResult(results, listAndroidPushtoken)
+                    analyseMultiCastResult(result, listAndroidPushtoken)
                 } else {
-                    Result result = androidGcmService.sendInstantMessage(data, listAndroidPushtoken.get(0))
                     analyseResult(result, listAndroidPushtoken.get(0))
                 }
             }
