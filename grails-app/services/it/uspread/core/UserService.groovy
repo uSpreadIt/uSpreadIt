@@ -52,12 +52,6 @@ class UserService {
         user.delete(flush: true)
     }
 
-    public void addAndroidPushToken(User user, String androidPushToken) {
-        if (!user.androidPushTokens.contains(androidPushToken)) {
-            user.androidPushTokens.add(androidPushToken)
-        }
-    }
-
     public List<User> getTopUsers() {
         return User.list([max: TOP_SIZE, sort: 'score', order: 'desc'])
     }

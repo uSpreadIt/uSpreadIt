@@ -19,9 +19,34 @@ class UserController extends RestfulController<User> {
     def springSecurityService
     def userService
     def messageService
+    def androidGcmPushService
 
     UserController() {
         super(User)
+    }
+
+    def login() {
+        // FIXME le code changera quand on aura un système de login : pour le moment pas de login donc l'user connecté viens des credential envoyé a chaque requete
+        def user = (User) springSecurityService.currentUser
+        if (null != user){
+            if (!user.isModerator()) {
+                String device = params.device;
+                String pushToken = params.pushToken
+                if (QueryParams.DEVICE_ANDROID.equals(device) && pushToken != null) {
+                    androidGcmPushService.reservePushTokenToUser(user, pushToken)
+                    render([status: HttpStatus.OK])
+                } else if (QueryParams.DEVICE_IOS.equals(device) && pushToken != null) {
+                    // TODO
+                    render([status: HttpStatus.OK])
+                }
+                else {
+                    render([status: HttpStatus.BAD_REQUEST])
+                }
+            }
+        }
+        else {
+            forbidden()
+        }
     }
 
     /**
@@ -47,11 +72,7 @@ class UserController extends RestfulController<User> {
         if (null != instance){
             userService.deleteUser(instance)
         }
-        request.withFormat {
-            '*'{
-                render([status: HttpStatus.NO_CONTENT])
-            }
-        }
+        render([status: HttpStatus.NO_CONTENT])
     }
 
     /**
@@ -68,11 +89,7 @@ class UserController extends RestfulController<User> {
         }
 
         instance.save flush:true
-        request.withFormat {
-            '*'{
-                render([status: HttpStatus.OK])
-            }
-        }
+        render([status: HttpStatus.OK])
     }
 
     @Override
@@ -219,7 +236,7 @@ class UserController extends RestfulController<User> {
     }
 
     /**
-     * Enregistrement d'un token PUSH pour l'utilisateur connecté
+     * Enregistrement d'un nouveau token PUSH pour l'utilisateur connecté
      * @return
      */
     def registerPushToken() {
@@ -228,7 +245,7 @@ class UserController extends RestfulController<User> {
             String device = request.JSON.opt(JSONAttribute.USER_DEVICE) ?: null
             String pushToken = request.JSON.opt(JSONAttribute.USER_PUSHTOKEN) ?: null
             if (QueryParams.DEVICE_ANDROID.equals(device) && pushToken != null) {
-                userService.addAndroidPushToken(user, pushToken)
+                androidGcmPushService.registerPushToken(user, pushToken)
                 render([status: HttpStatus.OK])
             } else if (QueryParams.DEVICE_IOS.equals(device) && pushToken != null) {
                 // TODO

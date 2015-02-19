@@ -10,7 +10,7 @@ import it.uspread.core.type.ReportType
 class MessageService {
 
     def APNSMessageService
-    def androidGcmMessageService
+    def androidGcmPushService
 
     // TODO à paramétrer
     private static final int MAX_MESSAGES_PER_DAY = 1000
@@ -233,7 +233,7 @@ class MessageService {
 
         // Envoie des notifications PUSH
         this.APNSMessageService.notifySentTo(recipients)
-        androidGcmMessageService.notifyMessageSentTo(recipients)
+        androidGcmPushService.notifyMessageSentTo(recipients)
     }
 
     public List isMessageReceivedByThisUser(user, messageId) {
@@ -286,6 +286,6 @@ class MessageService {
         viewer.addAll(message.spreadBy.collect { it.user.id })
         viewer.removeAll([null])
         message.delete(flush: true)
-        androidGcmMessageService.notifyMessageDeleteTo(viewer, message)
+        androidGcmPushService.notifyMessageDeleteTo(viewer, message)
     }
 }

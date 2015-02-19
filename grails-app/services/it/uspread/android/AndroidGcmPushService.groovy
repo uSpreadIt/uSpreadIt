@@ -9,23 +9,28 @@ import com.google.android.gcm.server.Constants
 import com.google.android.gcm.server.MulticastResult
 import com.google.android.gcm.server.Result
 
+/**
+ * Service du système de notification PUSH Android.
+ * FIXME optimisation des requetes car là c'est pas ok sauf si Grails est super bon pour comprendre
+ */
 @Transactional
-class AndroidGcmMessageService {
+class AndroidGcmPushService {
 
+    /** Spring inject : androidGcmService */
     def androidGcmService
+    /** Spring inject : grailsApplication */
     def grailsApplication
-    def userService
 
     /**
      * Lance une notification push pour indiquer aux différents clients android des utilisateurs concernés qu'un nouveau message est disponible.
      * @param listUser Les utilisateurs recevant un nouveau message
      */
-    def notifyMessageSentTo(List<User> listUser) {
+    public void notifyMessageSentTo(List<User> listUser) {
         for (User user : listUser) {
             List<String> listAndroidPushtoken = user.androidPushTokens.collect()
             if (listAndroidPushtoken != null && !listAndroidPushtoken.isEmpty()) {
-                def data = ["${JSONAttribute.USER_ID}": user.id]
-                MulticastResult results = androidGcmService.sendMulticastCollapseMessage("New Message", data, listAndroidPushtoken)
+                def data = ["${JSONAttribute.USER_USERNAME}": user.id]
+                MulticastResult results = androidGcmService.sendMulticastCollapseMessage("New Message ${JSONAttribute.USER_USERNAME}", data, listAndroidPushtoken)
                 analyseResult(results, listAndroidPushtoken)
             }
         }
@@ -36,14 +41,36 @@ class AndroidGcmMessageService {
      * @param listUser les utilisateurs pouvant visualiser ce message (Exclus l'auteur du message)
      * @param message le message qui est supprimé
      */
-    def notifyMessageDeleteTo(List<User> listUser, Message message) {
+    public void notifyMessageDeleteTo(List<User> listUser, Message message) {
         for (User user : listUser) {
             List<String> listAndroidPushtoken = user.androidPushTokens.collect()
             if (listAndroidPushtoken != null && !listAndroidPushtoken.isEmpty()) {
-                def data = ["${JSONAttribute.USER_ID}": user.id, "${JSONAttribute.MESSAGE_ID}": message.id]
+                def data = ["${JSONAttribute.USER_USERNAME}": user.id, "${JSONAttribute.MESSAGE_ID}": message.id]
                 MulticastResult results = androidGcmService.sendMulticastInstantMessage(data, listAndroidPushtoken)
                 analyseResult(results, listAndroidPushtoken)
             }
+        }
+    }
+
+    /**
+     * Réserve le push token donné exclusivement à l'utilisateur donné
+     * @param user un utilisateur
+     * @param pushToken le token
+     */
+    public void reservePushTokenToUser(User user, String pushToken) {
+        // On le retire des autres user
+        List<User> listUser = User.findAll("from User usr where usr.id <> :idUsr and :token in elements(usr.androidPushTokens)", [token: pushToken, idUsr: user.id])
+        for (User usr : listUser) {
+            usr.androidPushTokens.remove(pushToken)
+        }
+        // On reaffecte le push token à l'user demandé
+        registerPushToken(user, pushToken)
+    }
+
+    /** Enregistrement d'un nouveau token pour l'utilisateur */
+    public void registerPushToken(User user, String androidPushToken) {
+        if (!user.androidPushTokens.contains(androidPushToken)) {
+            user.androidPushTokens.add(androidPushToken)
         }
     }
 

@@ -24,6 +24,7 @@ class UrlMappings {
 
         // Déclaration des URL d'accès aux utilisateurs
         "/rest/signup"(controller:"user", action:"save", method:"POST")
+        "/rest/login"(controller:"user", action:"login", method:"POST")
         "/rest/users/connected"(controller:"user", action:"getUserConnected", method:"GET")
         "/rest/users/connected"(controller:"user", action:"updateUserConnected", method:"PUT")
         "/rest/users/connected"(controller:"user", action:"deleteUserConnected", method:"DELETE")
