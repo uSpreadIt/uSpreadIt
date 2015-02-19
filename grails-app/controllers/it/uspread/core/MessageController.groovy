@@ -98,7 +98,12 @@ class MessageController extends RestfulController<Message> {
         instance.save([flush: true])
 
         // propagation initiale
-        messageService.spreadIt(instance, true)
+        try {
+            messageService.spreadIt(instance, true)
+        } catch (Exception e) {
+            respond 'error':e.getMessage(),status:403
+            return
+        }
 
         JSON.use(JSONMarshaller.PUBLIC_MESSAGE_CREATION) {
             respond(instance)
