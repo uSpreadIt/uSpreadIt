@@ -273,7 +273,12 @@ class MessageController extends RestfulController<Message> {
         if (null != message) {
             User userConnected = (User) springSecurityService.currentUser
             if (message.isUserAllowedToDelete(userConnected)) {
-                messageService.deleteMessage(message)
+                try {
+                    messageService.deleteMessage(message)
+                } catch (Exception e) {
+                    respond 'error':e.getMessage(),status:403
+                    return
+                }
                 render([status: HttpStatus.NO_CONTENT])
             } else {
                 forbidden()
