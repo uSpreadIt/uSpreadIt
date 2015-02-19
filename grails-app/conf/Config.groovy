@@ -139,6 +139,7 @@ grails.plugin.springsecurity.interceptUrlMap = [
     '/rest/users/moderator':          ['ROLE_MODERATOR'],
     '/rest/userlist':                 ['ROLE_MODERATOR'],
     '/rest/users/connected':          ['isAuthenticated()'],
+    '/rest/users/connected/pushtoken':['isAuthenticated()'],
     '/rest/users/connected/status':   ['isAuthenticated()'],
     '/rest/users/**':                 ['ROLE_MODERATOR'],
     '/rest/messages/reported':        ['ROLE_MODERATOR'],
