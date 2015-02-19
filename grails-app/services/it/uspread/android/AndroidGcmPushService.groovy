@@ -29,7 +29,7 @@ class AndroidGcmPushService {
         for (User user : listUser) {
             List<String> listAndroidPushtoken = user.androidPushTokens.collect()
             if (listAndroidPushtoken != null && !listAndroidPushtoken.isEmpty()) {
-                def data = ["${JSONAttribute.USER_USERNAME}": user.id]
+                def data = [type: "SYNC", "${JSONAttribute.USER_USERNAME}": user.id]
                 if (listAndroidPushtoken.size() > 1) {
                     MulticastResult results = androidGcmService.sendMulticastCollapseMessage("New Message ${JSONAttribute.USER_USERNAME}", data, listAndroidPushtoken)
                     analyseMultiCastResult(results, listAndroidPushtoken)
@@ -50,7 +50,7 @@ class AndroidGcmPushService {
         for (User user : listUser) {
             List<String> listAndroidPushtoken = user.androidPushTokens.collect()
             if (listAndroidPushtoken != null && !listAndroidPushtoken.isEmpty()) {
-                def data = ["${JSONAttribute.USER_USERNAME}": user.id, "${JSONAttribute.MESSAGE_ID}": message.id]
+                def data = [type: "DELETE", "${JSONAttribute.USER_USERNAME}": user.id, "${JSONAttribute.MESSAGE_ID}": message.id]
                 if (listAndroidPushtoken.size() > 1) {
                     MulticastResult results = androidGcmService.sendMulticastInstantMessage(data, listAndroidPushtoken)
                     analyseMultiCastResult(results, listAndroidPushtoken)
