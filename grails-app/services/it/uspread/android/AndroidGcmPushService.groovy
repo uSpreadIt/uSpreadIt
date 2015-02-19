@@ -30,8 +30,8 @@ class AndroidGcmPushService {
             List<String> listAndroidPushtoken = user.androidPushTokens.collect()
             if (listAndroidPushtoken != null && !listAndroidPushtoken.isEmpty()) {
                 def data = ["${JSONAttribute.USER_USERNAME}": user.id]
-                MulticastResult results = androidGcmService.sendMulticastCollapseMessage("New Message ${JSONAttribute.USER_USERNAME}", data, listAndroidPushtoken)
-                analyseResult(results, listAndroidPushtoken)
+                //MulticastResult results = androidGcmService.sendMulticastCollapseMessage("New Message ${JSONAttribute.USER_USERNAME}", data, listAndroidPushtoken)
+                //analyseResult(results, listAndroidPushtoken)
             }
         }
     }
@@ -46,8 +46,8 @@ class AndroidGcmPushService {
             List<String> listAndroidPushtoken = user.androidPushTokens.collect()
             if (listAndroidPushtoken != null && !listAndroidPushtoken.isEmpty()) {
                 def data = ["${JSONAttribute.USER_USERNAME}": user.id, "${JSONAttribute.MESSAGE_ID}": message.id]
-                MulticastResult results = androidGcmService.sendMulticastInstantMessage(data, listAndroidPushtoken)
-                analyseResult(results, listAndroidPushtoken)
+                //MulticastResult results = androidGcmService.sendMulticastInstantMessage(data, listAndroidPushtoken)
+                //analyseResult(results, listAndroidPushtoken)
             }
         }
     }
