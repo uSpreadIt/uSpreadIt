@@ -34,14 +34,10 @@ class UserController extends RestfulController<User> {
                 String pushToken = params.pushToken
                 if (QueryParams.DEVICE_ANDROID.equals(device) && pushToken != null) {
                     androidGcmPushService.reservePushTokenToUser(user, pushToken)
-                    render([status: HttpStatus.OK])
                 } else if (QueryParams.DEVICE_IOS.equals(device) && pushToken != null) {
                     // TODO
-                    render([status: HttpStatus.OK])
                 }
-                else {
-                    render([status: HttpStatus.BAD_REQUEST])
-                }
+                render([status: HttpStatus.OK])
             }
         }
         else {
