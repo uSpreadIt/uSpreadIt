@@ -31,7 +31,7 @@ class UserController extends RestfulController<User> {
         if (null != user){
             if (!user.isModerator()) {
                 String device = params.device;
-                String pushToken = params.pushToken
+                String pushToken = params.pushToken != null ? URLDecoder.decode(params.pushToken, "UTF-8") : null
                 if (QueryParams.DEVICE_ANDROID.equals(device) && pushToken != null) {
                     androidGcmPushService.reservePushTokenToUser(user, pushToken)
                 } else if (QueryParams.DEVICE_IOS.equals(device) && pushToken != null) {
