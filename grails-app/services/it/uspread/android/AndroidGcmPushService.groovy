@@ -30,8 +30,13 @@ class AndroidGcmPushService {
             List<String> listAndroidPushtoken = user.androidPushTokens.collect()
             if (listAndroidPushtoken != null && !listAndroidPushtoken.isEmpty()) {
                 def data = ["${JSONAttribute.USER_USERNAME}": user.id]
-                //MulticastResult results = androidGcmService.sendMulticastCollapseMessage("New Message ${JSONAttribute.USER_USERNAME}", data, listAndroidPushtoken)
-                //analyseResult(results, listAndroidPushtoken)
+                if (listAndroidPushtoken.size() > 1) {
+                    MulticastResult results = androidGcmService.sendMulticastCollapseMessage("New Message ${JSONAttribute.USER_USERNAME}", data, listAndroidPushtoken)
+                    analyseMultiCastResult(results, listAndroidPushtoken)
+                } else {
+                    Result result = androidGcmService.sendCollapseMessage("New Message ${JSONAttribute.USER_USERNAME}", data, listAndroidPushtoken.get(0))
+                    analyseResult(result, listAndroidPushtoken.get(0))
+                }
             }
         }
     }
@@ -46,8 +51,13 @@ class AndroidGcmPushService {
             List<String> listAndroidPushtoken = user.androidPushTokens.collect()
             if (listAndroidPushtoken != null && !listAndroidPushtoken.isEmpty()) {
                 def data = ["${JSONAttribute.USER_USERNAME}": user.id, "${JSONAttribute.MESSAGE_ID}": message.id]
-                //MulticastResult results = androidGcmService.sendMulticastInstantMessage(data, listAndroidPushtoken)
-                //analyseResult(results, listAndroidPushtoken)
+                if (listAndroidPushtoken.size() > 1) {
+                    MulticastResult results = androidGcmService.sendMulticastInstantMessage(data, listAndroidPushtoken)
+                    analyseMultiCastResult(results, listAndroidPushtoken)
+                } else {
+                    Result result = androidGcmService.sendInstantMessage(data, listAndroidPushtoken.get(0))
+                    analyseResult(result, listAndroidPushtoken.get(0))
+                }
             }
         }
     }
@@ -75,37 +85,45 @@ class AndroidGcmPushService {
     }
 
     /**
-     * Analyse le retour du PUSH
-     * @param result Resultat du PUSH
-     * @return
+     * Analyse le retour multicast du PUSH
+     * @param results Resultat du PUSH
+     * @param listAndroidPushtoken
      */
-    private void analyseResult(MulticastResult results, List<String> listAndroidPushtoken) {
+    private void analyseMultiCastResult(MulticastResult results, List<String> listAndroidPushtoken) {
         for (int i = 0; i < listAndroidPushtoken.size(); i++) {
             String currentPushToken = listAndroidPushtoken.get(i)
             Result result = results.getResults().get(i)
+            analyseResult(result, currentPushToken)
+        }
+    }
 
-            // Si le message a été bien transmis
-            if (result.getMessageId() != null) {
-                String canonicalRegId = result.getCanonicalRegistrationId()
-                // Si un token plus récent est fourni alors le remplacer
-                if (canonicalRegId != null) {
-                    List<User> listUser = User.findAll("from User usr where :token in elements(usr.androidPushTokens)", [token: currentPushToken])
-                    for (User user : listUser) {
-                        user.androidPushTokens.remove(currentPushToken)
-                        user.androidPushTokens.add(canonicalRegId);
-                    }
-
+    /**
+     * Analyse le retour simple du PUSH
+     * @param result Resultat du PUSH
+     * @param androidPushToken
+     */
+    private void analyseResult(Result result, String androidPushToken) {
+        // Si le message a été bien transmis
+        if (result.getMessageId() != null) {
+            String canonicalRegId = result.getCanonicalRegistrationId()
+            // Si un token plus récent est fourni alors le remplacer
+            if (canonicalRegId != null) {
+                List<User> listUser = User.findAll("from User usr where :token in elements(usr.androidPushTokens)", [token: androidPushToken])
+                for (User user : listUser) {
+                    user.androidPushTokens.remove(androidPushToken)
+                    user.androidPushTokens.add(canonicalRegId);
                 }
+
             }
-            // Si le message n'a pas été transmis
-            else {
-                String error = result.getErrorCodeName();
-                // L'application c'est désenregister : retirer le token
-                if (Constants.ERROR_NOT_REGISTERED.equals(error)) {
-                    List<User> listUser = User.findAll("from User usr where :token in elements(usr.androidPushTokens)", [token: currentPushToken])
-                    for (User user : listUser) {
-                        user.androidPushTokens.remove(currentPushToken)
-                    }
+        }
+        // Si le message n'a pas été transmis
+        else {
+            String error = result.getErrorCodeName();
+            // L'application c'est désenregister : retirer le token
+            if (Constants.ERROR_NOT_REGISTERED.equals(error)) {
+                List<User> listUser = User.findAll("from User usr where :token in elements(usr.androidPushTokens)", [token: androidPushToken])
+                for (User user : listUser) {
+                    user.androidPushTokens.remove(androidPushToken)
                 }
             }
         }
