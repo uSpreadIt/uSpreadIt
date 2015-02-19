@@ -282,8 +282,8 @@ class MessageService {
      */
     public void deleteMessage(Message message) {
         List<User> viewer = new ArrayList<>()
-        viewer.addAll(message.receivedBy.collect { it.user.id })
-        viewer.addAll(message.spreadBy.collect { it.user.id })
+        viewer.addAll(message.receivedBy.collect { it.user })
+        viewer.addAll(message.spreadBy.collect { it.user })
         viewer.removeAll([null])
         message.delete(flush: true)
         androidGcmPushService.notifyMessageDeleteTo(viewer, message)
