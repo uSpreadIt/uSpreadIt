@@ -11,7 +11,7 @@ class MessageCriteria {
 
     MessageCriteria(String count, String date, String operator) {
         this.count = count != null ? new Long(count) : 0
-        this.date = date != null ? QueryParams.DATE_FORMAT.parse(URLDecoder.decode(date, "UTF-8")) : null
+        this.date = date != null ? QueryParams.DATE_FORMAT.parse(date) : null
         this.operator = operator
     }
 }
