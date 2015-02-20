@@ -101,13 +101,11 @@ class MessageController extends RestfulController<Message> {
         try {
             messageService.spreadIt(instance, true)
         } catch (Exception e) {
-            respond 'error':e.getMessage(),status:403
+            respond 'error':e.getMessage(),status:422
             return
         }
 
-        JSON.use(JSONMarshaller.PUBLIC_MESSAGE_CREATION) {
-            respond(instance)
-        }
+        JSON.use(JSONMarshaller.PUBLIC_MESSAGE_CREATION) { respond(instance) }
     }
 
     /**
@@ -123,9 +121,7 @@ class MessageController extends RestfulController<Message> {
         def (boolean receivedByThisUser, Message message) = messageService.isMessageReceivedByThisUser(userConnected, messageId)
         if (receivedByThisUser && !userConnected.isModerator()) {
             messageService.userSpreadThisMessage(userConnected, message)
-            JSON.use(JSONMarshaller.PUBLIC_MESSAGE_SPREAD) {
-                respond(message)
-            }
+            JSON.use(JSONMarshaller.PUBLIC_MESSAGE_SPREAD) { respond(message) }
         } else {
             notFound()
         }
@@ -273,12 +269,7 @@ class MessageController extends RestfulController<Message> {
         if (null != message) {
             User userConnected = (User) springSecurityService.currentUser
             if (message.isUserAllowedToDelete(userConnected)) {
-                try {
-                    messageService.deleteMessage(message)
-                } catch (Exception e) {
-                    respond 'error':e.getMessage(),status:403
-                    return
-                }
+                messageService.deleteMessage(message)
                 render([status: HttpStatus.NO_CONTENT])
             } else {
                 forbidden()

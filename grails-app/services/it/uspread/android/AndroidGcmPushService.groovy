@@ -30,7 +30,7 @@ class AndroidGcmPushService {
             List<String> listAndroidPushtoken = user.androidPushTokens.collect()
             if (listAndroidPushtoken != null && !listAndroidPushtoken.isEmpty()) {
                 def data = [type: "SYNC", "${JSONAttribute.USER_USERNAME}": user.username]
-                def result = androidGcmService.sendMessage("New Message ${JSONAttribute.USER_USERNAME}", data, listAndroidPushtoken)
+                def result = androidGcmService.sendMessage(data, listAndroidPushtoken, "New Message ${JSONAttribute.USER_USERNAME}")
                 if (listAndroidPushtoken.size() > 1) {
                     analyseMultiCastResult(result, listAndroidPushtoken)
                 } else {
