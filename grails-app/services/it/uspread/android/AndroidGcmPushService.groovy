@@ -8,6 +8,7 @@ import it.uspread.core.json.JSONAttribute
 import com.google.android.gcm.server.Constants
 import com.google.android.gcm.server.MulticastResult
 import com.google.android.gcm.server.Result
+import com.google.android.gcm.server.Sender
 
 /**
  * Service du système de notification PUSH Android.
@@ -16,10 +17,14 @@ import com.google.android.gcm.server.Result
 @Transactional
 class AndroidGcmPushService {
 
-    /** Spring inject : androidGcmService */
-    def androidGcmService
-    /** Spring inject : grailsApplication */
-    def grailsApplication
+    /** Api Key Android GCM */
+    public static final String API_KEY = "AIzaSyBi4Hdxi28HlbtZ8RKhlF2SYumzcHPJukU"
+    /** Nombre de seconde avant d'abandonner le stockage en attente de transmission d'un message ayant un collapseKey (send-to-sync) : 1 semaine */
+    public static final int TIME_TO_LIVE = 604800
+    /** Indique que le message ne nécessite pas d'être envoyé immédiatement si le terminal est en veille */
+    public static final boolean DELAY_WHILE_IDLE = true
+    /** Nombre de tentative de transmission du message aux serveurs GCM */
+    public static final int RETRY = 3
 
     /**
      * Lance une notification push pour indiquer aux différents clients android des utilisateurs concernés qu'un nouveau message est disponible.
@@ -30,7 +35,7 @@ class AndroidGcmPushService {
             List<String> listAndroidPushtoken = user.androidPushTokens.collect()
             if (listAndroidPushtoken != null && !listAndroidPushtoken.isEmpty()) {
                 def data = [type: "SYNC", (JSONAttribute.USER_USERNAME): user.username]
-                def result = androidGcmService.sendMessage(data, listAndroidPushtoken, "New Message ${JSONAttribute.USER_USERNAME}")
+                def result = sendMessage(data, listAndroidPushtoken, "New messages ${JSONAttribute.USER_USERNAME}")
                 if (listAndroidPushtoken.size() > 1) {
                     analyseMultiCastResult(result, listAndroidPushtoken)
                 } else {
@@ -50,7 +55,7 @@ class AndroidGcmPushService {
             List<String> listAndroidPushtoken = user.androidPushTokens.collect()
             if (listAndroidPushtoken != null && !listAndroidPushtoken.isEmpty()) {
                 def data = [type: "DELETE", (JSONAttribute.USER_USERNAME): user.username, (JSONAttribute.MESSAGE_ID): new Long(message.id).toString()]
-                def result = androidGcmService.sendMessage(data, listAndroidPushtoken)
+                def result = sendMessage(data, listAndroidPushtoken)
                 if (listAndroidPushtoken.size() > 1) {
                     analyseMultiCastResult(result, listAndroidPushtoken)
                 } else {
@@ -125,5 +130,35 @@ class AndroidGcmPushService {
                 }
             }
         }
+    }
+
+    /**
+     * Envoyer un message (Si une collapse key est fourni alors le message pourra être abandonné au profit du nouveau de même collapse key)<br>
+     * Le message sera envoyé à un ou plusieurs périphérique suivant la liste de push token
+     * Des données peuvent être ajouté
+     * @param collapseKey attention le serveur n'accepte qu'un maximum de 4 messages de collapseKey différents pour un périphérique
+     * @return un Result ou un MultiCastResult suivant si 1 ou plusieurs push token sont donné
+     */
+    private def sendMessage(Map data, List<String> registrationIds, String collapseKey = '') {
+        new Sender(API_KEY).send(buildMessage(data, collapseKey), registrationIds.size() > 1 ? registrationIds : registrationIds[0], RETRY)
+    }
+
+    private com.google.android.gcm.server.Message buildMessage(Map data, String collapseKey = '') {
+        withMessageBuilder(data) { com.google.android.gcm.server.Message.Builder messageBuilder ->
+            if (collapseKey) {
+                messageBuilder.collapseKey(collapseKey).timeToLive(TIME_TO_LIVE)
+            }
+        }
+    }
+
+    private com.google.android.gcm.server.Message withMessageBuilder(Map messageData, Closure builderConfigurator) {
+        com.google.android.gcm.server.Message.Builder messageBuilder = new com.google.android.gcm.server.Message.Builder().delayWhileIdle(DELAY_WHILE_IDLE)
+        if (builderConfigurator) {
+            builderConfigurator(messageBuilder)
+        }
+        messageData.each {
+            messageBuilder.addData(it.key, it.value)
+        }
+        messageBuilder.build()
     }
 }
