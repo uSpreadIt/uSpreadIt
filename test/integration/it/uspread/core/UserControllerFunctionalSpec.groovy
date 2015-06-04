@@ -158,7 +158,7 @@ class UserControllerFunctionalSpec extends Specification {
         when: "Trying to login"
         Response response = clientModerator.post([path: "/login"]) {
             type(ContentType.JSON)
-            json([email:"chuck@norris.fr", username:"chuck", password:"chuck"])
+            json([username:"mod", password:"mod"])
         }
 
         then: "Look like ok"
@@ -169,7 +169,7 @@ class UserControllerFunctionalSpec extends Specification {
         when: "Trying to login"
         Response response = clientUser1.post([path: "/login?pushToken=AZERTYUIOPQSDFGHJKLM&device=ANDROID"]) {
             type(ContentType.JSON)
-            json([email:"chuck@norris.fr", username:"chuck", password:"chuck"])
+            json([username:"user1", password:"user1"])
         }
         then: "Look like ok"
         response.statusCode == HttpStatus.ACCEPTED.value

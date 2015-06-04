@@ -55,6 +55,7 @@ class User {
     static mapping = {
         version(true)
         table('users') // PosteGSQL a réservé 'user'
+        id([generator:'sequence', params:[sequence:'users_sequence']])
         username(length: USERNAME_MAX_LENGTH)
         password(column: '`password`', length: PASSWORD_MAX_LENGTH) // TODO j'aimerai comprendre la raison de ces caractères ` . Y'a forcément une raison puisque par défaut sans cette ligne la colonne aurait été nommé 'password'
         messages(cascade: 'all-delete-orphan')

@@ -12,6 +12,7 @@ class Image {
 
     static mapping = {
         version(false)
+        id([generator:'sequence', params:[sequence:'image_sequence']])
         image(type: 'blob')
     }
 

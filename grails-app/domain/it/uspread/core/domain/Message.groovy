@@ -47,6 +47,7 @@ class Message {
 
     static mapping = {
         version(true)
+        id([generator:'sequence', params:[sequence:'message_sequence']])
         author(index: 'author_idx')
         text(length: TEXT_MAX_LENGTH)
         textColor(length: 6)
@@ -54,7 +55,7 @@ class Message {
         //backgroundImage(cascade: 'all-delete-orphan')
         receivedBy(cascade: 'all-delete-orphan')
         spreadBy(cascade: 'all-delete-orphan')
-        ignoredBy(joinTable: [name: 'message_ignored', key: 'message_id', column: 'ignored_by_user_id'])
+        ignoredBy(joinTable: [name: 'message_ignored', key: 'message_id', column: 'user_id'])
         reports(cascade: 'all-delete-orphan')
     }
 
