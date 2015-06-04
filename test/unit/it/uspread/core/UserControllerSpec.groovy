@@ -1,6 +1,5 @@
 package it.uspread.core
 
-import it.uspread.core.UserController;
 import grails.test.mixin.TestFor
 import spock.lang.Specification
 
@@ -17,5 +16,8 @@ class UserControllerSpec extends Specification {
     }
 
     void "test something"() {
+        when: "--"
+
+        then: "--"
     }
 }

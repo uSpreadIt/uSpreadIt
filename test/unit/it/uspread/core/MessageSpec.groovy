@@ -16,5 +16,8 @@ class MessageSpec extends Specification {
     }
 
     void "test something"() {
+        when: "--"
+
+        then: "--"
     }
 }

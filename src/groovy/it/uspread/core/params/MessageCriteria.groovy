@@ -1,5 +1,8 @@
 package it.uspread.core.params
 
+/**
+ * Critères de recherche des messages
+ */
 class MessageCriteria {
 
     /** Nombre d'éléments à retourner */

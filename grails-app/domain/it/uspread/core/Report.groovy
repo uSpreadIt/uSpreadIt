@@ -2,36 +2,39 @@ package it.uspread.core
 
 import it.uspread.core.type.ReportType
 
-class Report {
+/**
+ * Modèle du signalement des messages.
+ */
+class Report implements Serializable {
 
+    private static final long serialVersionUID = 1L
+
+    /** Message signalé */
+    Message message
+    /** Utilisateur ayant fait ce signalement */
     User reporter
+    /** Type de signalement donné */
     ReportType type
 
-    Report(User reporter) {
-        this(reporter, ReportType.INAPPROPRIATE)
+    static belongsTo = Message
+
+    static mapping = {
+        version(false)
+        reporter(index: 'reporter_idx')
+        type(enumType: 'string')
     }
 
+    static constraints = {
+    }
+
+    /**
+     * Création d'un nouveau signalement
+     * @param reporter Un utilisateur
+     * @param type le type de signalement
+     */
     Report(User reporter, ReportType type) {
         this.reporter = reporter
         this.type = type
     }
-    static constraints = {
-        reporter(nullable: false)
-        type(nullable: false)
-    }
 
-    boolean equals(o) {
-        if (this.is(o)) return true
-        if (!(o instanceof Report)) return false
-
-        Report report = (Report) o
-
-        if (reporter != report.reporter) return false
-
-        return true
-    }
-
-    int hashCode() {
-        return reporter.hashCode()
-    }
 }

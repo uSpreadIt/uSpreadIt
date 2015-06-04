@@ -86,6 +86,9 @@ grails.hibernate.pass.readonly = false
 grails.hibernate.osiv.readonly = false
 
 environments {
+    test {
+        grails.gorm.failOnError = true
+    }
     development {
         grails.logging.jul.usebridge = true
     }
@@ -136,6 +139,7 @@ grails.plugin.springsecurity.interceptUrlMap = [
     '/login/**':                      ['permitAll'],
     '/logout/**':                     ['permitAll'],
     '/rest/signup':                   ['permitAll'],
+    '/rest/login':                    ['permitAll'],
     '/rest/users/moderator':          ['ROLE_MODERATOR'],
     '/rest/userlist':                 ['ROLE_MODERATOR'],
     '/rest/users/connected':          ['isAuthenticated()'],

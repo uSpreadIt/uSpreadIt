@@ -2,40 +2,68 @@ package it.uspread.core
 
 import org.apache.commons.lang.builder.HashCodeBuilder
 
+/**
+ * Sécurité : association entre les utilisateurs et les rôles.
+ * Un utilisateur associé à aucun rôle est considéré comme étant un simple utilisateur car il n'aura jamais d'autres roles
+ */
 class UserRole implements Serializable {
 
     private static final long serialVersionUID = 1
 
+    /** Utilisateur */
     User user
+    /** Role associé */
     Role role
 
-    boolean equals(other) {
+    static mapping = {
+        id(composite: ['role', 'user'])
+        version(false)
+    }
+
+    static constraints = {
+        role(validator: { Role r, UserRole ur ->
+            if (ur.user == null){
+                return
+            }
+            boolean existing = false
+            UserRole.withNewSession {
+                existing = UserRole.exists(ur.user.id, r.id)
+            }
+            if (existing) {
+                return 'userRole.exists'
+            }
+        })
+    }
+
+    @Override
+    boolean equals(Object other) {
+        if (is(other)) {
+            return true
+        }
         if (!(other instanceof UserRole)) {
             return false
         }
 
-        other.user?.id == user?.id &&
-                other.role?.id == role?.id
+        return other.user?.id == user?.id && other.role?.id == role?.id
     }
 
+    @Override
     int hashCode() {
-        def builder = new HashCodeBuilder()
-        if (user) builder.append(user.id)
-        if (role) builder.append(role.id)
-        builder.toHashCode()
+        HashCodeBuilder builder = new HashCodeBuilder()
+        builder.append(user.id)
+        builder.append(role.id)
+        return builder.toHashCode()
     }
 
     static UserRole get(long userId, long roleId) {
         UserRole.where {
-            user == User.load(userId) &&
-                    role == Role.load(roleId)
+            user == User.load(userId) && role == Role.load(roleId)
         }.get()
     }
 
     static boolean exists(long userId, long roleId) {
         UserRole.where {
-            user == User.load(userId) &&
-                    role == Role.load(roleId)
+            user == User.load(userId) && role == Role.load(roleId)
         }.count() > 0
     }
 
@@ -46,11 +74,12 @@ class UserRole implements Serializable {
     }
 
     static boolean remove(User u, Role r, boolean flush = false) {
-        if (u == null || r == null) return false
+        if (u == null || r == null) {
+            return false
+        }
 
         int rowCount = UserRole.where {
-            user == User.load(u.id) &&
-                    role == Role.load(r.id)
+            user == User.load(u.id) && role == Role.load(r.id)
         }.deleteAll()
 
         if (flush) {
@@ -60,42 +89,28 @@ class UserRole implements Serializable {
     }
 
     static void removeAll(User u, boolean flush = false) {
-        if (u == null) return
+        if (u == null){
+            return
+        }
 
-            UserRole.where {
-                user == User.load(u.id)
-            }.deleteAll()
+        UserRole.where {
+            user == User.load(u.id)
+        }.deleteAll()
 
         if (flush) {
             UserRole.withSession { it.flush() } }
     }
 
     static void removeAll(Role r, boolean flush = false) {
-        if (r == null) return
+        if (r == null){
+            return
+        }
 
-            UserRole.where {
-                role == Role.load(r.id)
-            }.deleteAll()
+        UserRole.where {
+            role == Role.load(r.id)
+        }.deleteAll()
 
         if (flush) {
             UserRole.withSession { it.flush() } }
-    }
-
-    static constraints = {
-        role validator: { Role r, UserRole ur ->
-            if (ur.user == null) return
-                boolean existing = false
-            UserRole.withNewSession {
-                existing = UserRole.exists(ur.user.id, r.id)
-            }
-            if (existing) {
-                return 'userRole.exists'
-            }
-        }
-    }
-
-    static mapping = {
-        id composite: ['role', 'user']
-        version false
     }
 }

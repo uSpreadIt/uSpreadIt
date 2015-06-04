@@ -13,35 +13,39 @@ import org.springframework.http.HttpStatus
  */
 class UserController extends RestfulController<User> {
 
-    static scope = "singleton"
-    static responseFormats = ["json"]
+    static scope = 'singleton'
+    static responseFormats = ['json']
 
     def springSecurityService
     def userService
     def messageService
-    def androidGcmPushService
+    def roleService
+    def androidGcmService
+    def iosAPNSService
 
     UserController() {
         super(User)
     }
 
     def login() {
-        // FIXME le code changera quand on aura un système de login : pour le moment pas de login donc l'user connecté viens des credential envoyé a chaque requete
-        def user = (User) springSecurityService.currentUser
-        if (null != user){
-            if (!user.isModerator()) {
+        // FIXME le code changera quand on aura fixé le système de login
+        def userConnected = (User) springSecurityService.currentUser
+        if (null != userConnected){
+            if (!userConnected.isSpecialUser()) {
                 String device = params.device;
                 String pushToken = params.pushToken
-                if (QueryParams.DEVICE_ANDROID.equals(device) && pushToken != null) {
-                    androidGcmPushService.reservePushTokenToUser(user, pushToken)
-                } else if (QueryParams.DEVICE_IOS.equals(device) && pushToken != null) {
-                    // TODO
+                if (QueryParams.DEVICE_ANDROID == device && pushToken != null) {
+                    androidGcmService.reservePushTokenToUser(userConnected, pushToken)
+                } else if (QueryParams.DEVICE_IOS == device && pushToken != null) {
+                    iosAPNSService.reservePushTokenToUser(userConnected, pushToken)
                 }
-                render([status: HttpStatus.OK])
+                render([status: HttpStatus.ACCEPTED])
+            } else {
+                render([status: HttpStatus.ACCEPTED])
             }
         }
         else {
-            forbidden()
+            renderForbidden()
         }
     }
 
@@ -49,14 +53,9 @@ class UserController extends RestfulController<User> {
      * Retourne les infos de l'utilisateur connecté
      */
     def getUserConnected() {
-        def user = (User) springSecurityService.currentUser
-        if (null != user){
-            JSON.use(user.isModerator() ? JSONMarshaller.INTERNAL : JSONMarshaller.PUBLIC_USER) {
-                respond(userService.getUserFromId(user.id))
-            }
-        }
-        else {
-            redirect(uri: '/')
+        def userConnected = (User) springSecurityService.currentUser
+        JSON.use(userConnected.isSpecialUser() ? JSONMarshaller.INTERNAL : JSONMarshaller.PUBLIC_USER) {
+            respond(userService.getUserFromId(userConnected.id), [status: HttpStatus.OK])
         }
     }
 
@@ -64,36 +63,41 @@ class UserController extends RestfulController<User> {
      * Supprime le compte de l'user connecté
      */
     def deleteUserConnected(){
-        def instance = (User) springSecurityService.currentUser
-        if (null != instance){
-            userService.deleteUser(instance)
-        }
-        render([status: HttpStatus.NO_CONTENT])
+        def userConnected = (User) springSecurityService.currentUser
+        userService.deleteUser(userConnected)
+        render([status: HttpStatus.ACCEPTED])
     }
 
     /**
      * Update du compte de l'user connecté
      */
     def updateUserConnected(){
-        def instance = (User) springSecurityService.currentUser
+        def userConnected = (User) springSecurityService.currentUser
 
-        updateFromRequest(instance)
+        updateFromRequest(userConnected)
 
-        if (instance.hasErrors()) {
-            respond(instance.errors) // STATUS CODE 422
+        userConnected.validate()
+        if (userConnected.hasErrors()) {
+            renderBadRequest()
             return
         }
 
-        instance.save flush:true
-        render([status: HttpStatus.OK])
+        userConnected.save([flush:true])
+        render([status: HttpStatus.ACCEPTED])
     }
 
+    /**
+     * Liste les utilisateurs
+     */
     @Override
     def index(Integer max) {
-        def user = (User) springSecurityService.currentUser
+        def userConnected = (User) springSecurityService.currentUser
         params.max = Math.min(max ?: 10, 100)
-        JSON.use(user.isModerator() ? JSONMarshaller.INTERNAL : JSONMarshaller.PUBLIC_USER) {
-            respond(listAllResources(params), model: [("${resourceName}Count".toString()): countResources()])
+
+        // TODO prendre en compte les critères URL et la réponse BAD_REQUEST
+
+        JSON.use(userConnected.isSpecialUser() ? JSONMarshaller.INTERNAL : JSONMarshaller.PUBLIC_USER) {
+            respond(listAllResources(params), [status: HttpStatus.OK])
         }
     }
 
@@ -112,105 +116,91 @@ class UserController extends RestfulController<User> {
         // Non nécessaire pour le moment
     }
 
+    /**
+     * Création d'un modérateur
+     * @return
+     */
     def createModerator() {
-        if(handleReadOnly()) {
-            return
-        }
-        User instance = createResource()
-        instance.validate()
-        if (instance.hasErrors()) {
-            respond(instance.errors, view:'create') // STATUS CODE 422
-            return
-        }
+        def userConnected = (User) springSecurityService.currentUser
 
-        instance.save flush:true
-
-        def roleMod = new Role(authority: Role.ROLE_MODERATOR)
-        roleMod.save()
-        UserRole droitsMod = new UserRole(user: instance, role: roleMod)
-
-        request.withFormat {
-            '*' {
-                render([status: HttpStatus.CREATED])
+        // Protection supplémentaire même si normalement les droits ne permettent pas d'arriver ici
+        if (userConnected.isSpecialUser()) {
+            User newModerator = createResource()
+            newModerator.specialUser = true
+            newModerator.validate()
+            if (newModerator.hasErrors()) {
+                renderBadRequest()
+                return
             }
+
+            newModerator.save([flush:true])
+            roleService.setRoleModerator(newModerator)
+
+            render([status: HttpStatus.CREATED])
+        } else {
+            renderForbidden()
         }
     }
 
     @Override
     def save() {
-        if(handleReadOnly()) {
-            return
-        }
-        User instance = createResource()
-        instance.validate()
-        if (instance.hasErrors()) {
-            respond(instance.errors, view:'create') // STATUS CODE 422
+        User newUser = createResource()
+        newUser.validate()
+        if (newUser.hasErrors()) {
+            renderBadRequest()
             return
         }
 
-        instance.save flush:true
+        newUser.save([flush:true])
 
-        request.withFormat {
-            '*' {
-                render([status: HttpStatus.CREATED])
-            }
-        }
+        render([status: HttpStatus.CREATED])
     }
 
     @Override
     def show() {
-        def user = (User) springSecurityService.currentUser
-        JSON.use(user.isModerator() ? JSONMarshaller.INTERNAL : JSONMarshaller.PUBLIC_USER) {
-            respond(queryForResource(params.id))
+        def userConnected = (User) springSecurityService.currentUser
+        User user = queryForResource(params.id)
+        if (user == null) {
+            renderNotFound()
+            return
+        }
+
+        JSON.use(userConnected.isSpecialUser() ? JSONMarshaller.INTERNAL : JSONMarshaller.PUBLIC_USER) {
+            respond(user, [status: HttpStatus.OK])
         }
     }
 
     @Override
     def update() {
-        if(handleReadOnly()) {
+        User user = queryForResource(params.id)
+        if (user == null) {
+            renderNotFound()
             return
         }
 
-        User instance = queryForResource(params.id)
-        if (instance == null) {
-            notFound()
+        updateFromRequest(user)
+        user.validate()
+        if (user.hasErrors()) {
+            renderBadRequest()
             return
         }
 
-        updateFromRequest(instance)
+        user.save([flush:true])
 
-        if (instance.hasErrors()) {
-            respond(instance.errors) // STATUS CODE 422
-            return
-        }
-
-        instance.save flush:true
-        request.withFormat {
-            '*'{
-                render([status: HttpStatus.OK])
-            }
-        }
+        render([status: HttpStatus.ACCEPTED])
     }
 
     @Override
     def delete() {
-        if(handleReadOnly()) {
+        def user = queryForResource(params.id)
+        if (user == null) {
+            renderNotFound()
             return
         }
 
-        def instance = queryForResource(params.id)
-        if (instance == null) {
-            notFound()
-            return
-        }
+        userService.deleteUser(user)
 
-        userService.deleteUser(instance)
-
-        request.withFormat {
-            "*"{
-                render([status: HttpStatus.NO_CONTENT])
-            }
-        }
+        render([status: HttpStatus.ACCEPTED])
     }
 
     /**
@@ -219,7 +209,8 @@ class UserController extends RestfulController<User> {
      */
     def status() {
         def user = (User) springSecurityService.currentUser
-        if (user.isModerator()) {
+        if (user.isSpecialUser()) {
+            renderForbidden()
             return
         }
 
@@ -227,7 +218,7 @@ class UserController extends RestfulController<User> {
         boolean quotaOnly = params.quotaOnly != null ? new Boolean((String)params.quotaOnly).booleanValue() : false
 
         JSON.use(quotaOnly ? JSONMarshaller.PUBLIC_STATUS_QUOTA : JSONMarshaller.PUBLIC_STATUS) {
-            respond(messageService.getUserMessagesStatus(user, quotaOnly))
+            respond(messageService.getUserMessagesStatus(user, quotaOnly), [status: HttpStatus.OK])
         }
     }
 
@@ -237,31 +228,39 @@ class UserController extends RestfulController<User> {
      */
     def registerPushToken() {
         def user = (User) springSecurityService.currentUser
-        if (null != user && !user.isModerator()) {
+        if (!user.isSpecialUser()) {
             String device = request.JSON.opt(JSONAttribute.USER_DEVICE) ?: null
             String pushToken = request.JSON.opt(JSONAttribute.USER_PUSHTOKEN) ?: null
-            if (QueryParams.DEVICE_ANDROID.equals(device) && pushToken != null) {
-                androidGcmPushService.registerPushToken(user, pushToken)
-                render([status: HttpStatus.OK])
-            } else if (QueryParams.DEVICE_IOS.equals(device) && pushToken != null) {
-                // TODO
-                render([status: HttpStatus.OK])
+            if (QueryParams.DEVICE_ANDROID == device && pushToken != null) {
+                androidGcmService.registerPushToken(user, pushToken)
+                render([status: HttpStatus.ACCEPTED])
+            } else if (QueryParams.DEVICE_IOS == device && pushToken != null) {
+                iosAPNSService.registerPushToken(user, pushToken)
+                render([status: HttpStatus.ACCEPTED])
             }
             else {
-                render([status: HttpStatus.BAD_REQUEST])
+                renderBadRequest()
             }
         } else {
-            forbidden()
+            renderForbidden()
         }
     }
 
     def topUsers() {
         JSON.use(JSONMarshaller.PUBLIC_USER_SCORE) {
-            respond(userService.getTopUsers())
+            respond(userService.getTopUsers(), [status: HttpStatus.OK])
         }
     }
 
-    def forbidden() {
+    private def renderBadRequest() {
+        render([status: HttpStatus.BAD_REQUEST])
+    }
+
+    private def renderNotFound() {
+        render([status: HttpStatus.NOT_FOUND])
+    }
+
+    private def renderForbidden() {
         render([status: HttpStatus.FORBIDDEN])
     }
 
@@ -272,10 +271,13 @@ class UserController extends RestfulController<User> {
         return user
     }
 
+    /**
+     * Renseigne l'utilisateur a partir des donnée fournie
+     * @param user
+     */
     private void updateFromRequest(User user) {
         user.username = request.JSON.opt(JSONAttribute.USER_USERNAME) ?: user.username
         user.password = request.JSON.opt(JSONAttribute.USER_PASSWORD) ?: user.password
         user.email = request.JSON.opt(JSONAttribute.USER_EMAIL) ?: user.email
-        user.iosPushToken = request.JSON.opt(JSONAttribute.USER_IOSPUSHTOKEN) ?: user.iosPushToken
     }
 }

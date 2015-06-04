@@ -6,11 +6,14 @@ import it.uspread.core.params.MessageCriteria
 import it.uspread.core.params.QueryParams
 import it.uspread.core.type.ReportType
 
+/**
+ * Service des messages
+ */
 @Transactional
 class MessageService {
 
-    def APNSMessageService
-    def androidGcmPushService
+    def iosAPNSService
+    def androidGcmService
 
     // TODO à paramétrer
     private static final int MAX_MESSAGES_PER_DAY = 1000
@@ -22,33 +25,27 @@ class MessageService {
      * @param msgCriteria Critères de recherche supplémentaires
      * @return liste de messages
      */
-    public List<Message> getMessagesWritedThisAuthorId(Long id, MessageCriteria msgCriteria) {
-        def listMap = [sort: "dateCreated", order: "desc"]
+    List<Message> getMessagesWritedByAuthorId(Long id, MessageCriteria msgCriteria) {
+        def listMap = [sort: 'dateCreated', order: 'desc']
 
         if (msgCriteria != null && msgCriteria.getCount() > 0) {
-            listMap["max"] = msgCriteria.getCount()
+            listMap['max'] = msgCriteria.getCount()
         }
 
         List<Message> listMessage;
         // Recherche des messages avec critère de date
-        if (msgCriteria != null && msgCriteria.getOperator() != null) {
-            if (QueryParams.OPERATOR_GREATER.equals(msgCriteria.getOperator())) {
-                listMessage = Message.where {
-                    author.id == id && dateCreated > msgCriteria.getDate()
-                }.list(listMap)
-            } else if (QueryParams.OPERATOR_GREATER_OR_EQUALS.equals(msgCriteria.getOperator())) {
-                listMessage = Message.where {
-                    author.id == id && dateCreated >= msgCriteria.getDate()
-                }.list(listMap)
+        if (msgCriteria?.getOperator() != null) {
+            if (QueryParams.OPERATOR_GREATER == msgCriteria.getOperator()) {
+                listMessage = Message.where({ author.id == id && dateCreated > msgCriteria.getDate() }).list(listMap)
+            } else if (QueryParams.OPERATOR_GREATER_OR_EQUALS == msgCriteria.getOperator()) {
+                listMessage = Message.where({ author.id == id && dateCreated >= msgCriteria.getDate() }).list(listMap)
             } else {
-                listMessage = Message.where {
-                    author.id == id && dateCreated < msgCriteria.getDate()
-                }.list(listMap)
+                listMessage = Message.where({ author.id == id && dateCreated < msgCriteria.getDate() }).list(listMap)
             }
         }
         // Recherche des messages sans critère de date
         else {
-            listMessage = Message.where { author.id == id }.list(listMap)
+            listMessage = Message.where({ author.id == id }).list(listMap)
         }
         return listMessage
     }
@@ -59,37 +56,37 @@ class MessageService {
      * @param msgCriteria Critères de recherche supplémentaires
      * @return liste de messages
      */
-    public List<Message> getMessagesReceivedByThisUserId(Long id, MessageCriteria msgCriteria) {
+    List<Message> getMessagesReceivedByUserId(Long id, MessageCriteria msgCriteria) {
         def listMap = [:]
         if (msgCriteria != null && msgCriteria.getCount() > 0) {
-            listMap["max"] = msgCriteria.getCount()
+            listMap['max'] = msgCriteria.getCount()
         }
 
         List<Message> listMessage;
         // Recherche des messages avec critère de date
-        if (msgCriteria != null && msgCriteria.getOperator() != null) {
-            if (QueryParams.OPERATOR_GREATER.equals(msgCriteria.getOperator())) {
+        if (msgCriteria?.getOperator() != null) {
+            if (QueryParams.OPERATOR_GREATER == msgCriteria.getOperator()) {
                 listMessage =  Message.createCriteria().list(listMap, {
                     receivedBy {
-                        eq("user.id", id)
-                        gt("date", msgCriteria.getDate())
-                        order("date", "desc")
+                        eq('user.id', id)
+                        gt('date', msgCriteria.getDate())
+                        order('date', 'desc')
                     }
                 })
-            } else if (QueryParams.OPERATOR_GREATER_OR_EQUALS.equals(msgCriteria.getOperator())) {
+            } else if (QueryParams.OPERATOR_GREATER_OR_EQUALS == msgCriteria.getOperator()) {
                 listMessage =  Message.createCriteria().list(listMap, {
                     receivedBy {
-                        eq("user.id", id)
-                        ge("date", msgCriteria.getDate())
-                        order("date", "desc")
+                        eq('user.id', id)
+                        ge('date', msgCriteria.getDate())
+                        order('date', 'desc')
                     }
                 })
             } else {
                 listMessage =  Message.createCriteria().list(listMap, {
                     receivedBy {
                         eq('user.id', id)
-                        lt("date", msgCriteria.getDate())
-                        order("date", "desc")
+                        lt('date', msgCriteria.getDate())
+                        order('date', 'desc')
                     }
                 })
             }
@@ -98,8 +95,8 @@ class MessageService {
         else {
             listMessage =  Message.createCriteria().list(listMap, {
                 receivedBy {
-                    eq("user.id", id)
-                    order("date", "desc")
+                    eq('user.id', id)
+                    order('date', 'desc')
                 }
             })
         }
@@ -112,37 +109,37 @@ class MessageService {
      * @param msgCriteria Critères de recherche supplémentaires
      * @return liste de messages
      */
-    public List<Message> getMessagesSpreadByThisUserId(Long id, MessageCriteria msgCriteria) {
+    List<Message> getMessagesSpreadByUserId(Long id, MessageCriteria msgCriteria) {
         def listMap = [:]
         if (msgCriteria != null && msgCriteria.getCount() > 0) {
-            listMap["max"] = msgCriteria.getCount()
+            listMap['max'] = msgCriteria.getCount()
         }
 
-        List<Message> listMessage;
+        List<Message> listMessage
         // Recherche des messages avec critère de date
-        if (msgCriteria != null && msgCriteria.getOperator() != null) {
-            if (QueryParams.OPERATOR_GREATER.equals(msgCriteria.getOperator())) {
+        if (msgCriteria?.getOperator() != null) {
+            if (QueryParams.OPERATOR_GREATER == msgCriteria.getOperator()) {
                 listMessage =  Message.createCriteria().list(listMap, {
                     spreadBy {
-                        eq("user.id", id)
-                        gt("date", msgCriteria.getDate())
-                        order("date", "desc")
+                        eq('user.id', id)
+                        gt('date', msgCriteria.getDate())
+                        order('date', 'desc')
                     }
                 })
-            } else if (QueryParams.OPERATOR_GREATER_OR_EQUALS.equals(msgCriteria.getOperator())) {
+            } else if (QueryParams.OPERATOR_GREATER_OR_EQUALS == msgCriteria.getOperator()) {
                 listMessage =  Message.createCriteria().list(listMap, {
                     spreadBy {
-                        eq("user.id", id)
-                        ge("date", msgCriteria.getDate())
-                        order("date", "desc")
+                        eq('user.id', id)
+                        ge('date', msgCriteria.getDate())
+                        order('date', 'desc')
                     }
                 })
             } else {
                 listMessage =  Message.createCriteria().list(listMap, {
                     spreadBy {
                         eq('user.id', id)
-                        lt("date", msgCriteria.getDate())
-                        order("date", "desc")
+                        lt('date', msgCriteria.getDate())
+                        order('date', 'desc')
                     }
                 })
             }
@@ -151,8 +148,8 @@ class MessageService {
         else {
             listMessage =  Message.createCriteria().list(listMap, {
                 spreadBy {
-                    eq("user.id", id)
-                    order("date", "desc")
+                    eq('user.id', id)
+                    order('date', 'desc')
                 }
             })
         }
@@ -163,10 +160,8 @@ class MessageService {
      * Recherche des messages signalés
      * @return liste de messages
      */
-    public List<Message> getReportedMessages() {
-        return (List<Message>) Message.createCriteria().list {
-            reports { isNotNull('id') }
-        }
+    List<Message> getReportedMessages() {
+        return (List<Message>) Message.createCriteria().list({ reports({ isNotNull('id') }) })
     }
 
     /**
@@ -174,14 +169,14 @@ class MessageService {
      * @param user
      * @return
      */
-    def getUserMessagesStatus(User user, boolean quotaOnly) {
+    Status getUserMessagesStatus(User user, boolean quotaOnly) {
         Status status = new Status()
         status.setQuotaReached(isMessageCreationLimitReached(user))
         if (!quotaOnly) {
-            status.setNbMessageWrited(Message.createCriteria().count({eq("author.id", user.id)}))
-            status.setNbMessageSpread(Message.createCriteria().count({spreadBy{eq("user.id", user.id)}}))
-            status.setNbMessageIgnored(Message.createCriteria().count({ignoredBy{eq("id", user.id)}}))
-            status.setNbMessageReported(Message.createCriteria().count({reports{eq("reporter.id", user.id)}}))
+            status.setNbMessageWrited(Message.createCriteria().count({ eq('author.id', user.id) }))
+            status.setNbMessageSpread(Message.createCriteria().count({ spreadBy{ eq('user.id', user.id) } }))
+            status.setNbMessageIgnored(Message.createCriteria().count({ ignoredBy{ eq('id', user.id) } }))
+            status.setNbMessageReported(Message.createCriteria().count({ reports{ eq('reporter.id', user.id) } }))
         }
         return status
     }
@@ -192,9 +187,9 @@ class MessageService {
      * TODO Cette vérification devra être géré de façon atomique (possible en prenant en compte la scalabilité des serveurs ?)
      * @return true si quota atteint
      */
-    def isMessageCreationLimitReached(User user) {
+    boolean isMessageCreationLimitReached(User user) {
         def startDate = (new Date()).minus(1);
-        def nbMessage = Message.where { author.id == user.id && dateCreated > startDate }.count()
+        def nbMessage = Message.where({ author.id == user.id && dateCreated > startDate }).count()
         return nbMessage >= MAX_MESSAGES_PER_DAY
     }
 
@@ -203,16 +198,17 @@ class MessageService {
      * @param message le message à propager
      * @param initialSpread pour distinguer la création d'un nouveau message de la propagation
      */
-    public void spreadIt(Message message, boolean initialSpread) {
+    void spreadIt(Message message, boolean initialSpread) {
         // Select spreadSize users order by lastReceivedMessageDate asc
         List<User> recipients
         if (initialSpread) {
             recipients = User.findAllBySpecialUserAndIdNotEqual(
                     false, message.authorId, [max: SPREAD_SIZE, sort: 'lastReceivedMessageDate', order: 'asc'])
         } else {
-            def usersWhoReceivedThisMessage = message.ignoredBy.collect { it.id }
-            usersWhoReceivedThisMessage.addAll(message.receivedBy.collect { it.user.id })
-            usersWhoReceivedThisMessage.addAll(message.spreadBy.collect { it.user.id })
+            // Un message signalé est aussi ignoré donc pas nécessaire d'utiliser la collection des éléments reporté
+            def usersWhoReceivedThisMessage = message.ignoredBy.collect({ it.id })
+            usersWhoReceivedThisMessage.addAll(message.receivedBy.collect({ it.user.id }))
+            usersWhoReceivedThisMessage.addAll(message.spreadBy.collect({ it.user.id }))
 
             recipients = User.findAllBySpecialUserAndIdNotEqualAndIdNotInList(
                     false, message.authorId, usersWhoReceivedThisMessage, [max: SPREAD_SIZE, sort: 'lastReceivedMessageDate', order: 'asc'])
@@ -222,28 +218,33 @@ class MessageService {
         recipients.each {
             it.lastReceivedMessageDate = now
             message.addToReceivedBy(new Spread(it))
-            it.save(flush: true)
+            it.save([flush: true])
         }
         if (!initialSpread) {
             message.nbSpread++
             message.author.score++
-            //Test rebase
         }
-        message.save(flush: true)
+        message.save([flush: true])
 
         // Envoie des notifications PUSH
-        this.APNSMessageService.notifySentTo(recipients)
-        androidGcmPushService.notifyMessageSentTo(recipients)
+        androidGcmService.notifyMessageSentTo(recipients)
+        iosAPNSService.notifyMessageSentTo(recipients)
     }
 
-    public List isMessageReceivedByThisUser(user, messageId) {
+    /**
+     * Indique si le message a été reçus par l'utilisateur
+     * @param user l'utilisateur concerné
+     * @param messageId l'id du message concerné
+     * @return Le résultat du test et le message
+     */
+    List isMessageReceivedByUser(User user, Long messageId) {
         List<Message> messagesReceivedByCurrentUser = (List<Message>) Message.createCriteria().list {
             receivedBy { eq('user.id', user.id) }
         }
         boolean receivedByThisUser = false
         Message message = null
         for (Message m : messagesReceivedByCurrentUser) {
-            if (m.id.equals(messageId.toLong())) {
+            if (m.id == messageId) {
                 message = m
                 receivedByThisUser = true
                 break
@@ -252,40 +253,48 @@ class MessageService {
         return [receivedByThisUser, message]
     }
 
-    public void userSpreadThisMessage(User user, Message message) {
-        message.receivedBy.remove(new Spread(user))
-        message.spreadBy.add(new Spread(user, new Date()))
+    void userSpreadThisMessage(User user, Message message) {
+        message.removeFromReceivedBy(message.getReceivedFor(user))
+        message.addToSpreadBy(new Spread(user))
         spreadIt(message, false)
     }
 
-    public void userIgnoreThisMessage(User user, Message message) {
-        message.receivedBy.remove(new Spread(user))
-        message.ignoredBy.add(user)
-        message.save(flush: true)
+    void userIgnoreThisMessage(User user, Message message) {
+        message.removeFromReceivedBy(message.getReceivedFor(user))
+        message.addToIgnoredBy(user)
+        message.save([flush: true])
     }
 
-    public void userReportThisMessage(User user, Message message, ReportType reportType) {
-        message.receivedBy.remove(new Spread(user))
-        message.reports.add(new Report(user, reportType))
-        message.incrementReportType(reportType)
-        message.ignoredBy.add(user)
+    void userReportThisMessage(User user, Message message, ReportType reportType) {
+        message.removeFromReceivedBy(message.getReceivedFor(user))
+        message.addToReports(new Report(user, reportType))
+        message.addToIgnoredBy(user)
+        message.save([flush: true])
+
         message.author.reportsReceived++
         user.reportsSent++
-        message.save(flush: true)
-        user.save(flush: true)
     }
 
     /**
      * Suppression d'un message.<br>
-     * S'accompagne d'une notification PUSH pour indiquer aux utilisateurs ayant reçus ou propagé ce message qu'il doit disparaitre
+     * Et notifications aux appli clientes
      * @param message
      */
-    public void deleteMessage(Message message) {
-        List<User> viewer = new ArrayList<>()
-        viewer.addAll(message.receivedBy.collect { it.user })
-        viewer.addAll(message.spreadBy.collect { it.user })
-        viewer.removeAll([null])
-        message.delete(flush: true)
-        androidGcmPushService.notifyMessageDeleteTo(viewer, message)
+    void deleteMessage(Message message) {
+        notifyMessageWillDelete(message)
+        message.delete([flush: true])
+    }
+
+    /**
+     * Notifie les appli clientes de la suppression du message
+     * @param message
+     */
+    void notifyMessageWillDelete(Message message) {
+        Set<User> viewer = new HashSet<>()
+        viewer.addAll(message.receivedBy.collect({ it.user }))
+        viewer.addAll(message.spreadBy.collect({ it.user }))
+        viewer.removeAll([null]) // supprime les éléments null qui débarque si une
+        androidGcmService.notifyMessageDeleteTo(viewer, message.id)
+        iosAPNSService.notifyMessageDeleteTo(viewer, message.id)
     }
 }

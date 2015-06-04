@@ -1,37 +1,42 @@
 package it.uspread.core
 
 
-class Spread {
+/**
+ * Modèle de propagation des messages
+ */
+class Spread implements Serializable {
 
+    private static final long serialVersionUID = 1L
+
+    /** Message reçus */
+    Message messageReceived
+    /** Message propagé */
+    Message messageSpread
+    /** Utilisateur concerné */
     User user
+    /** Date de l'action */
     Date date
 
-    Spread(User user) {
-        this(user, new Date())
-    }
+    static belongsTo = Message
 
-    Spread(User user, Date date) {
-        this.user = user
-        this.date = date
+    static mapping = {
+        user(index: 'user_idx')
+        version(false)
     }
 
     static constraints = {
-        user(nullable: false)
-        date(nullable: false)
+        messageReceived(nullable:true)
+        messageSpread(nullable:true, validator: { val, obj ->
+            return obj.messageReceived != null && val == null ||  obj.messageReceived == null && val != null
+        })
     }
 
-    boolean equals(o) {
-        if (this.is(o)) return true
-        if (!(o instanceof Spread)) return false
-
-        Spread spread = (Spread) o
-
-        if (user != spread.user) return false
-
-        return true
-    }
-
-    int hashCode() {
-        return user.hashCode()
+    /**
+     * Création d'une nouvelle propagation à cet instant
+     * @param user l'utilisateur recevant ou propagant le message
+     */
+    Spread(User user) {
+        this.user = user
+        this.date = new Date()
     }
 }

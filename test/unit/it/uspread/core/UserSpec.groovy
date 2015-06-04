@@ -16,5 +16,8 @@ class UserSpec extends Specification {
     }
 
     void "test something"() {
+        when: "--"
+
+        then: "--"
     }
 }

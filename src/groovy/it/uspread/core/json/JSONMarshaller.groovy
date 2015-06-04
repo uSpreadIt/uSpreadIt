@@ -2,10 +2,10 @@ package it.uspread.core.json
 
 import grails.converters.JSON
 import it.uspread.core.Message
+import it.uspread.core.Role
 import it.uspread.core.User
 import it.uspread.core.data.Status
 import it.uspread.core.type.ReportType
-import it.uspread.core.type.RoleType
 
 import java.text.SimpleDateFormat
 
@@ -57,7 +57,6 @@ class JSONMarshaller {
                 output[JSONAttribute.USER_ID] = user.id
                 output[JSONAttribute.USER_USERNAME] = user.username
                 output[JSONAttribute.USER_EMAIL] = user.email
-                output[JSONAttribute.USER_IOSPUSHTOKEN] = user.iosPushToken
                 return output;
             }
         }
@@ -221,8 +220,7 @@ class JSONMarshaller {
                 output[JSONAttribute.USER_ID] = user.id
                 output[JSONAttribute.USER_USERNAME] = user.username
                 output[JSONAttribute.USER_EMAIL] = user.email
-                output[JSONAttribute.USER_IOSPUSHTOKEN] = user.iosPushToken
-                output[JSONAttribute.USER_ROLE] = user.isModerator() ? RoleType.MODERATOR.name() : RoleType.USER.name()
+                output[JSONAttribute.USER_ROLE] = user.isModerator() ? Role.ROLE_MODERATOR : (user.isAdministrator() ? Role.ROLE_ADMINISTRATOR : 'ROLE_USER')
                 if (!user.isModerator()) {
                     output[JSONAttribute.USER_REPORTSSENT] = user.reportsSent
                     output[JSONAttribute.USER_REPORTRECEIVED] = user.reportsReceived

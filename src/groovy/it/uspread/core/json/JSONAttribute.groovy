@@ -14,7 +14,6 @@ class JSONAttribute {
     public static final String USER_MODERATIONREQUIRED = "moderationRequired"
     public static final String USER_PUSHTOKEN = "pushToken"
     public static final String USER_DEVICE = "device"
-    public static final String USER_IOSPUSHTOKEN = "iosPushToken"
 
     public static final String MESSAGE_ID = "id"
     public static final String MESSAGE_AUTHOR = "author"
@@ -24,8 +23,9 @@ class JSONAttribute {
     public static final String MESSAGE_NBSPREAD = "nbSpread"
     public static final String MESSAGE_TEXT = "text"
     public static final String MESSAGE_TEXTCOLOR = "textColor"
-    public static final String MESSAGE_BACKGROUNDCOLOR = "backgroundColor"
     public static final String MESSAGE_BACKGROUNDTYPE = "backgroundType"
+    public static final String MESSAGE_BACKGROUNDCOLOR = "backgroundColor"
+    public static final String MESSAGE_IMAGE = "image"
     public static final String MESSAGE_MAINREPORTTYPE = "mainReportType"
 
     public static final String STATUS_QUOTAREACHED = "quotaReached"

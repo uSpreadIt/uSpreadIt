@@ -1,7 +1,6 @@
 package it.uspread.android
 
 import grails.transaction.Transactional
-import it.uspread.core.Message
 import it.uspread.core.User
 import it.uspread.core.json.JSONAttribute
 
@@ -15,7 +14,7 @@ import com.google.android.gcm.server.Sender
  * FIXME optimisation des requetes car là c'est pas ok sauf si Grails est super bon pour comprendre
  */
 @Transactional
-class AndroidGcmPushService {
+class AndroidGcmService {
 
     /** Api Key Android GCM */
     public static final String API_KEY = "AIzaSyBi4Hdxi28HlbtZ8RKhlF2SYumzcHPJukU"
@@ -30,10 +29,10 @@ class AndroidGcmPushService {
      * Lance une notification push pour indiquer aux différents clients android des utilisateurs concernés qu'un nouveau message est disponible.
      * @param listUser Les utilisateurs recevant un nouveau message
      */
-    public void notifyMessageSentTo(List<User> listUser) {
+    void notifyMessageSentTo(List<User> listUser) {
         for (User user : listUser) {
-            List<String> listAndroidPushtoken = user.androidPushTokens.collect()
-            if (listAndroidPushtoken != null && !listAndroidPushtoken.isEmpty()) {
+            Set<String> listAndroidPushtoken = user.androidPushTokens
+            if (listAndroidPushtoken) {
                 def data = [type: "SYNC", (JSONAttribute.USER_USERNAME): user.username]
                 def result = sendMessage(data, listAndroidPushtoken, "New messages ${JSONAttribute.USER_USERNAME}")
                 if (listAndroidPushtoken.size() > 1) {
@@ -48,13 +47,14 @@ class AndroidGcmPushService {
     /**
      * Lance une notification push pour indiquer aux différents clients android des utilisateurs concernés qu'un message a été supprimé
      * @param listUser les utilisateurs pouvant visualiser ce message (Exclus l'auteur du message)
-     * @param message le message qui est supprimé
+     * @param message l'id du message qui est supprimé
      */
-    public void notifyMessageDeleteTo(List<User> listUser, Message message) {
+    void notifyMessageDeleteTo(Set<User> listUser, Long messageId) {
         for (User user : listUser) {
-            List<String> listAndroidPushtoken = user.androidPushTokens.collect()
-            if (listAndroidPushtoken != null && !listAndroidPushtoken.isEmpty()) {
-                def data = [type: "DELETE", (JSONAttribute.USER_USERNAME): user.username, (JSONAttribute.MESSAGE_ID): new Long(message.id).toString()]
+            Set<String>  listAndroidPushtoken = user.androidPushTokens
+            if (listAndroidPushtoken) {
+                def data = [type: "DELETE", (JSONAttribute.USER_USERNAME): user.username, (JSONAttribute.MESSAGE_ID): messageId.toString()]
+                // TODO Quel est la limite de la taille de la collection qui peut etre envoyé
                 def result = sendMessage(data, listAndroidPushtoken)
                 if (listAndroidPushtoken.size() > 1) {
                     analyseMultiCastResult(result, listAndroidPushtoken)
@@ -66,24 +66,24 @@ class AndroidGcmPushService {
     }
 
     /**
-     * Réserve le push token donné exclusivement à l'utilisateur donné
+     * Réserve le push token donné exclusivement à l'utilisateur donné (Cas ou l'utilisateur change de compte sur son périphérique)
      * @param user un utilisateur
      * @param pushToken le token
      */
-    public void reservePushTokenToUser(User user, String pushToken) {
+    void reservePushTokenToUser(User user, String pushToken) {
         // On le retire des autres user
         List<User> listUser = User.findAll("from User usr where usr.id <> :idUsr and :token in elements(usr.androidPushTokens)", [token: pushToken, idUsr: user.id])
         for (User usr : listUser) {
-            usr.androidPushTokens.remove(pushToken)
+            usr.removeFromAndroidPushTokens(pushToken)
         }
         // On reaffecte le push token à l'user demandé
         registerPushToken(user, pushToken)
     }
 
-    /** Enregistrement d'un nouveau token pour l'utilisateur */
-    public void registerPushToken(User user, String androidPushToken) {
+    /** Enregistrement d'un token pour l'utilisateur  (s'il est nouveau) */
+    void registerPushToken(User user, String androidPushToken) {
         if (!user.androidPushTokens.contains(androidPushToken)) {
-            user.androidPushTokens.add(androidPushToken)
+            user.addToAndroidPushTokens(androidPushToken)
         }
     }
 
@@ -123,7 +123,7 @@ class AndroidGcmPushService {
         else {
             String error = result.getErrorCodeName();
             // L'application c'est désenregister : retirer le token
-            if (Constants.ERROR_NOT_REGISTERED.equals(error)) {
+            if (Constants.ERROR_NOT_REGISTERED == error) {
                 List<User> listUser = User.findAll("from User usr where :token in elements(usr.androidPushTokens)", [token: androidPushToken])
                 for (User user : listUser) {
                     user.androidPushTokens.remove(androidPushToken)

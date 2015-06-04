@@ -16,5 +16,8 @@ class MessageControllerSpec extends Specification {
     }
 
     void "test something"() {
+        when: "--"
+
+        then: "--"
     }
 }
