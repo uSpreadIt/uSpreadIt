@@ -2,9 +2,9 @@ package it.uspread.core.json
 
 import grails.converters.JSON
 import it.uspread.core.data.Status
-import it.uspread.core.domain.Message;
-import it.uspread.core.domain.Role;
-import it.uspread.core.domain.User;
+import it.uspread.core.domain.Message
+import it.uspread.core.domain.Role
+import it.uspread.core.domain.User
 import it.uspread.core.type.ReportType
 
 import java.text.SimpleDateFormat
@@ -90,7 +90,7 @@ class JSONMarshaller {
                 output[JSONAttribute.MESSAGE_TEXT] = msg.text
                 output[JSONAttribute.MESSAGE_TEXTCOLOR] = msg.textColor
                 output[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] = msg.backgroundColor
-                output[JSONAttribute.MESSAGE_BACKGROUNDTYPE] = msg.backgroundType
+                output[JSONAttribute.MESSAGE_BACKGROUNDTYPE] = msg.backgroundType.name()
                 // TODO
                 return output;
             }
@@ -126,7 +126,7 @@ class JSONMarshaller {
                 output[JSONAttribute.MESSAGE_TEXT] = msg.text
                 output[JSONAttribute.MESSAGE_TEXTCOLOR] = msg.textColor
                 output[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] = msg.backgroundColor
-                output[JSONAttribute.MESSAGE_BACKGROUNDTYPE] = msg.backgroundType
+                output[JSONAttribute.MESSAGE_BACKGROUNDTYPE] = msg.backgroundType.name()
                 return output;
             }
         }
@@ -160,7 +160,7 @@ class JSONMarshaller {
                 output[JSONAttribute.MESSAGE_TEXT] = msg.text
                 output[JSONAttribute.MESSAGE_TEXTCOLOR] = msg.textColor
                 output[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] = msg.backgroundColor
-                output[JSONAttribute.MESSAGE_BACKGROUNDTYPE] = msg.backgroundType
+                output[JSONAttribute.MESSAGE_BACKGROUNDTYPE] = msg.backgroundType.name()
                 return output;
             }
         }
