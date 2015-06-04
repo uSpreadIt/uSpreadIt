@@ -20,6 +20,8 @@ class Spread implements Serializable {
     static belongsTo = Message
 
     static mapping = {
+        messageReceived(index: 'messageReceived_idx')
+        messageSpread(index: 'messageSpread_idx')
         user(index: 'user_idx')
         version(false)
     }
