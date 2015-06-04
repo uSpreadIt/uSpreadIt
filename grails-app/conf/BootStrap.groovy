@@ -1,7 +1,7 @@
 import grails.util.Environment
-import it.uspread.core.domain.Role;
-import it.uspread.core.domain.User;
-import it.uspread.core.domain.UserRole;
+import it.uspread.core.domain.Role
+import it.uspread.core.domain.User
+import it.uspread.core.domain.UserRole
 import it.uspread.core.json.JSONMarshaller
 
 class BootStrap {
@@ -30,19 +30,17 @@ class BootStrap {
             droitsMod = new UserRole(user: mod, role: roleMod)
             droitsMod.save()
         } else if (Environment.current == Environment.PRODUCTION) {
-            //Crée les rôles si nécessaire
-            if (Role.count() == 0) {
-                def roleModerator = new Role(authority: Role.ROLE_MODERATOR)
-                roleModerator.save([failOnError: true])
-                def roleAdministrator = new Role(authority: Role.ROLE_ADMINISTRATOR)
-                roleModerator.save([failOnError: true])
-            }
-
             // Si BD vierge.
             if (!User.count()) {
                 // Création du modérateur originel  (FIXME à remplacer plus tard plutôt par un administrateur)
                 def mod = new User(username: 'mod', password: 'mod', email:"mod@free.fr", specialUser: true)
                 mod.save([failOnError: true])
+
+                def roleModerator = new Role(authority: Role.ROLE_MODERATOR)
+                roleModerator.save([failOnError: true])
+                def roleAdministrator = new Role(authority: Role.ROLE_ADMINISTRATOR)
+                roleAdministrator.save([failOnError: true])
+
                 UserRole droitsMod = new UserRole(user: mod, role: roleModerator)
                 droitsMod.save([failOnError: true])
 
