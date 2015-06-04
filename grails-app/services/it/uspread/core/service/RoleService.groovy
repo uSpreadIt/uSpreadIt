@@ -1,9 +1,9 @@
 package it.uspread.core.service
 
 import grails.transaction.Transactional
-import it.uspread.core.Role
-import it.uspread.core.User
-import it.uspread.core.UserRole
+import it.uspread.core.domain.Role;
+import it.uspread.core.domain.User;
+import it.uspread.core.domain.UserRole;
 
 /**
  *  Service d'accés aux rôles de sécurité

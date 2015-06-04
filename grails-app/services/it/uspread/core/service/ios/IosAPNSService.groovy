@@ -1,8 +1,8 @@
-package it.uspread.ios
+package it.uspread.core.service.ios
 
 import grails.transaction.Transactional
 import grails.util.Environment
-import it.uspread.core.User
+import it.uspread.core.domain.User;
 
 import org.codehaus.groovy.grails.io.support.ClassPathResource
 

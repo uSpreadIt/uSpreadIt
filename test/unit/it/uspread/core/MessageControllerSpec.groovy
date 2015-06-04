@@ -1,5 +1,6 @@
 package it.uspread.core
 
+import it.uspread.core.controller.MessageController;
 import grails.test.mixin.TestFor
 import spock.lang.Specification
 

@@ -1,7 +1,11 @@
-package it.uspread.core
+package it.uspread.core.service
 
 import grails.transaction.Transactional
 import it.uspread.core.data.Status
+import it.uspread.core.domain.Message;
+import it.uspread.core.domain.Report;
+import it.uspread.core.domain.Spread;
+import it.uspread.core.domain.User;
 import it.uspread.core.params.MessageCriteria
 import it.uspread.core.params.QueryParams
 import it.uspread.core.type.ReportType

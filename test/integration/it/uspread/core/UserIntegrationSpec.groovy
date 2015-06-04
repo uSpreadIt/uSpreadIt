@@ -1,6 +1,10 @@
 package it.uspread.core
 
 
+import it.uspread.core.domain.Message;
+import it.uspread.core.domain.Report;
+import it.uspread.core.domain.Spread;
+import it.uspread.core.domain.User;
 import it.uspread.core.type.BackgroundType
 import it.uspread.core.type.ReportType
 import spock.lang.*

@@ -1,10 +1,10 @@
 package it.uspread.core.json
 
 import grails.converters.JSON
-import it.uspread.core.Message
-import it.uspread.core.Role
-import it.uspread.core.User
 import it.uspread.core.data.Status
+import it.uspread.core.domain.Message;
+import it.uspread.core.domain.Role;
+import it.uspread.core.domain.User;
 import it.uspread.core.type.ReportType
 
 import java.text.SimpleDateFormat

@@ -1,4 +1,4 @@
-package it.uspread.core
+package it.uspread.core.domain
 
 import org.apache.commons.lang.builder.HashCodeBuilder
 

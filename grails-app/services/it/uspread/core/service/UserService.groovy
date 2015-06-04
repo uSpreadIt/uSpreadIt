@@ -1,5 +1,7 @@
-package it.uspread.core
+package it.uspread.core.service
 
+import it.uspread.core.domain.Message;
+import it.uspread.core.domain.User;
 import grails.transaction.Transactional
 
 /**

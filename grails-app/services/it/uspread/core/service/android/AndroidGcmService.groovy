@@ -1,7 +1,7 @@
-package it.uspread.android
+package it.uspread.core.service.android
 
 import grails.transaction.Transactional
-import it.uspread.core.User
+import it.uspread.core.domain.User;
 import it.uspread.core.json.JSONAttribute
 
 import com.google.android.gcm.server.Constants

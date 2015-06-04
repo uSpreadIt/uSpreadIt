@@ -1,4 +1,4 @@
-package it.uspread.core
+package it.uspread.core.domain
 
 /**
  * Modèle destiné à stocker les images dans une table dédié

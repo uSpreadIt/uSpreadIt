@@ -1,4 +1,4 @@
-package it.uspread.core
+package it.uspread.core.domain
 
 /**
  * Sécurité : rôles spéciaux disponibles (Pas de rôle USER car ne pas avoir de rôles est la condition pour être un simple utilisateur)

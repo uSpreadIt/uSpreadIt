@@ -121,9 +121,9 @@ log4j.main = {
 
 
 // Added by the Spring Security Core plugin:
-grails.plugin.springsecurity.userLookup.userDomainClassName = 'it.uspread.core.User'
-grails.plugin.springsecurity.userLookup.authorityJoinClassName = 'it.uspread.core.UserRole'
-grails.plugin.springsecurity.authority.className = 'it.uspread.core.Role'
+grails.plugin.springsecurity.userLookup.userDomainClassName = 'it.uspread.core.domain.User'
+grails.plugin.springsecurity.userLookup.authorityJoinClassName = 'it.uspread.core.domain.UserRole'
+grails.plugin.springsecurity.authority.className = 'it.uspread.core.domain.Role'
 grails.plugin.springsecurity.useBasicAuth = true
 grails.plugin.springsecurity.basic.realmName = "uSpread"
 grails.plugin.springsecurity.securityConfigType = "InterceptUrlMap"

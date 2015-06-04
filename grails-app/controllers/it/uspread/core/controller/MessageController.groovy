@@ -1,7 +1,9 @@
-package it.uspread.core
+package it.uspread.core.controller
 
 import grails.converters.JSON
 import grails.rest.RestfulController
+import it.uspread.core.domain.Message;
+import it.uspread.core.domain.User;
 import it.uspread.core.json.JSONAttribute
 import it.uspread.core.json.JSONMarshaller
 import it.uspread.core.params.MessageCriteria
