@@ -10,6 +10,8 @@ import it.uspread.core.type.ReportType
 
 import java.text.SimpleDateFormat
 
+import org.apache.commons.codec.binary.Base64
+
 /**
  * Configuration des formes de conversions des données vers le format JSON.<br>
  * C'est dans cette classe qu'est géré les différentes possibilités d'informations retourné aux clients.
@@ -94,7 +96,7 @@ class JSONMarshaller {
                 output[JSONAttribute.MESSAGE_TEXTCOLOR] = msg.textColor
                 output[JSONAttribute.MESSAGE_BACKGROUNDTYPE] = msg.backgroundType.name()
                 if (msg.backgroundType == BackgroundType.IMAGE) {
-                    output[JSONAttribute.MESSAGE_IMAGE] = msg.backgroundImage.image
+                    output[JSONAttribute.MESSAGE_IMAGE] = Base64.encodeBase64String(msg.backgroundImage.image)
                 } else {
                     output[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] = msg.backgroundColor
                 }
@@ -108,7 +110,7 @@ class JSONMarshaller {
             it.registerObjectMarshaller(Message) { Message msg ->
                 def output = [:]
                 output[JSONAttribute.MESSAGE_ID] = msg.id
-                output[JSONAttribute.MESSAGE_IMAGE] = msg.backgroundImage.image
+                output[JSONAttribute.MESSAGE_IMAGE] = Base64.encodeBase64String(msg.backgroundImage.image)
                 return output
             }
         }
@@ -124,7 +126,7 @@ class JSONMarshaller {
                 output[JSONAttribute.MESSAGE_TEXTCOLOR] = msg.textColor
                 output[JSONAttribute.MESSAGE_BACKGROUNDTYPE] = msg.backgroundType.name()
                 if (msg.backgroundType == BackgroundType.IMAGE) {
-                    output[JSONAttribute.MESSAGE_IMAGE] = msg.backgroundImage.image
+                    output[JSONAttribute.MESSAGE_IMAGE] = Base64.encodeBase64String(msg.backgroundImage.image)
                 } else {
                     output[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] = msg.backgroundColor
                 }
@@ -148,7 +150,7 @@ class JSONMarshaller {
                 output[JSONAttribute.MESSAGE_TEXTCOLOR] = msg.textColor
                 output[JSONAttribute.MESSAGE_BACKGROUNDTYPE] = msg.backgroundType.name()
                 if (msg.backgroundType == BackgroundType.IMAGE) {
-                    output[JSONAttribute.MESSAGE_IMAGE] = msg.backgroundImage.image
+                    output[JSONAttribute.MESSAGE_IMAGE] = Base64.encodeBase64String(msg.backgroundImage.image)
                 } else {
                     output[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] = msg.backgroundColor
                 }
@@ -171,7 +173,7 @@ class JSONMarshaller {
                 output[JSONAttribute.MESSAGE_TEXTCOLOR] = msg.textColor
                 output[JSONAttribute.MESSAGE_BACKGROUNDTYPE] = msg.backgroundType.name()
                 if (msg.backgroundType == BackgroundType.IMAGE) {
-                    output[JSONAttribute.MESSAGE_IMAGE] = msg.backgroundImage.image
+                    output[JSONAttribute.MESSAGE_IMAGE] = Base64.encodeBase64String(msg.backgroundImage.image)
                 } else {
                     output[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] = msg.backgroundColor
                 }
@@ -265,7 +267,7 @@ class JSONMarshaller {
                         output[JSONAttribute.MESSAGE_MAINREPORTTYPE] = reportType.name()
                     }
                     if ( msg.backgroundType == BackgroundType.IMAGE) {
-                        output[JSONAttribute.MESSAGE_IMAGE] = msg.backgroundImage.image
+                        output[JSONAttribute.MESSAGE_IMAGE] = Base64.encodeBase64String(msg.backgroundImage.image)
                     }
                 }
 
