@@ -1,8 +1,8 @@
 package it.uspread.core.service
 
-import it.uspread.core.domain.Message;
-import it.uspread.core.domain.User;
 import grails.transaction.Transactional
+import it.uspread.core.domain.Message
+import it.uspread.core.domain.User
 
 /**
  * Service utilisateur
@@ -17,12 +17,21 @@ class UserService {
     private static final int TOP_SIZE = 50;
 
     /**
-     *
+     * Retourne l'utilisateur demandé
      * @param userId
      * @return
      */
     User getUserFromId(Long userId) {
         return User.get(userId)
+    }
+
+    /**
+     * Retourne l'utilisateur demandé
+     * @param username
+     * @return
+     */
+    User getUserFromUsername(String username) {
+        return User.findByUsername(username)
     }
 
     /**

@@ -20,41 +20,122 @@ class UserControllerFunctionalSpec extends Specification {
     @Shared def clientPublic = new RESTClient("http://localhost:8080/uSpread-core/rest/")
     @Shared def clientUser1 = new RESTClient("http://localhost:8080/uSpread-core/rest/")
     @Shared def clientUser2_NoChange = new RESTClient("http://localhost:8080/uSpread-core/rest/")
-    @Shared def clientUser5_ToDelete = new RESTClient("http://localhost:8080/uSpread-core/rest/")
-    @Shared def client_UnknownAccount = new RESTClient("http://localhost:8080/uSpread-core/rest/")
+    @Shared def clientUser6_ToDelete = new RESTClient("http://localhost:8080/uSpread-core/rest/")
     @Shared def clientModerator = new RESTClient("http://localhost:8080/uSpread-core/rest/")
     @Shared def clientModerator_ToDelete = new RESTClient("http://localhost:8080/uSpread-core/rest/")
 
     void setup() {
         clientUser1.authorization = new HTTPBasicAuthorization("user1", "user1")
         clientUser2_NoChange.authorization = new HTTPBasicAuthorization("user2", "user2")
-        clientUser5_ToDelete.authorization = new HTTPBasicAuthorization("user5", "user5")
-        client_UnknownAccount.authorization = new HTTPBasicAuthorization("unknown", "unknown")
+        clientUser6_ToDelete.authorization = new HTTPBasicAuthorization("user6", "user6")
         clientModerator.authorization = new HTTPBasicAuthorization("mod", "mod")
         clientModerator_ToDelete.authorization = new HTTPBasicAuthorization("old_mod", "old_mod")
         // TODO lorsqu'on aura mis en place SSL
         // clientPublic.httpClient.sslTrustAllCerts = true
-        // clientUser_1.httpClient.sslTrustAllCerts = true
-        // clientUser_2.httpClient.sslTrustAllCerts = true
-        // clientUser_5_ToDelete.httpClient.sslTrustAllCerts = true
-        // client_UnknownAccount.httpClient.sslTrustAllCerts = true
+        // clientUser1.httpClient.sslTrustAllCerts = true
+        // clientUser2_NoChange.httpClient.sslTrustAllCerts = true
+        // clientUser6_ToDelete.httpClient.sslTrustAllCerts = true
         // clientModerator.httpClient.sslTrustAllCerts = true
+        // clientModerator_ToDelete.httpClient.sslTrustAllCerts = true
     }
 
     void "Unknow user try to access protected URL"() {
+
+        try {
+            when: "GET user connected"
+            Response response = clientPublic.get([path: "/users/connected", accept: ContentType.JSON])
+            false
+        } catch(HTTPClientException e) {
+            then: "is forbidden"
+            e.response.statusCode == HttpStatus.FORBIDDEN.value
+        }
+
+        try {
+            when: "PUT user connected"
+            Response response = clientPublic.get([path: "/users/connected", accept: ContentType.JSON])
+            false
+        } catch(HTTPClientException e) {
+            then: "is forbidden"
+            e.response.statusCode == HttpStatus.FORBIDDEN.value
+        }
+
+        try {
+            when: "DELETE user connected"
+            Response response = clientPublic.get([path: "/users/connected", accept: ContentType.JSON])
+            false
+        } catch(HTTPClientException e) {
+            then: "is forbidden"
+            e.response.statusCode == HttpStatus.FORBIDDEN.value
+        }
+
+        try {
+            when: "Get his status"
+            Response response = clientPublic.get([path: "/users/connected/status", accept: ContentType.JSON])
+            false
+        } catch(HTTPClientException e) {
+            then: "is forbidden"
+            e.response.statusCode == HttpStatus.FORBIDDEN.value
+        }
+
+        try {
+            when: "POST a pushtoken"
+            Response response = clientPublic.post([path: "/users/connected/pushtoken"]) {
+                type(ContentType.JSON)
+                json([pushToken: "AZERTYUIOPQSDFGHJKLM", device: "ANDROID"])
+            }
+            false
+        } catch(HTTPClientException e) {
+            then: "is forbidden"
+            e.response.statusCode == HttpStatus.FORBIDDEN.value
+        }
+
         try {
             when: "GET an user"
-            Response response = client_UnknownAccount.get([path: "/users/1", accept: ContentType.JSON])
+            Response response = clientPublic.get([path: "/users/1", accept: ContentType.JSON])
             false
         } catch(HTTPClientException e) {
             then: "is unauthorized"
             e.response.statusCode == HttpStatus.UNAUTHORIZED.value
         }
 
-        // TODO faire pour toutes les URL protégé
+        try {
+            when: "DELETE an user"
+            Response response = clientPublic.delete([path: "/users/1"])
+            false
+        } catch(HTTPClientException e) {
+            then: "is forbidden"
+            e.response.statusCode == HttpStatus.FORBIDDEN.value
+        }
+
+        try {
+            when: "PUT an user"
+            Response response = clientPublic.put([path: "/users/1"])
+            false
+        } catch(HTTPClientException e) {
+            then: "is forbidden"
+            e.response.statusCode == HttpStatus.FORBIDDEN.value
+        }
+
+        try {
+            when: "POST an moderator"
+            Response response = clientPublic.post([path: "/users/moderator"])
+            false
+        } catch(HTTPClientException e) {
+            then: "is forbidden"
+            e.response.statusCode == HttpStatus.FORBIDDEN.value
+        }
+
+        try {
+            when: "get the user list"
+            Response response = clientPublic.get([path: "/userlist", accept: ContentType.JSON])
+            false
+        } catch(HTTPClientException e) {
+            then: "is forbidden"
+            e.response.statusCode == HttpStatus.FORBIDDEN.value
+        }
     }
 
-    void "Simple user try to get specific user"() {
+    void "Simple user try to access forbidden URL"() {
         try {
             when: "GET an user"
             Response response = clientUser1.get([path: "/users/1", accept: ContentType.JSON])
@@ -63,9 +144,7 @@ class UserControllerFunctionalSpec extends Specification {
             then: "is forbidden"
             e.response.statusCode == HttpStatus.FORBIDDEN.value
         }
-    }
 
-    void "Simple user try to Delete specific user"() {
         try {
             when: "DELETE an user"
             Response response = clientUser1.delete([path: "/users/1"])
@@ -74,9 +153,7 @@ class UserControllerFunctionalSpec extends Specification {
             then: "is forbidden"
             e.response.statusCode == HttpStatus.FORBIDDEN.value
         }
-    }
 
-    void "Simple user try to update specific user"() {
         try {
             when: "PUT an user"
             Response response = clientUser1.put([path: "/users/1"])
@@ -85,22 +162,18 @@ class UserControllerFunctionalSpec extends Specification {
             then: "is forbidden"
             e.response.statusCode == HttpStatus.FORBIDDEN.value
         }
-    }
 
-    void "Simple user try to create a moderator"() {
         try {
-            when: "POST an user"
+            when: "POST an moderator"
             Response response = clientUser1.post([path: "/users/moderator"])
             false
         } catch(HTTPClientException e) {
             then: "is forbidden"
             e.response.statusCode == HttpStatus.FORBIDDEN.value
         }
-    }
 
-    void "Simple user try to get the user's list"() {
         try {
-            when: "get thez user list"
+            when: "get the user list"
             Response response = clientUser1.get([path: "/userlist", accept: ContentType.JSON])
             false
         } catch(HTTPClientException e) {
@@ -109,18 +182,16 @@ class UserControllerFunctionalSpec extends Specification {
         }
     }
 
-    void "Moderator try to get status"() {
+    void "Moderator try to access forbidden URL"() {
         try {
-            when: "Get his status"
+            when: "Get the status"
             Response response = clientModerator.get([path: "/users/connected/status", accept: ContentType.JSON])
             false
         } catch(HTTPClientException e) {
             then: "is forbidden"
             e.response.statusCode == HttpStatus.FORBIDDEN.value
         }
-    }
 
-    void "Moderator try to post pushtoken"() {
         try {
             when: "POST a pushtoken"
             Response response = clientModerator.post([path: "/users/connected/pushtoken"]) {
@@ -201,10 +272,11 @@ class UserControllerFunctionalSpec extends Specification {
 
         then: "I get the expected user as a JSON"
         response.statusCode == HttpStatus.OK.value
+        response.json.size() == 7
         response.json.id == 2
         response.json.username == "user2"
         response.json.email == "user2@42.fr"
-        response.json.role == "ROLE_USER"
+        response.json.role == "USER"
         response.json.reportsSent == 0
         response.json.reportsReceived == 1
         response.json.moderationRequired == true
@@ -228,16 +300,16 @@ class UserControllerFunctionalSpec extends Specification {
         response.json.email == "jp@toto.fr"
     }
 
-    void "Moderator Delete user with id 6"() {
-        when: "delete user with id 6"
-        Response response = clientModerator.delete([path: "/users/6"])
+    void "Moderator Delete user with id 7"() {
+        when: "delete user with id 7"
+        Response response = clientModerator.delete([path: "/users/7"])
 
         then: "Look like ok"
         response.statusCode == HttpStatus.ACCEPTED.value
 
         try {
             when: "I try to get the expected user as a JSON"
-            clientModerator.get([path: "/users/6", accept: ContentType.JSON])
+            clientModerator.get([path: "/users/7", accept: ContentType.JSON])
             false
         } catch(HTTPClientException e) {
             then: "is not found"
@@ -262,10 +334,11 @@ class UserControllerFunctionalSpec extends Specification {
 
         then: "I get the expected user as a JSON"
         response.statusCode == HttpStatus.OK.value
-        response.json.id == 7
+        response.json.size() == 4
+        response.json.id == 8
         response.json.username == "mod"
         response.json.email == "mod@42.fr"
-        response.json.role == "ROLE_MODERATOR"
+        response.json.role == "MODERATOR"
     }
 
     void "Moderator Put user connected"() {
@@ -310,6 +383,8 @@ class UserControllerFunctionalSpec extends Specification {
         then: "I get the list as a JSON"
         response.statusCode == HttpStatus.OK.value
         response.json[0].username != null
+
+        // TODO paufiner ce test en même temps que la fonctionnalité
     }
 
     void "Simple user GET user connected"() {
@@ -318,6 +393,7 @@ class UserControllerFunctionalSpec extends Specification {
 
         then: "I get the expected user as a JSON"
         response.statusCode == HttpStatus.OK.value
+        response.json.size() == 3
         response.json.id == 2
         response.json.username == "user2"
         response.json.email == "user2@42.fr"
@@ -343,14 +419,14 @@ class UserControllerFunctionalSpec extends Specification {
 
     void "Simple user delete user connected"() {
         when: "delete user connected"
-        Response response = clientUser5_ToDelete.delete([path: "/users/connected"])
+        Response response = clientUser6_ToDelete.delete([path: "/users/connected"])
 
         then: "Look like ok"
         response.statusCode == HttpStatus.ACCEPTED.value
 
         try {
             when: "I try to get the expected user as a JSON"
-            clientUser5_ToDelete.get([path: "/users/connected", accept: ContentType.JSON])
+            clientUser6_ToDelete.get([path: "/users/connected", accept: ContentType.JSON])
             false
         } catch(HTTPClientException e) {
             then: "is not found"
@@ -364,14 +440,15 @@ class UserControllerFunctionalSpec extends Specification {
 
         then: "Its work"
         response.statusCode == HttpStatus.OK.value
+        response.json.size() == 1
         response.json.quotaReached != null
-        response.json.nbMessageWrited == null
 
         when: "Get his status"
         response = clientUser1.get([path: "/users/connected/status", accept: ContentType.JSON])
 
         then: "Its work"
         response.statusCode == HttpStatus.OK.value
+        response.json.size() == 5
         response.json.quotaReached != null
         response.json.nbMessageWrited != null
         response.json.nbMessageSpread != null
@@ -397,5 +474,7 @@ class UserControllerFunctionalSpec extends Specification {
         then: "I get the list as a JSON"
         response.statusCode == HttpStatus.OK.value
         response.json[0].username != null
+
+        // TODO paufiner ce test en meme temps que la fonctionnalité
     }
 }

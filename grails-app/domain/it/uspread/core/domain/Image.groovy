@@ -5,6 +5,9 @@ package it.uspread.core.domain
  */
 class Image {
 
+    /** Taille maximale d'une image en octet */
+    public static final int IMAGE_MAX_SIZE = 1048576
+
     /** Image de fond encodé en PNG */
     byte[] image
 
@@ -13,9 +16,10 @@ class Image {
     static mapping = {
         version(false)
         id([generator:'sequence', params:[sequence:'image_sequence']])
-        image(type: 'blob')
     }
 
     static constraints = {
+        image(maxSize: IMAGE_MAX_SIZE)
     }
+
 }

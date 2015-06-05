@@ -3,7 +3,7 @@ package it.uspread.core.params
 import java.text.SimpleDateFormat
 
 /**
- * Choses utiles pour les paramètre d'entrée des requetes rest
+ * Choses utiles pour les valeurs des paramètres d'entrée des requetes rest
  */
 class QueryParams {
 

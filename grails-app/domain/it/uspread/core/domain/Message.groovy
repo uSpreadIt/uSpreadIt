@@ -52,7 +52,7 @@ class Message {
         text(length: TEXT_MAX_LENGTH)
         textColor(length: 6)
         backgroundType(enumType: 'string')
-        //backgroundImage(cascade: 'all-delete-orphan')
+        backgroundImage(cascade: 'all-delete-orphan')
         receivedBy(cascade: 'all-delete-orphan')
         spreadBy(cascade: 'all-delete-orphan')
         ignoredBy(joinTable: [name: 'message_ignored', key: 'message_id', column: 'user_id'])
@@ -68,7 +68,7 @@ class Message {
 
     /**
      * Indique le type de signalement principalement effectué
-     * @return type de signalement
+     * @return type de signalement ou null si non signalé
      */
     ReportType getMainReportType() {
         int reportedAsSpam = 0

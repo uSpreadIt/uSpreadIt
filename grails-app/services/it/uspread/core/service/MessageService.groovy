@@ -2,10 +2,10 @@ package it.uspread.core.service
 
 import grails.transaction.Transactional
 import it.uspread.core.data.Status
-import it.uspread.core.domain.Message;
-import it.uspread.core.domain.Report;
-import it.uspread.core.domain.Spread;
-import it.uspread.core.domain.User;
+import it.uspread.core.domain.Message
+import it.uspread.core.domain.Report
+import it.uspread.core.domain.Spread
+import it.uspread.core.domain.User
 import it.uspread.core.params.MessageCriteria
 import it.uspread.core.params.QueryParams
 import it.uspread.core.type.ReportType
@@ -162,10 +162,18 @@ class MessageService {
 
     /**
      * Recherche des messages signalés
+     * @param user de l'utilisateur concerné ou null
      * @return liste de messages
      */
-    List<Message> getReportedMessages() {
-        return (List<Message>) Message.createCriteria().list({ reports({ isNotNull('id') }) })
+    List<Message> getReportedMessages(User user) {
+        if (user) {
+            return (List<Message>) Message.createCriteria().list({
+                eq('author.id', user.id)
+                and(reports({ isNotNull('id') }))
+            })
+        } else {
+            return (List<Message>) Message.createCriteria().list({ reports({ isNotNull('id') }) })
+        }
     }
 
     /**

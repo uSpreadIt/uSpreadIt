@@ -2,10 +2,12 @@ package it.uspread.core
 
 import it.uspread.core.type.BackgroundType
 
+import org.apache.commons.codec.binary.Base64
 import org.springframework.http.HttpStatus
 
 import spock.lang.Shared
 import spock.lang.Specification
+import wslite.http.HTTPClientException
 import wslite.http.auth.HTTPBasicAuthorization
 import wslite.rest.ContentType
 import wslite.rest.RESTClient
@@ -14,78 +16,128 @@ import wslite.rest.Response
 /**
  * Tests qui servent à valider les refactoring important
  * Le serveur doit tourner (en localhost) avant exécution
- * Ne peuvent être rejoués plusieurs fois
+ * Ne peuvent être rejoués plusieurs fois.
  */
 class MessageControllerFunctionalSpec extends Specification {
 
-    // TODO couvrir plus de cas un peu comme dans le test functional des user
+    private final long idMessage1FromUser1 = 1
+    private final long idMessage2FromUser1 = 2
+    private final long idMessage3FromUser1_ToDelete = 3
+    private final long idMessage1FromUser2 = 4
+    private final long idMessage2FromUser2_ToReport = 5
+    private final long idMessage1FromUser3 = 6
 
-    private final long idMessageFromUser1 = 1
-    private final long idMessage2FromUser1_ToDelete = 2
-    private final long idMessageFromUser2 = 3
-    private final long idMessage2FromUser2_ToReport = 4
-    private final long idMessageFromUser3 = 5
-
-    @Shared def clientModerator = new RESTClient("http://localhost:8080/uSpread-core/rest/")
+    @Shared def clientPublic = new RESTClient("http://localhost:8080/uSpread-core/rest/")
     @Shared def clientUser1 = new RESTClient("http://localhost:8080/uSpread-core/rest/")
     @Shared def clientUser2 = new RESTClient("http://localhost:8080/uSpread-core/rest/")
     @Shared def clientUser3 = new RESTClient("http://localhost:8080/uSpread-core/rest/")
     @Shared def clientUser4 = new RESTClient("http://localhost:8080/uSpread-core/rest/")
+    @Shared def clientModerator = new RESTClient("http://localhost:8080/uSpread-core/rest/")
 
-    def wrapPlainMessage(Map param) {
+    void setup() {
+        clientUser1.authorization = new HTTPBasicAuthorization("user1", "user1")
+        clientUser2.authorization = new HTTPBasicAuthorization("user2", "user2")
+        clientUser3.authorization = new HTTPBasicAuthorization("user3", "user3")
+        clientUser4.authorization = new HTTPBasicAuthorization("user4", "user4")
+        clientModerator.authorization = new HTTPBasicAuthorization("mod", "mod")
+
+        // TODO lorsqu'on aura mis en place SSL
+        // clientPublic.httpClient.sslTrustAllCerts = true
+        // clientUser1.httpClient.sslTrustAllCerts = true
+        // clientUser2.httpClient.sslTrustAllCerts = true
+        // clientUser3.httpClient.sslTrustAllCerts = true
+        // clientUser4.httpClient.sslTrustAllCerts = true
+    }
+
+    private Map wrapPlainMessage(Map param) {
         param['backgroundType'] = BackgroundType.PLAIN.name()
         param['backgroundColor'] = 'FFBB33'
         param['textColor'] = '000000'
         return param
     }
 
-    private void postMessage(RESTClient client, String text) {
+    private Map wrapImageMessage(Map param) {
+        param['backgroundType'] = BackgroundType.IMAGE.name()
+        param['image'] = Base64.encodeBase64String([0, 0, 0, 0, 0, 1, 0] as byte[])
+        param['textColor'] = '000000'
+        return param
+    }
+
+    private void postMessage(RESTClient client, String text, boolean image = false) {
         Response response = client.post([path: "/messages", accept: ContentType.JSON]) {
             type(ContentType.JSON)
-            json(wrapPlainMessage([text: text]))
+            json(image ? wrapImageMessage([text: text]) : wrapPlainMessage([text: text]))
         }
 
         assert response.statusCode == HttpStatus.CREATED.value
         assert response.json.id != null
     }
 
-    void setup() {
-        clientModerator.authorization = new HTTPBasicAuthorization("mod", "mod")
-        clientUser1.authorization = new HTTPBasicAuthorization("user1", "user1")
-        clientUser2.authorization = new HTTPBasicAuthorization("user2", "user2")
-        clientUser3.authorization = new HTTPBasicAuthorization("user3", "user3")
-        clientUser4.authorization = new HTTPBasicAuthorization("user4", "user4")
-
-        // TODO lorsqu'on aura mis en place SSL
-        // clientModerator.httpClient.sslTrustAllCerts = true
-        // clientUser1.httpClient.sslTrustAllCerts = true
-        // clientUser2.httpClient.sslTrustAllCerts = true
-        // clientUser3.httpClient.sslTrustAllCerts = true
-        // clientUser4.httpClient.sslTrustAllCerts = true
-
-        // Créer des messages pour le test
-        postMessage(clientUser1, "hello world")
+    void "Users post messages"() {
+        when: "Users post messages"
+        postMessage(clientUser1, "hello")
+        postMessage(clientUser1, "hello world", true)
         postMessage(clientUser1, "hello universe")
         postMessage(clientUser2, "he ho calmos")
         postMessage(clientUser2, "Fuck")
         postMessage(clientUser3, "Yo")
+
+        then: "no assert releved"
     }
 
-    void "user 2 spread"() {
-        when: "Message is spread by user2"
-        Response response = clientUser2.post([path: "/messages/"+idMessageFromUser1+"/spread", accept: ContentType.JSON]) {
+    void "Unknow user try to access protected URL"() {
+        when: "ee"
+        then: "ee"
+        // TODO faire pour toutes les URL protégé cf test User
+    }
+
+    void "Simple user try to access forbidden URL"() {
+
+        // Les conditions spéciale (tentative de suppression d'un message d'un autre, ou de spread again the same etc sont dans le test avec le mot Troll)
+
+        when: "ee"
+        then: "ee"
+
+        // TODO faire pour toutes les URL qu'il n'a pas accés cf test User
+    }
+
+    void "Moderator try to access forbidden URL"() {
+        when: "ee"
+        then: "ee"
+        // TODO faire pour toutes les URL qu'il n'a pas accés cf test User
+    }
+
+    void "user 1 spread"() {
+        when: "Message is spread by user1"
+        Response response = clientUser1.post([path: "/messages/"+idMessage1FromUser2+"/spread", accept: ContentType.JSON]) {
             type(ContentType.JSON)
         }
 
         then: "Status code is"
         response.statusCode == HttpStatus.ACCEPTED.value
+        response.json.size() == 3
         response.json.id != null
         response.json.nbSpread != null
+        response.json.dateSpread != null
+    }
+
+    void "user 2 spread"() {
+        when: "Message is spread by user2"
+        Response response = clientUser2.post([path: "/messages/"+idMessage1FromUser1+"/spread", accept: ContentType.JSON]) {
+            type(ContentType.JSON)
+        }
+
+        then: "Status code is"
+        response.statusCode == HttpStatus.ACCEPTED.value
+        response.json.size() == 3
+        response.json.id != null
+        response.json.nbSpread != null
+        response.json.dateSpread != null
     }
 
     void "user 3 ignores"() {
         when: "Message is ignored by user3"
-        Response response = clientUser3.post([path: "/messages/"+idMessageFromUser1+"/ignore"]) {
+        Response response = clientUser3.post([path: "/messages/"+idMessage1FromUser1+"/ignore"]) {
             type(ContentType.JSON)
         }
 
@@ -103,38 +155,82 @@ class MessageControllerFunctionalSpec extends Specification {
         response.statusCode == HttpStatus.ACCEPTED.value
     }
 
+    void "user 1 get a specific PLAIN message"() {
+        when: "Message is got by user1"
+        Response response = clientUser1.get([path: "/messages/"+idMessage1FromUser1, accept: ContentType.JSON])
+
+        then: "Status code is"
+        response.statusCode == HttpStatus.OK.value
+        response.json.size() == 7
+        response.json.id != null
+        response.json.dateCreation != null
+        response.json.nbSpread != null
+        response.json.text != null
+        response.json.textColor != null
+        response.json.backgroundType != null
+        response.json.backgroundColor != null
+    }
+
+    void "user 1 get a specific IMAGE message"() {
+        when: "Message is got by user1"
+        Response response = clientUser1.get([path: "/messages/"+idMessage2FromUser1, accept: ContentType.JSON])
+
+        then: "Status code is"
+        response.statusCode == HttpStatus.OK.value
+        response.json.size() == 7
+        response.json.id != null
+        response.json.dateCreation != null
+        response.json.nbSpread != null
+        response.json.text != null
+        response.json.textColor != null
+        response.json.backgroundType != null
+        response.json.image != null
+    }
+
+    void "user 1 get a specific IMAGE message but only the image"() {
+        when: "Message is got by user1"
+        Response response = clientUser1.get([path: "/messages/"+idMessage2FromUser1+"?onlyImage=true", accept: ContentType.JSON])
+
+        then: "Status code is"
+        response.statusCode == HttpStatus.OK.value
+        response.json.size() == 2
+        response.json.id != null
+        response.json.image != null
+    }
+
+    void "user 1 delete one of his message"() {
+        when: "Message is deleted"
+        Response response = clientUser1.delete([path: "/messages/"+idMessage3FromUser1_ToDelete])
+
+        then: "Status code is"
+        response.statusCode == HttpStatus.ACCEPTED.value
+    }
+
     void "user 1 gets his messages"() {
         when: "Messages are got by user1"
         Response response = clientUser1.get([path: "/messages?query=AUTHOR", accept: ContentType.JSON])
 
         then: "Status code is"
         response.statusCode == HttpStatus.OK.value
-        response.json[0] != null
+        response.json.size() == 2
     }
 
-    void "user 1 gets his message"() {
-        when: "Message is got by user1"
-        Response response = clientUser1.get([path: "/messages/"+idMessageFromUser1, accept: ContentType.JSON])
+    void "user 1 gets his messages received"() {
+        when: "Messages are got by user1"
+        Response response = clientUser1.get([path: "/messages?query=RECEIVED", accept: ContentType.JSON])
 
         then: "Status code is"
         response.statusCode == HttpStatus.OK.value
-        response.json.id != null
+        response.json.size() == 2
     }
 
-    void "user 1 deletes a message"() {
-        when: "Message is deleted"
-        Response response = clientUser1.delete([path: "/messages/"+idMessage2FromUser1_ToDelete])
-
-        then: "Status code is"
-        response.statusCode == HttpStatus.ACCEPTED.value
-    }
-
-    void "user 1 gets his status"() {
-        when: "status is got by user1"
-        Response response = clientUser1.get([path: "/users/connected/status", accept: ContentType.JSON])
+    void "user 1 gets his messages spread"() {
+        when: "Messages are got by user1"
+        Response response = clientUser1.get([path: "/messages?query=SPREAD", accept: ContentType.JSON])
 
         then: "Status code is"
         response.statusCode == HttpStatus.OK.value
+        response.json.size() == 1
     }
 
     void "mod gets user1 messages"() {
@@ -143,6 +239,7 @@ class MessageControllerFunctionalSpec extends Specification {
 
         then: "Status code is"
         response.statusCode == HttpStatus.OK.value
+        response.json.size() == 2
     }
 
     void "mod gets user2 message received"() {
@@ -151,6 +248,7 @@ class MessageControllerFunctionalSpec extends Specification {
 
         then: "Status code is"
         response.statusCode == HttpStatus.OK.value
+        response.json.size() == 2
     }
 
     void "mod gets user2 message spread"() {
@@ -159,6 +257,7 @@ class MessageControllerFunctionalSpec extends Specification {
 
         then: "Status code is"
         response.statusCode == HttpStatus.OK.value
+        response.json.size() == 1
     }
 
     void "mod gets reported messages"() {
@@ -167,5 +266,84 @@ class MessageControllerFunctionalSpec extends Specification {
 
         then: "Status code is"
         response.statusCode == HttpStatus.OK.value
+        response.json.size() == 1
     }
+
+    void "Simple user try to Troll the server"() {
+        try {
+            when: "A user try to delete a message of another user"
+            Response response = clientUser1.delete([path: "/messages/"+idMessage1FromUser2])
+            false
+        } catch(HTTPClientException e) {
+            then: "is forbidden"
+            e.response.statusCode == HttpStatus.FORBIDDEN.value
+        }
+
+        try {
+            when: "A user try to spread a message he has writed"
+            Response response = clientUser1.post([path: "/messages/"+idMessage1FromUser1+"/spread", accept: ContentType.JSON]) {
+                type(ContentType.JSON)
+            }
+            false
+        } catch(HTTPClientException e) {
+            then: "is forbidden"
+            e.response.statusCode == HttpStatus.FORBIDDEN.value
+        }
+
+        try {
+            when: "A user try to spread a message he has already spread"
+            Response response = clientUser2.post([path: "/messages/"+idMessage1FromUser2+"/spread", accept: ContentType.JSON]) {
+                type(ContentType.JSON)
+            }
+            false
+        } catch(HTTPClientException e) {
+            then: "is forbidden"
+            e.response.statusCode == HttpStatus.FORBIDDEN.value
+        }
+
+        try {
+            when: "A user try to ignore a message he has writed"
+            Response response = clientUser1.post([path: "/messages/"+idMessage1FromUser1+"/ignore", accept: ContentType.JSON]) {
+                type(ContentType.JSON)
+            }
+            false
+        } catch(HTTPClientException e) {
+            then: "is forbidden"
+            e.response.statusCode == HttpStatus.FORBIDDEN.value
+        }
+
+        try {
+            when: "A user try to ignore a message he has already ignored"
+            Response response = clientUser3.post([path: "/messages/"+idMessage1FromUser1+"/ignore"]) {
+                type(ContentType.JSON)
+            }
+            false
+        } catch(HTTPClientException e) {
+            then: "is forbidden"
+            e.response.statusCode == HttpStatus.FORBIDDEN.value
+        }
+
+        try {
+            when: "A user try to report a message he has writed"
+            Response response = clientUser1.post([path: "/messages/"+idMessage1FromUser1+"/report?type=SPAM"]) {
+                type(ContentType.JSON)
+            }
+            false
+        } catch(HTTPClientException e) {
+            then: "is forbidden"
+            e.response.statusCode == HttpStatus.FORBIDDEN.value
+        }
+
+        try {
+            when: "A user try to report a message he has already reported"
+            Response response = clientUser4.post([path: "/messages/"+idMessage2FromUser2_ToReport+"/report?type=SPAM"]) {
+                type(ContentType.JSON)
+            }
+            false
+        } catch(HTTPClientException e) {
+            then: "is forbidden"
+            e.response.statusCode == HttpStatus.FORBIDDEN.value
+        }
+    }
+
 }

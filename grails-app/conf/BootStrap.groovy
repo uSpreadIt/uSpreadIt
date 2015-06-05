@@ -11,12 +11,12 @@ class BootStrap {
         if (Environment.current == Environment.TEST || Environment.current == Environment.DEVELOPMENT) {
             // NE PAS CHANGER L'ORDRE CAR LES test fonctionels se basent la dessus
 
-            // création de 6 users
-            for (int i = 1; i <= 6; i++){
+            // création de 7 users (Les 2 derniers sont pour des tests de suppression)
+            for (int i = 1; i <= 7; i++){
                 new User(username: 'user'+i, password: 'user'+i, email:"user"+i+"@42.fr").save()
             }
 
-            // Création de 2 modérateur
+            // Création de 2 modérateur (Le dernier est pour un test de suppression)
             def roleMod = new Role(authority: Role.ROLE_MODERATOR)
             roleMod.save()
 

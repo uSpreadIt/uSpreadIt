@@ -5,6 +5,7 @@ import it.uspread.core.data.Status
 import it.uspread.core.domain.Message
 import it.uspread.core.domain.Role
 import it.uspread.core.domain.User
+import it.uspread.core.type.BackgroundType
 import it.uspread.core.type.ReportType
 
 import java.text.SimpleDateFormat
@@ -24,12 +25,14 @@ class JSONMarshaller {
     public static final String PUBLIC_MESSAGE = "publicAPI-Message"
     /** Configuration pour clients public : Message limité à son image */
     public static final String PUBLIC_MESSAGE_IMAGE = "publicAPI-Message-Image"
-    /** Configuration pour clients public : Liste de Message limité aux informations nécessaire aux messages propagé ou écrits par l'utilisateur */
-    public static final String PUBLIC_MESSAGE_LIST = "publicAPI-Message-List"
-    /** Configuration pour clients public : Liste de Message limité aux informations nécessaire aux messages propagé ou écrits par l'utilisateur valeurs dynamique uniquement */
-    public static final String PUBLIC_MESSAGE_LIST_DYNAMIC = "publicAPI-Message-List-Dynamic"
+    /** Configuration pour clients public : Liste de Message limité aux informations nécessaire aux messages écrits par l'utilisateur */
+    public static final String PUBLIC_MESSAGE_LIST_WRITED = "publicAPI-Message-List-Writed"
+    /** Configuration pour clients public : Liste de Message limité aux informations nécessaire aux messages propagé par l'utilisateur */
+    public static final String PUBLIC_MESSAGE_LIST_SPREAD = "publicAPI-Message-List-Spread"
     /** Configuration pour clients public : Liste de Message limité aux informations nécessaire aux messages reçus par l'utilisateur */
     public static final String PUBLIC_MESSAGE_LIST_RECEIVED = "publicAPI-Message-List-Received"
+    /** Configuration pour clients public : Liste de Message limité aux informations nécessaire aux messages propagé ou écrits par l'utilisateur valeurs dynamique uniquement */
+    public static final String PUBLIC_MESSAGE_LIST_DYNAMIC = "publicAPI-Message-List-Dynamic"
     /** Configuration pour clients public : Message limité aux informations de retour d'une création */
     public static final String PUBLIC_MESSAGE_CREATION = "publicAPI-Message-Creation"
     /** Configuration pour clients public : Message limité aux informations de retour d'une propagation */
@@ -57,7 +60,7 @@ class JSONMarshaller {
                 output[JSONAttribute.USER_ID] = user.id
                 output[JSONAttribute.USER_USERNAME] = user.username
                 output[JSONAttribute.USER_EMAIL] = user.email
-                return output;
+                return output
             }
         }
 
@@ -66,7 +69,7 @@ class JSONMarshaller {
             it.registerObjectMarshaller(User) { User user ->
                 def output = [:]
                 output[JSONAttribute.USER_USERNAME] = user.username
-                return output;
+                return output
             }
         }
 
@@ -89,10 +92,14 @@ class JSONMarshaller {
                 output[JSONAttribute.MESSAGE_NBSPREAD] = msg.nbSpread
                 output[JSONAttribute.MESSAGE_TEXT] = msg.text
                 output[JSONAttribute.MESSAGE_TEXTCOLOR] = msg.textColor
-                output[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] = msg.backgroundColor
                 output[JSONAttribute.MESSAGE_BACKGROUNDTYPE] = msg.backgroundType.name()
-                // TODO
-                return output;
+                if (msg.backgroundType == BackgroundType.IMAGE) {
+                    output[JSONAttribute.MESSAGE_IMAGE] = msg.backgroundImage.image
+                } else {
+                    output[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] = msg.backgroundColor
+                }
+
+                return output
             }
         }
 
@@ -101,23 +108,37 @@ class JSONMarshaller {
             it.registerObjectMarshaller(Message) { Message msg ->
                 def output = [:]
                 output[JSONAttribute.MESSAGE_ID] = msg.id
-                // TODO
-                return output;
+                output[JSONAttribute.MESSAGE_IMAGE] = msg.backgroundImage.image
+                return output
             }
         }
 
-        // Configuration pour clients public : Liste de Message limité aux informations nécessaire aux messages propagé ou écrits par l'utilisateur
-        JSON.createNamedConfig(PUBLIC_MESSAGE_LIST) {
+        // Configuration pour clients public : Liste de Message limité aux informations nécessaire aux messages écrits par l'utilisateur
+        JSON.createNamedConfig(PUBLIC_MESSAGE_LIST_WRITED) {
             it.registerObjectMarshaller(Message) { Message msg ->
                 def output = [:]
                 output[JSONAttribute.MESSAGE_ID] = msg.id
                 output[JSONAttribute.MESSAGE_DATECREATION] = DATE_FORMAT.format(msg.dateCreated)
-
-                Date date = msg.getDateReception(msg.getSpringSecurityService().currentUser)
-                if (date != null) {
-                    output[JSONAttribute.MESSAGE_DATERECEPTION] = DATE_FORMAT.format(date)
+                output[JSONAttribute.MESSAGE_NBSPREAD] = msg.nbSpread
+                output[JSONAttribute.MESSAGE_TEXT] = msg.text
+                output[JSONAttribute.MESSAGE_TEXTCOLOR] = msg.textColor
+                output[JSONAttribute.MESSAGE_BACKGROUNDTYPE] = msg.backgroundType.name()
+                if (msg.backgroundType == BackgroundType.IMAGE) {
+                    output[JSONAttribute.MESSAGE_IMAGE] = msg.backgroundImage.image
+                } else {
+                    output[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] = msg.backgroundColor
                 }
-                date = msg.getDateSpread(msg.getSpringSecurityService().currentUser)
+                return output
+            }
+        }
+
+        // Configuration pour clients public : Liste de Message limité aux informations nécessaire aux messages propagé par l'utilisateur
+        JSON.createNamedConfig(PUBLIC_MESSAGE_LIST_SPREAD) {
+            it.registerObjectMarshaller(Message) { Message msg ->
+                def output = [:]
+                output[JSONAttribute.MESSAGE_ID] = msg.id
+
+                Date date = msg.getDateSpread(msg.getSpringSecurityService().currentUser)
                 if (date != null) {
                     output[JSONAttribute.MESSAGE_DATESPREAD] = DATE_FORMAT.format(date)
                 }
@@ -125,9 +146,36 @@ class JSONMarshaller {
                 output[JSONAttribute.MESSAGE_NBSPREAD] = msg.nbSpread
                 output[JSONAttribute.MESSAGE_TEXT] = msg.text
                 output[JSONAttribute.MESSAGE_TEXTCOLOR] = msg.textColor
-                output[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] = msg.backgroundColor
                 output[JSONAttribute.MESSAGE_BACKGROUNDTYPE] = msg.backgroundType.name()
-                return output;
+                if (msg.backgroundType == BackgroundType.IMAGE) {
+                    output[JSONAttribute.MESSAGE_IMAGE] = msg.backgroundImage.image
+                } else {
+                    output[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] = msg.backgroundColor
+                }
+                return output
+            }
+        }
+
+        // Configuration pour clients public : Liste de Message limité aux informations nécessaire aux messages reçus par l'utilisateur
+        JSON.createNamedConfig(PUBLIC_MESSAGE_LIST_RECEIVED) {
+            it.registerObjectMarshaller(Message) { Message msg ->
+                def output = [:]
+                output[JSONAttribute.MESSAGE_ID] = msg.id
+
+                Date date = msg.getDateReception(msg.getSpringSecurityService().currentUser)
+                if (date != null) {
+                    output[JSONAttribute.MESSAGE_DATERECEPTION] = DATE_FORMAT.format(date)
+                }
+
+                output[JSONAttribute.MESSAGE_TEXT] = msg.text
+                output[JSONAttribute.MESSAGE_TEXTCOLOR] = msg.textColor
+                output[JSONAttribute.MESSAGE_BACKGROUNDTYPE] = msg.backgroundType.name()
+                if (msg.backgroundType == BackgroundType.IMAGE) {
+                    output[JSONAttribute.MESSAGE_IMAGE] = msg.backgroundImage.image
+                } else {
+                    output[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] = msg.backgroundColor
+                }
+                return output
             }
         }
 
@@ -137,31 +185,7 @@ class JSONMarshaller {
                 def output = [:]
                 output[JSONAttribute.MESSAGE_ID] = msg.id
                 output[JSONAttribute.MESSAGE_NBSPREAD] = msg.nbSpread
-                return output;
-            }
-        }
-
-        // Configuration pour clients public : Liste de Message limité aux informations nécessaire aux messages reçus par l'utilisateur
-        JSON.createNamedConfig(PUBLIC_MESSAGE_LIST_RECEIVED) {
-            it.registerObjectMarshaller(Message) { Message msg ->
-                def output = [:]
-                output[JSONAttribute.MESSAGE_ID] = msg.id
-                output[JSONAttribute.MESSAGE_DATECREATION] = DATE_FORMAT.format(msg.dateCreated)
-
-                Date date = msg.getDateReception(msg.getSpringSecurityService().currentUser)
-                if (date != null) {
-                    output[JSONAttribute.MESSAGE_DATERECEPTION] = DATE_FORMAT.format(date)
-                }
-                date = msg.getDateSpread(msg.getSpringSecurityService().currentUser)
-                if (date != null) {
-                    output[JSONAttribute.MESSAGE_DATESPREAD] = DATE_FORMAT.format(date)
-                }
-
-                output[JSONAttribute.MESSAGE_TEXT] = msg.text
-                output[JSONAttribute.MESSAGE_TEXTCOLOR] = msg.textColor
-                output[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] = msg.backgroundColor
-                output[JSONAttribute.MESSAGE_BACKGROUNDTYPE] = msg.backgroundType.name()
-                return output;
+                return output
             }
         }
 
@@ -171,7 +195,7 @@ class JSONMarshaller {
                 def output = [:]
                 output[JSONAttribute.MESSAGE_ID] = msg.id
                 output[JSONAttribute.MESSAGE_DATECREATION] = DATE_FORMAT.format(msg.dateCreated)
-                return output;
+                return output
             }
         }
 
@@ -182,7 +206,7 @@ class JSONMarshaller {
                 output[JSONAttribute.MESSAGE_ID] = msg.id
                 output[JSONAttribute.MESSAGE_DATESPREAD] = DATE_FORMAT.format(msg.getDateSpread(msg.getSpringSecurityService().currentUser))
                 output[JSONAttribute.MESSAGE_NBSPREAD] = msg.nbSpread
-                return output;
+                return output
             }
         }
 
@@ -195,7 +219,7 @@ class JSONMarshaller {
                 output[JSONAttribute.STATUS_NBMESSAGESPREAD] = status.nbMessageSpread
                 output[JSONAttribute.STATUS_NBMESSAGEIGNORED] = status.nbMessageIgnored
                 output[JSONAttribute.STATUS_NBMESSAGEREPORTED] = status.nbMessageReported
-                return output;
+                return output
             }
         }
 
@@ -204,7 +228,7 @@ class JSONMarshaller {
             it.registerObjectMarshaller(Status) { Status status ->
                 def output = [:]
                 output[JSONAttribute.STATUS_QUOTAREACHED] = status.quotaReached
-                return output;
+                return output
             }
         }
     }
@@ -220,13 +244,13 @@ class JSONMarshaller {
                 output[JSONAttribute.USER_ID] = user.id
                 output[JSONAttribute.USER_USERNAME] = user.username
                 output[JSONAttribute.USER_EMAIL] = user.email
-                output[JSONAttribute.USER_ROLE] = user.isModerator() ? Role.ROLE_MODERATOR : (user.isAdministrator() ? Role.ROLE_ADMINISTRATOR : 'ROLE_USER')
+                output[JSONAttribute.USER_ROLE] = user.isModerator() ? Role.ROLE_MODERATOR.replace('ROLE_', '') : (user.isAdministrator() ? Role.ROLE_ADMINISTRATOR.replace('ROLE_', '') : 'USER')
                 if (!user.isModerator()) {
                     output[JSONAttribute.USER_REPORTSSENT] = user.reportsSent
                     output[JSONAttribute.USER_REPORTRECEIVED] = user.reportsReceived
                     output[JSONAttribute.USER_MODERATIONREQUIRED] = user.isModerationRequired()
                 }
-                return output;
+                return output
             }
 
             it.registerObjectMarshaller(Message) { Message msg ->
@@ -235,12 +259,17 @@ class JSONMarshaller {
                 output[JSONAttribute.MESSAGE_DATECREATION] = DATE_FORMAT.format(msg.dateCreated)
                 output[JSONAttribute.MESSAGE_TEXT] = msg.text
                 output[JSONAttribute.MESSAGE_AUTHOR] = ["${JSONAttribute.USER_ID}": msg.author.id, "${JSONAttribute.USER_USERNAME}": msg.author.username]
-                def ReportType reportType = msg.getMainReportType();
-                if (reportType != null) {
-                    output[JSONAttribute.MESSAGE_MAINREPORTTYPE] = reportType.name()
+                if (msg.isReported()) {
+                    def ReportType reportType = msg.getMainReportType()
+                    if (reportType != null) {
+                        output[JSONAttribute.MESSAGE_MAINREPORTTYPE] = reportType.name()
+                    }
+                    if ( msg.backgroundType == BackgroundType.IMAGE) {
+                        output[JSONAttribute.MESSAGE_IMAGE] = msg.backgroundImage.image
+                    }
                 }
 
-                return output;
+                return output
             }
         }
     }
