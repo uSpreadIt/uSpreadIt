@@ -1,7 +1,7 @@
 package it.uspread.core.service.android
 
 import grails.transaction.Transactional
-import it.uspread.core.domain.User;
+import it.uspread.core.domain.User
 import it.uspread.core.json.JSONAttribute
 
 import com.google.android.gcm.server.Constants
@@ -139,8 +139,8 @@ class AndroidGcmService {
      * @param collapseKey attention le serveur n'accepte qu'un maximum de 4 messages de collapseKey différents pour un périphérique
      * @return un Result ou un MultiCastResult suivant si 1 ou plusieurs push token sont donné
      */
-    private def sendMessage(Map data, List<String> registrationIds, String collapseKey = '') {
-        new Sender(API_KEY).send(buildMessage(data, collapseKey), registrationIds.size() > 1 ? registrationIds : registrationIds[0], RETRY)
+    private def sendMessage(Map data, Set<String> registrationIds, String collapseKey = '') {
+        new Sender(API_KEY).send(buildMessage(data, collapseKey), registrationIds.size() > 1 ? new ArrayList(registrationIds) : registrationIds[0], RETRY)
     }
 
     private com.google.android.gcm.server.Message buildMessage(Map data, String collapseKey = '') {

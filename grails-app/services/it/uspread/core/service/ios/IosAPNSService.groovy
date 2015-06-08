@@ -2,7 +2,7 @@ package it.uspread.core.service.ios
 
 import grails.transaction.Transactional
 import grails.util.Environment
-import it.uspread.core.domain.User;
+import it.uspread.core.domain.User
 
 import org.codehaus.groovy.grails.io.support.ClassPathResource
 
@@ -47,7 +47,7 @@ class IosAPNSService {
         for (User user : listUser) {
             Set<String> listIosPushtoken = user.iosPushTokens
             if (listIosPushtoken) {
-                push(listIosPushtoken, "New message(s) spreading")
+                push(listIosPushtoken[0], "New message(s) spreading")
             }
         }
     }
