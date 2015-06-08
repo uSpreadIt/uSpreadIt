@@ -102,7 +102,12 @@ class MessageController extends RestfulController<Message> {
         newMessage.save([flush: true])
 
         // propagation initiale
-        messageService.spreadIt(newMessage, true)
+        try {
+            messageService.spreadIt(newMessage, true)
+        } catch (Exception e) {// FIXME a retirer lorsque l'appli sera terminé
+            return respond('error':e.getMessage(), [status:500])
+        }
+
 
         JSON.use(JSONMarshaller.PUBLIC_MESSAGE_CREATION) {
             return respond(newMessage, [status: HttpStatus.CREATED])
