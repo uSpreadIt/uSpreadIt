@@ -99,13 +99,13 @@ class MessageController extends RestfulController<Message> {
             return renderBadRequest()
         }
 
-        try {
-            newMessage.save([flush: true])
+        newMessage.save([flush: true])
 
+        try {
             // propagation initiale
             messageService.spreadIt(newMessage, true)
         } catch (Exception e) {// FIXME a retirer lorsque l'appli sera terminé
-            return respond('error':e.getMessage(), [status:422])
+            return respond(JSON.parse("{'error':'${e.getMessage()?.encodeAsHTML()}'}"),[status:422])
         }
 
 
