@@ -47,7 +47,7 @@ class IosAPNSService {
         for (User user : listUser) {
             Set<String> listIosPushtoken = user.iosPushTokens
             if (listIosPushtoken) {
-                push(listIosPushtoken[0], "New message(s) spreading")
+                push(listIosPushtoken.first(), "New message(s) spreading")
             }
         }
     }

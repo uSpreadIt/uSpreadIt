@@ -73,6 +73,30 @@ class MessageControllerFunctionalSpec extends Specification {
         assert response.json.id != null
     }
 
+    void "user1 post pushtoken Android"() {
+        // NECESSAIRE pour pouvoir tester un minimum la partie push Android
+        when: "POST a pushtoken"
+        Response response = clientUser1.post([path: "/users/connected/pushtoken"]) {
+            type(ContentType.JSON)
+            json([pushToken: "APA91bEuKPbl9edxSai9NfV1JMdnQTvhxKYCCrLvXDlg0GHTnEX20wj_QW9MupoZWoQW9MupoZWoQW9MupoZWoQW9MupoZWoQW9MupoZWooVhN8EahuQHzvC179OA5kJW4Oc7ybS2iWi9I2puR8EtDmebihL4bdiig", device: "ANDROID"])
+        }
+
+        then: "Its work"
+        response.statusCode == HttpStatus.ACCEPTED.value
+    }
+
+    void "user2 post pushtoken OS"() {
+        // NECESSAIRE pour pouvoir tester un minimum la partie push IOS
+        when: "POST a pushtoken"
+        Response response = clientUser1.post([path: "/users/connected/pushtoken"]) {
+            type(ContentType.JSON)
+            json([pushToken: "00000007bebcf74f9b7c25d48e3358945f67701da5ddb387462c7eaf61bbad78", device: "IOS"])
+        }
+
+        then: "Its work"
+        response.statusCode == HttpStatus.ACCEPTED.value
+    }
+
     void "Users post messages"() {
         when: "Users post messages"
         postMessage(clientUser1, "hello")

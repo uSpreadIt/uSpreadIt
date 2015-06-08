@@ -38,7 +38,7 @@ class AndroidGcmService {
                 if (listAndroidPushtoken.size() > 1) {
                     analyseMultiCastResult(result, listAndroidPushtoken)
                 } else {
-                    analyseResult(result, listAndroidPushtoken.get(0))
+                    analyseResult(result, listAndroidPushtoken.first())
                 }
             }
         }
@@ -59,7 +59,7 @@ class AndroidGcmService {
                 if (listAndroidPushtoken.size() > 1) {
                     analyseMultiCastResult(result, listAndroidPushtoken)
                 } else {
-                    analyseResult(result, listAndroidPushtoken.get(0))
+                    analyseResult(result, listAndroidPushtoken.first())
                 }
             }
         }
@@ -92,9 +92,9 @@ class AndroidGcmService {
      * @param results Resultat du PUSH
      * @param listAndroidPushtoken
      */
-    private void analyseMultiCastResult(MulticastResult results, List<String> listAndroidPushtoken) {
+    private void analyseMultiCastResult(MulticastResult results, Set<String> listAndroidPushtoken) {
         for (int i = 0; i < listAndroidPushtoken.size(); i++) {
-            String currentPushToken = listAndroidPushtoken.get(i)
+            String currentPushToken = listAndroidPushtoken.first()
             Result result = results.getResults().get(i)
             analyseResult(result, currentPushToken)
         }
@@ -140,7 +140,7 @@ class AndroidGcmService {
      * @return un Result ou un MultiCastResult suivant si 1 ou plusieurs push token sont donné
      */
     private def sendMessage(Map data, Set<String> registrationIds, String collapseKey = '') {
-        new Sender(API_KEY).send(buildMessage(data, collapseKey), registrationIds.size() > 1 ? new ArrayList(registrationIds) : registrationIds[0], RETRY)
+        new Sender(API_KEY).send(buildMessage(data, collapseKey), registrationIds.size() > 1 ? new ArrayList<String>(registrationIds) : registrationIds[0], RETRY)
     }
 
     private com.google.android.gcm.server.Message buildMessage(Map data, String collapseKey = '') {
