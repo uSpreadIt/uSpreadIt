@@ -4,7 +4,7 @@ import grails.transaction.Transactional
 import grails.util.Environment
 import it.uspread.core.domain.User
 
-import org.codehaus.groovy.grails.io.support.ClassPathResource
+import org.grails.io.support.ClassPathResource
 
 import com.notnoop.apns.APNS
 import com.notnoop.apns.ApnsService

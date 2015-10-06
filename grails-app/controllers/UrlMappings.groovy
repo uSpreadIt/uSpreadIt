@@ -9,6 +9,8 @@ class UrlMappings {
 
         "/"(view:"/index")
         "500"(view:"/error")
+        "400"(view:"/error")
+        "404"(view:'/notFound')
 
         // Déclaration des URL d'accès aux messages
         "/rest/messages"(resources:'message', excludes:["create", "edit", "patch", "update"]) {

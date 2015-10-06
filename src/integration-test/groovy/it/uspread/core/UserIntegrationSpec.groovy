@@ -1,10 +1,10 @@
 package it.uspread.core
 
-
-import it.uspread.core.domain.Message;
-import it.uspread.core.domain.Report;
-import it.uspread.core.domain.Spread;
-import it.uspread.core.domain.User;
+import grails.test.mixin.integration.Integration
+import it.uspread.core.domain.Message
+import it.uspread.core.domain.Report
+import it.uspread.core.domain.Spread
+import it.uspread.core.domain.User
 import it.uspread.core.type.BackgroundType
 import it.uspread.core.type.ReportType
 import spock.lang.*
@@ -12,6 +12,7 @@ import spock.lang.*
 /**
  * Test utile pour mettre en valeur les problèmes éventuelle avec le modèle de donnée et hibernate
  */
+@Integration
 class UserIntegrationSpec extends Specification {
 
     def userService

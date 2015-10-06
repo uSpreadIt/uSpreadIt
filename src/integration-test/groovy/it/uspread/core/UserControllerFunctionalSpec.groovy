@@ -1,5 +1,7 @@
 package it.uspread.core
 
+import grails.test.mixin.integration.Integration
+
 import org.springframework.http.HttpStatus
 
 import spock.lang.Shared
@@ -13,8 +15,9 @@ import wslite.rest.Response
 /**
  * Tests qui servent à valider les refactoring important
  * Le serveur doit tourner (en localhost) avant exécution
- * Ne peuvent être rejoués plusieurs fois
+ * Ne peuvent être rejoués plusieurs fois (Pas de rollback pour ces test)
  */
+@Integration
 class UserControllerFunctionalSpec extends Specification {
 
     @Shared def clientPublic = new RESTClient("http://localhost:8080/uSpread-core/rest/")
