@@ -123,7 +123,7 @@ environments:
             dbCreate: update
             dialect: org.hibernate.dialect.PostgreSQLDialect
             driverClassName: org.postgresql.Driver
-            url: jdbc:postgres://ec2-46-137-72-123.eu-west-1.compute.amazonaws.com:5432/d428sua6tv2t3c
+            url: jdbc:postgresql://ec2-46-137-72-123.eu-west-1.compute.amazonaws.com:5432/d428sua6tv2t3c
             username: flhfdphnpvipkn
             password: RbAYHQ-Vb0YYlRnDfGF_asXpff
 
