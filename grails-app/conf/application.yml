@@ -123,9 +123,9 @@ environments:
             dbCreate: update
             dialect: org.hibernate.dialect.PostgreSQLDialect
             driverClassName: org.postgresql.Driver
-            url: jdbc:postgresql://localhost/test
-            username: test
-            password: test
+            url: jdbc:postgres://ec2-46-137-72-123.eu-west-1.compute.amazonaws.com:5432/d428sua6tv2t3c
+            username: flhfdphnpvipkn
+            password: RbAYHQ-Vb0YYlRnDfGF_asXpff
 
 #Spring Security Core plugin config (https://grails-plugins.github.io/grails-spring-security-core/guide/single.html) :
 grails:
