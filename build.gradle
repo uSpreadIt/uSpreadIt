@@ -73,6 +73,8 @@ dependencies {
     
     runtime "postgresql:postgresql:8.4-702.jdbc3"
     runtime "org.hibernate:hibernate-validator:5.0.3.Final"
+    
+    provided "org.springframework.boot:spring-boot-starter-tomcat"
 
     testCompile "org.grails:grails-plugin-testing"
     testCompile "org.grails.plugins:geb"
@@ -88,6 +90,15 @@ task wrapper(type: Wrapper) {
     gradleVersion = gradleWrapperVersion
 }
 
-// Instruction nécessaire pour pouvoir déployer sous Heroku
-task stage(dependsOn: ['installDist'])
+// Heroku a besoin d'une tache stage
+task stage() {
+    dependsOn clean, war
+}
+tasks.stage.doLast() {
+    delete fileTree(dir: "build/distributions")
+    delete fileTree(dir: "build/assetCompile")
+    delete fileTree(dir: "build/distributions")
+    delete fileTree(dir: "build/libs", exclude: "*.war")
+}
+war.mustRunAfter clean
 
