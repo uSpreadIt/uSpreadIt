@@ -18,7 +18,7 @@ plugins {
 }
 
 version "0.1"
-group "uspreadit"
+group "it.uspread"
 
 apply plugin: "spring-boot"
 apply plugin: "war"
@@ -87,3 +87,7 @@ dependencies {
 task wrapper(type: Wrapper) {
     gradleVersion = gradleWrapperVersion
 }
+
+// Instruction nécessaire pour pouvoir déployer sous Heroku
+task stage(dependsOn: ['installDist'])
+
