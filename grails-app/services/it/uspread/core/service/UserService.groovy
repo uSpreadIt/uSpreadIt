@@ -77,10 +77,8 @@ class UserService {
             })
         }
 
-        // Si l'utilisateur est un specialuser il faut virer ses droits
-        if (user.isSpecialUser()) {
-            roleService.clearRole(user)
-        }
+        // Virer ses droits
+        roleService.clearRole(user)
 
         user.delete([flush: true])
     }

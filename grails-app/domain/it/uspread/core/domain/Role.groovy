@@ -1,10 +1,14 @@
 package it.uspread.core.domain
 
 /**
- * Sécurité : rôles spéciaux disponibles (Pas de rôle USER car ne pas avoir de rôles est la condition pour être un simple utilisateur)
+ * Sécurité : rôles disponibles
  */
-class Role {
+class Role implements Serializable {
 
+    private static final long serialVersionUID = 1
+
+    /** Role d'un utilisateur */
+    public static final String ROLE_USER = "ROLE_USER"
     /** Role d'un modérateur */
     public static final String ROLE_MODERATOR = "ROLE_MODERATOR"
     /** Role d'un administrateur */
@@ -19,5 +23,20 @@ class Role {
 
     static constraints = {
         authority(blank: false, unique: true)
+    }
+
+    @Override
+    int hashCode() {
+       authority?.hashCode() ?: 0
+    }
+
+    @Override
+    boolean equals(Object other) {
+       is(other) || (other instanceof Role && other.authority == authority)
+    }
+
+    @Override
+    String toString() {
+       authority
     }
 }

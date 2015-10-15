@@ -1,9 +1,9 @@
 package it.uspread.core.service
 
 import grails.transaction.Transactional
-import it.uspread.core.domain.Role;
-import it.uspread.core.domain.User;
-import it.uspread.core.domain.UserRole;
+import it.uspread.core.domain.Role
+import it.uspread.core.domain.User
+import it.uspread.core.domain.UserRole
 
 /**
  *  Service d'accés aux rôles de sécurité
@@ -12,7 +12,18 @@ import it.uspread.core.domain.UserRole;
 public class RoleService {
 
     /**
-     * Applique le rôle modérateur a l'utilisateur
+     * Applique le rôle {@link Role.ROLE_USER} a l'utilisateur
+     * @param newModerator
+     * @return
+     */
+    void setRoleUser(User newUser) {
+        Role role = Role.where({ authority == Role.ROLE_USER }).find()
+        UserRole droitsMod = new UserRole(user: newUser, role: role)
+        droitsMod.save()
+    }
+
+    /**
+     * Applique le rôle {@link Role.ROLE_MODERATOR} a l'utilisateur
      * @param newModerator
      * @return
      */
@@ -23,7 +34,7 @@ public class RoleService {
     }
 
     /**
-     * Supprime les rôle de l'utilisateur
+     * Supprime les rôles de l'utilisateur
      * @param user
      * @return
      */

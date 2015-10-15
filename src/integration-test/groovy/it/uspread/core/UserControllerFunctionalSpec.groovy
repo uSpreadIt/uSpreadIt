@@ -14,18 +14,19 @@ import wslite.rest.Response
 
 /**
  * Tests qui servent à valider les refactoring important
- * Le serveur doit tourner (en localhost) avant exécution
  * Ne peuvent être rejoués plusieurs fois (Pas de rollback pour ces test)
  */
 @Integration
 class UserControllerFunctionalSpec extends Specification {
 
-    @Shared def clientPublic = new RESTClient("http://localhost:8080/uSpread-core/rest/")
-    @Shared def clientUser1 = new RESTClient("http://localhost:8080/uSpread-core/rest/")
-    @Shared def clientUser2_NoChange = new RESTClient("http://localhost:8080/uSpread-core/rest/")
-    @Shared def clientUser6_ToDelete = new RESTClient("http://localhost:8080/uSpread-core/rest/")
-    @Shared def clientModerator = new RESTClient("http://localhost:8080/uSpread-core/rest/")
-    @Shared def clientModerator_ToDelete = new RESTClient("http://localhost:8080/uSpread-core/rest/")
+    private static final String BASE_URL = "http://localhost:8080/rest/"
+
+    @Shared def clientPublic = new RESTClient(BASE_URL)
+    @Shared def clientUser1 = new RESTClient(BASE_URL)
+    @Shared def clientUser2_NoChange = new RESTClient(BASE_URL)
+    @Shared def clientUser6_ToDelete = new RESTClient(BASE_URL)
+    @Shared def clientModerator = new RESTClient(BASE_URL)
+    @Shared def clientModerator_ToDelete = new RESTClient(BASE_URL)
 
     void setup() {
         clientUser1.authorization = new HTTPBasicAuthorization("user1", "user1")
@@ -130,7 +131,7 @@ class UserControllerFunctionalSpec extends Specification {
 
         try {
             when: "get the user list"
-            Response response = clientPublic.get([path: "/userlist", accept: ContentType.JSON])
+            Response response = clientPublic.get([path: "/users", accept: ContentType.JSON])
             false
         } catch(HTTPClientException e) {
             then: "is forbidden"
@@ -177,7 +178,7 @@ class UserControllerFunctionalSpec extends Specification {
 
         try {
             when: "get the user list"
-            Response response = clientUser1.get([path: "/userlist", accept: ContentType.JSON])
+            Response response = clientUser1.get([path: "/users", accept: ContentType.JSON])
             false
         } catch(HTTPClientException e) {
             then: "is forbidden"
@@ -219,7 +220,7 @@ class UserControllerFunctionalSpec extends Specification {
         response.statusCode == HttpStatus.CREATED.value
 
         when: "Trying to get this new user"
-        def newclient = new RESTClient("http://localhost:8080/uSpread-core/rest/")
+        def newclient = new RESTClient(BASE_URL)
         newclient.authorization = new HTTPBasicAuthorization("chuck", "chuck")
         response = newclient.get([path: "/users/connected", accept: ContentType.JSON])
 
@@ -260,7 +261,7 @@ class UserControllerFunctionalSpec extends Specification {
         response.statusCode == HttpStatus.CREATED.value
 
         when: "Trying to get this new moderator"
-        def newModo = new RESTClient("http://localhost:8080/uSpread-core/rest/")
+        def newModo = new RESTClient(BASE_URL)
         newModo.authorization = new HTTPBasicAuthorization("modo", "modo")
         response = newModo.get([path: "/users/connected", accept: ContentType.JSON])
 
@@ -322,7 +323,7 @@ class UserControllerFunctionalSpec extends Specification {
 
     void "Moderator GET user list"() {
         when: "GET user list"
-        Response response = clientModerator.get([path: "/userlist", accept: ContentType.JSON])
+        Response response = clientModerator.get([path: "/users", accept: ContentType.JSON])
 
         then: "I get the list as a JSON"
         response.statusCode == HttpStatus.OK.value
@@ -381,7 +382,7 @@ class UserControllerFunctionalSpec extends Specification {
 
     void "Moderator GET topusers"() {
         when: "GET topusers"
-        Response response = clientModerator.get([path: "/topusers", accept: ContentType.JSON])
+        Response response = clientModerator.get([path: "/users/topusers", accept: ContentType.JSON])
 
         then: "I get the list as a JSON"
         response.statusCode == HttpStatus.OK.value
@@ -472,7 +473,7 @@ class UserControllerFunctionalSpec extends Specification {
 
     void "Simple user GET topusers"() {
         when: "GET topusers"
-        Response response = clientUser1.get([path: "/topusers", accept: ContentType.JSON])
+        Response response = clientUser1.get([path: "/users/topusers", accept: ContentType.JSON])
 
         then: "I get the list as a JSON"
         response.statusCode == HttpStatus.OK.value

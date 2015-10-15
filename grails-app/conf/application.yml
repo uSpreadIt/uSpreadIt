@@ -131,19 +131,33 @@ environments:
 grails:
     plugin:
         springsecurity:
-            useBasicAuth: true
+            useBasicAuth: true # Va ajouter basicAuthenticationFilter et basicExceptionTranslationFilter dans les filterchain au bon endroit
+            rejectIfNoRule: true
+            fii:
+                rejectPublicInvocations: true
             basic:
                 realmName: uSpreadIt
             userLookup:
                 userDomainClassName: it.uspread.core.domain.User
+                usernamePropertyName: username
+                passwordPropertyName: password
+                authoritiesPropertyName: authorities
+                enabledPropertyName: enabled
+                accountExpiredPropertyName: accountExpired
+                accountLockedPropertyName: accountLocked 
+                passwordExpiredPropertyName: passwordExpired
                 authorityJoinClassName: it.uspread.core.domain.UserRole
             authority:
                 className: it.uspread.core.domain.Role
+                nameField: authority
             securityConfigType: InterceptUrlMap
             interceptUrlMap:
                 '/':                               permitAll
                 '/index':                          permitAll
                 '/index.gsp':                      permitAll
+                '/error':                          permitAll
+                '/notfound':                       permitAll
+                '/shutdown':                       permitAll
                 '/assets/**':                      permitAll
                 '/**/js/**':                       permitAll
                 '/**/css/**':                      permitAll
@@ -152,14 +166,28 @@ grails:
                 '/login/**':                       permitAll
                 '/logout/**':                      permitAll
                 '/rest/signup':                    permitAll
-                '/rest/users/moderator':           ROLE_MODERATOR
-                '/rest/userlist':                  ROLE_MODERATOR
+                '/rest/login*':                    isAuthenticated()
                 '/rest/users/connected':           isAuthenticated()
-                '/rest/users/connected/pushtoken': isAuthenticated()
-                '/rest/users/connected/status':    isAuthenticated()
-                '/rest/users/**':                  ROLE_MODERATOR
-                '/rest/messages/reported':         ROLE_MODERATOR
-                '/**':                             isAuthenticated()
-            filterChain.chainMap:
-                '/rest/**': 'JOINED_FILTERS'
-                '/**':      'JOINED_FILTERS, -basicAuthenticationFilter, -basicExceptionTranslationFilter'
+                '/rest/users/connected/pushtoken': hasRole('ROLE_USER')
+                '/rest/users/connected/status*':   hasRole('ROLE_USER')
+                '/rest/users/topusers':            isAuthenticated()
+                '/rest/users*/**':                 hasAnyRole('ROLE_MODERATOR', 'ROLE_ADMINISTRATOR')
+                '/rest/messages/*/spread':         hasRole('ROLE_USER')
+                '/rest/messages/*/ignore':         hasRole('ROLE_USER')
+                '/rest/messages/*/report*':        hasRole('ROLE_USER')
+                '/rest/messages/reported*':        hasAnyRole('ROLE_MODERATOR', 'ROLE_ADMINISTRATOR')
+                '/rest/messages*':                 hasRole('ROLE_USER')
+                '/rest/messages/**':               isAuthenticated()
+            filterChain: # Il y a par défaut une liste de filter appliqué qu'on peut référencer avec le mot clé JOINED_FILTERS
+                chainMap:
+                    '/rest/**': 'JOINED_FILTERS,-exceptionTranslationFilter'
+                    '/**':      'JOINED_FILTERS,-basicAuthenticationFilter,-basicExceptionTranslationFilter' # Utise l'authentification par formulaire en dehors de l'api REST
+            portMapper:
+                httpPort: 8080
+                httpsPort: 8443
+            #secureChannel:
+            #       definition:
+            #           '/rest/**':   REQUIRES_SECURE_CHANNEL
+            #           '/login/**':  REQUIRES_SECURE_CHANNEL
+            #           '/logout/**': REQUIRES_SECURE_CHANNEL
+            #           '/**':        ANY_CHANNEL

@@ -38,9 +38,6 @@ class MessageController extends RestfulController<Message> {
     @Override
     def index() {
         def userConnected = (User) springSecurityService.currentUser
-        if (userConnected.isSpecialUser()) {
-            return renderForbidden()
-        }
 
         // Lecture des paramètres
         String query = params.query
@@ -75,15 +72,36 @@ class MessageController extends RestfulController<Message> {
         }
     }
 
+    @Override
+    def show() {
+        Message message = queryForResource(params.id)
+        if (message != null) {
+            User userConnected = (User) springSecurityService.currentUser
+            if (message.isUserAllowedToRead(userConnected)) {
+                boolean onlyImage = params.onlyImage != null ? new Boolean((String)params.onlyImage).booleanValue() : false
+                JSON.use(userConnected.isSpecialUser() ? JSONMarshaller.INTERNAL : (onlyImage ? JSONMarshaller.PUBLIC_MESSAGE_IMAGE : JSONMarshaller.PUBLIC_MESSAGE)) {
+                    return respond(queryForResource(params.id), [status: HttpStatus.OK])
+                }
+            } else {
+                return renderForbidden()
+            }
+        } else {
+            return renderNotFound()
+        }
+    }
+
+    @Override
+    def create() {
+        // Non nécessaire car méthode d'obtention de formulaire de création.
+    }
+
     /**
      * Sauvegarde de création d'un message (POST)
      */
+    @Transactional
     @Override
     def save() {
         def userConnected = (User) springSecurityService.currentUser
-        if (userConnected.isSpecialUser()) {
-            return renderForbidden()
-        }
 
         // Vérification du quota
         if (messageService.isMessageCreationLimitReached(userConnected)) {
@@ -109,15 +127,46 @@ class MessageController extends RestfulController<Message> {
         }
     }
 
+    @Override
+    def edit() {
+        // Non nécessaire car méthode d'obtention de formulaire d'édition.
+    }
+
+    @Override
+    @Transactional
+    def patch() {
+        // Non nécessaire pour le moment
+    }
+
+    @Override
+    @Transactional
+    def update() {
+        // Non nécessaire pour le moment
+    }
+
+    @Transactional
+    @Override
+    def delete() {
+        Message message = queryForResource(params.id)
+        if (null != message) {
+            User userConnected = (User) springSecurityService.currentUser
+            if (message.isUserAllowedToDelete(userConnected)) {
+                messageService.deleteMessage(message)
+                return render([status: HttpStatus.ACCEPTED])
+            } else {
+                return renderForbidden()
+            }
+        } else {
+            return renderNotFound()
+        }
+    }
+
     /**
      * Propage le message dont l'id est fourni lors de l'appel
      */
     @Transactional
     def spread() {
         def userConnected = (User) springSecurityService.currentUser
-        if (userConnected.isSpecialUser()) {
-            return renderForbidden()
-        }
 
         // Lecture des paramètres
         def messageId = new Long(params.messageId)
@@ -140,9 +189,6 @@ class MessageController extends RestfulController<Message> {
     @Transactional
     def ignore() {
         def userConnected = (User) springSecurityService.currentUser
-        if (userConnected.isSpecialUser()) {
-            return renderForbidden()
-        }
 
         // Lecture des paramètres
         def messageId = new Long(params.messageId)
@@ -163,9 +209,6 @@ class MessageController extends RestfulController<Message> {
     @Transactional
     def report() {
         def userConnected = (User) springSecurityService.currentUser
-        if (userConnected.isSpecialUser()) {
-            return renderForbidden()
-        }
 
         // Lecture des paramètres
         def messageId = new Long(params.messageId)
@@ -190,17 +233,11 @@ class MessageController extends RestfulController<Message> {
      * Liste les messages écrits par l'utilisateur donné
      */
     def indexUserMsg() {
-        def userConnected = (User) springSecurityService.currentUser
-
         // Lecture des paramètres
         Long userId = ((String) params.userId).toLong()
 
-        if (userConnected.isSpecialUser()) {
-            JSON.use(JSONMarshaller.INTERNAL) {
-                return respond(messageService.getMessagesWritedByAuthorId(userId, null), [status: HttpStatus.OK])
-            }
-        } else {
-            return renderForbidden()
+        JSON.use(JSONMarshaller.INTERNAL) {
+            return respond(messageService.getMessagesWritedByAuthorId(userId, null), [status: HttpStatus.OK])
         }
     }
 
@@ -208,17 +245,11 @@ class MessageController extends RestfulController<Message> {
      * Liste les messages reçus par l'utilisateur donné
      */
     def indexUserMsgReceived() {
-        def userConnected = (User) springSecurityService.currentUser
-
         // Lecture des paramètres
         Long userId = ((String) params.userId).toLong()
 
-        if (userConnected.isSpecialUser()) {
-            JSON.use(JSONMarshaller.INTERNAL) {
-                return respond(messageService.getMessagesReceivedByUserId(userId, null), [status: HttpStatus.OK])
-            }
-        } else {
-            return renderForbidden()
+        JSON.use(JSONMarshaller.INTERNAL) {
+            return respond(messageService.getMessagesReceivedByUserId(userId, null), [status: HttpStatus.OK])
         }
     }
 
@@ -226,17 +257,11 @@ class MessageController extends RestfulController<Message> {
      * Liste les messages propagé par l'utilisateur donné
      */
     def indexUserMsgSpread() {
-        def userConnected = (User) springSecurityService.currentUser
-
         // Lecture des paramètres
         Long userId = ((String) params.userId).toLong()
 
-        if (userConnected.isSpecialUser()) {
-            JSON.use(JSONMarshaller.INTERNAL) {
-                return respond(messageService.getMessagesSpreadByUserId(userId, null), [status: HttpStatus.OK])
-            }
-        } else {
-            return renderForbidden()
+        JSON.use(JSONMarshaller.INTERNAL) {
+            return respond(messageService.getMessagesSpreadByUserId(userId, null), [status: HttpStatus.OK])
         }
     }
 
@@ -244,75 +269,15 @@ class MessageController extends RestfulController<Message> {
      * Liste tous les messages signalés
      */
     def indexMsgReported() {
-        def userConnected = (User) springSecurityService.currentUser
-        if (userConnected.isSpecialUser()) {
-            if (params.username) {
-                JSON.use(JSONMarshaller.INTERNAL) {
-                    return respond(messageService.getReportedMessages(userService.getUserFromUsername()), [status: HttpStatus.OK])
-                }
-            } else {
-                JSON.use(JSONMarshaller.INTERNAL) {
-                    return respond(messageService.getReportedMessages(), [status: HttpStatus.OK])
-                }
+        if (params.username) {
+            JSON.use(JSONMarshaller.INTERNAL) {
+                return respond(messageService.getReportedMessages(userService.getUserFromUsername()), [status: HttpStatus.OK])
             }
         } else {
-            return renderForbidden()
-        }
-    }
-
-
-    @Override
-    def create() {
-        // Non nécessaire car méthode d'obtention de formulaire de création.
-    }
-
-    @Override
-    def edit() {
-        // Non nécessaire car méthode d'obtention de formulaire d'édition.
-    }
-
-    @Override
-    def patch() {
-        // Non nécessaire pour le moment
-    }
-
-    @Override
-    def show() {
-        Message message = queryForResource(params.id)
-        if (message != null) {
-            User userConnected = (User) springSecurityService.currentUser
-            if (message.isUserAllowedToRead(userConnected)) {
-                boolean onlyImage = params.onlyImage != null ? new Boolean((String)params.onlyImage).booleanValue() : false
-                JSON.use(userConnected.isSpecialUser() ? JSONMarshaller.INTERNAL : (onlyImage ? JSONMarshaller.PUBLIC_MESSAGE_IMAGE : JSONMarshaller.PUBLIC_MESSAGE)) {
-                    return respond(queryForResource(params.id), [status: HttpStatus.OK])
-                }
-            } else {
-                return renderForbidden()
+            JSON.use(JSONMarshaller.INTERNAL) {
+                return respond(messageService.getReportedMessages(), [status: HttpStatus.OK])
             }
-        } else {
-            return renderNotFound()
         }
-    }
-
-    @Override
-    def delete() {
-        Message message = queryForResource(params.id)
-        if (null != message) {
-            User userConnected = (User) springSecurityService.currentUser
-            if (message.isUserAllowedToDelete(userConnected)) {
-                messageService.deleteMessage(message)
-                return render([status: HttpStatus.ACCEPTED])
-            } else {
-                return renderForbidden()
-            }
-        } else {
-            return renderNotFound()
-        }
-    }
-
-    @Override
-    def update() {
-        // Non nécessaire pour le moment
     }
 
     private def renderBadRequest() {

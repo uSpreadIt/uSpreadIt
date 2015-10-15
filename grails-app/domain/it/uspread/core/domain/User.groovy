@@ -4,7 +4,9 @@ package it.uspread.core.domain
 /**
  * Modèle de l'utilisateur
  */
-class User {
+class User implements Serializable {
+
+    private static final long serialVersionUID = 1
 
     /** Nombre de caractère maximal d'un nom d'utilisateur */
     public static final int USERNAME_MAX_LENGTH = 20
@@ -15,14 +17,23 @@ class User {
 
     transient springSecurityService
 
-    /** Pseudo */
+    /** Spring Security attribute */
+    boolean enabled = true
+    /** Spring Security attribute */
+    boolean accountExpired
+    /** Spring Security attribute */
+    boolean accountLocked
+    /** Spring Security attribute */
+    boolean passwordExpired
+
+    /** Pseudo (Spring Security attribute) */
     String username
-    /** Mot de passe */
+    /** Mot de passe (Spring Security attribute) */
     String password
     /** Email */
     String email
 
-    /** Dernière date de récéption d'un message */
+    /** Dernière date de réception d'un message */
     Date lastReceivedMessageDate
 
     /** Nombre de signalement effectué */
@@ -33,13 +44,8 @@ class User {
     /** Score TODO de la conception à faire */
     long score
 
-    /** Indique que l'utilisateur a des rôles particuliers (Il n'est donc pas un simple utilisateur) */
+    /** Indique que l'utilisateur n'est pas un simple utilisateur */
     boolean specialUser
-
-    boolean enabled = true // TODO venant du tuto sécurité : a exploiter later ou supprimer si pertinent et possible
-    boolean accountExpired // TODO venant du tuto sécurité : a exploiter later ou supprimer si pertinent et possible
-    boolean accountLocked // TODO venant du tuto sécurité : a exploiter later ou supprimer si pertinent et possible
-    boolean passwordExpired // TODO venant du tuto sécurité : a exploiter later ou supprimer si pertinent et possible
 
     /** La liste des messages écrits par l'utilisateur */
     Set<Message> messages
@@ -48,16 +54,18 @@ class User {
     /** Tokens du système de push ios (Correspond au périphérique sur lesquel l'user est connecté) */
     Set<String> iosPushTokens
 
+    static transients = ['springSecurityService']
+
     static hasMany = [messages: Message, androidPushTokens: String, iosPushTokens: String]
 
     static mappedBy = [messages: 'author']
 
     static mapping = {
         version(true)
-        table('users') // PosteGSQL a réservé 'user'
-        id([generator:'sequence', params:[sequence:'users_sequence']])
+        table('`user`') // PostegreSQL a réservé 'user' donc on échappe
+        id([generator: 'sequence', params: [sequence:'user_sequence']])
         username(length: USERNAME_MAX_LENGTH)
-        password(column: '`password`', length: PASSWORD_MAX_LENGTH) // TODO j'aimerai comprendre la raison de ces caractères ` . Y'a forcément une raison puisque par défaut sans cette ligne la colonne aurait été nommé 'password'
+        password(column: '`password`', length: PASSWORD_MAX_LENGTH)
         messages(cascade: 'all-delete-orphan')
         androidPushTokens(cascade: 'all-delete-orphan', joinTable: [column: 'android_push_token'])
         iosPushTokens(cascade: 'all-delete-orphan', joinTable: [column: 'ios_push_token'])
@@ -80,16 +88,16 @@ class User {
         }
     }
 
+    protected void encodePassword() {
+        password = springSecurityService?.passwordEncoder ? springSecurityService.encodePassword(password) : password
+    }
+
     /**
-     * Retourne les rôles que possède l'utilisateur
+     * Retourne les rôles que possède l'utilisateur (Nécessaire pour spring security : soit ce simple getter soit la définition d'un many-to-many authorities)
      * @return
      */
     Set<Role> getAuthorities() {
         UserRole.findAllByUser(this).collect({ it.role })
-    }
-
-    protected void encodePassword() {
-        password = springSecurityService?.passwordEncoder ? springSecurityService.encodePassword(password) : password
     }
 
     /**
@@ -114,10 +122,21 @@ class User {
      * @return
      */
     boolean isModerationRequired() {
-        return messages?.any({ it.isReported()})
+        messages?.any({ it.isReported()})
     }
 
-    String toString(){
-        return null != username ? username : "<EMPTY>"
+    @Override
+    int hashCode() {
+       username?.hashCode() ?: 0
+    }
+
+    @Override
+    boolean equals(Object other) {
+       is(other) || (other instanceof User && other.username == username)
+    }
+
+    @Override
+    String toString() {
+       username
     }
 }

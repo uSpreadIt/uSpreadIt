@@ -16,25 +16,26 @@ import wslite.rest.Response
 
 /**
  * Tests qui servent à valider les refactoring important
- * Le serveur doit tourner (en localhost) avant exécution
  * Ne peuvent être rejoués plusieurs fois (Pas de rollback pour ces test).
  */
 @Integration
 class MessageControllerFunctionalSpec extends Specification {
 
-    private final long idMessage1FromUser1 = 1
-    private final long idMessage2FromUser1 = 2
-    private final long idMessage3FromUser1_ToDelete = 3
-    private final long idMessage1FromUser2 = 4
-    private final long idMessage2FromUser2_ToReport = 5
-    private final long idMessage1FromUser3 = 6
+    private static final String BASE_URL = "http://localhost:8080/rest/"
 
-    @Shared def clientPublic = new RESTClient("http://localhost:8080/uSpread-core/rest/")
-    @Shared def clientUser1 = new RESTClient("http://localhost:8080/uSpread-core/rest/")
-    @Shared def clientUser2 = new RESTClient("http://localhost:8080/uSpread-core/rest/")
-    @Shared def clientUser3 = new RESTClient("http://localhost:8080/uSpread-core/rest/")
-    @Shared def clientUser4 = new RESTClient("http://localhost:8080/uSpread-core/rest/")
-    @Shared def clientModerator = new RESTClient("http://localhost:8080/uSpread-core/rest/")
+    private static long idMessage1FromUser1
+    private static long idMessage2FromUser1
+    private static long idMessage3FromUser1_ToDelete
+    private static long idMessage1FromUser2
+    private static long idMessage2FromUser2_ToReport
+    private static long idMessage1FromUser3
+
+    @Shared def clientPublic = new RESTClient(BASE_URL)
+    @Shared def clientUser1 = new RESTClient(BASE_URL)
+    @Shared def clientUser2 = new RESTClient(BASE_URL)
+    @Shared def clientUser3 = new RESTClient(BASE_URL)
+    @Shared def clientUser4 = new RESTClient(BASE_URL)
+    @Shared def clientModerator = new RESTClient(BASE_URL)
 
     void setup() {
         clientUser1.authorization = new HTTPBasicAuthorization("user1", "user1")
@@ -65,7 +66,7 @@ class MessageControllerFunctionalSpec extends Specification {
         return param
     }
 
-    private void postMessage(RESTClient client, String text, boolean image = false) {
+    private long postMessage(RESTClient client, String text, boolean image = false) {
         Response response = client.post([path: "/messages", accept: ContentType.JSON]) {
             type(ContentType.JSON)
             json(image ? wrapImageMessage([text: text]) : wrapPlainMessage([text: text]))
@@ -73,6 +74,7 @@ class MessageControllerFunctionalSpec extends Specification {
 
         assert response.statusCode == HttpStatus.CREATED.value
         assert response.json.id != null
+        return response.json.id
     }
 
     void "user1 post pushtoken Android"() {
@@ -101,12 +103,12 @@ class MessageControllerFunctionalSpec extends Specification {
 
     void "Users post messages"() {
         when: "Users post messages"
-        postMessage(clientUser1, "hello")
-        postMessage(clientUser1, "hello world", true)
-        postMessage(clientUser1, "hello universe")
-        postMessage(clientUser2, "he ho calmos")
-        postMessage(clientUser2, "Fuck")
-        postMessage(clientUser3, "Yo")
+        idMessage1FromUser1 = postMessage(clientUser1, "hello")
+        idMessage2FromUser1 = postMessage(clientUser1, "hello world", true)
+        idMessage3FromUser1_ToDelete = postMessage(clientUser1, "hello universe")
+        idMessage1FromUser2 = postMessage(clientUser2, "he ho calmos")
+        idMessage2FromUser2_ToReport = postMessage(clientUser2, "Fuck")
+        idMessage1FromUser3 = postMessage(clientUser3, "Yo")
 
         then: "no assert releved"
     }

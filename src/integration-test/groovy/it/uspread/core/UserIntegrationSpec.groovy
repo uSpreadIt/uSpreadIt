@@ -1,6 +1,7 @@
 package it.uspread.core
 
 import grails.test.mixin.integration.Integration
+import grails.transaction.Rollback
 import it.uspread.core.domain.Message
 import it.uspread.core.domain.Report
 import it.uspread.core.domain.Spread
@@ -13,6 +14,7 @@ import spock.lang.*
  * Test utile pour mettre en valeur les problèmes éventuelle avec le modèle de donnée et hibernate
  */
 @Integration
+@Rollback
 class UserIntegrationSpec extends Specification {
 
     def userService
@@ -296,6 +298,7 @@ class UserIntegrationSpec extends Specification {
 
         when: "the message is deleted"
         joe.removeFromMessages(message)
+        joe.save(flush: true)
 
         then: "The user is still there, not the message"
         User.exists(joe.id)
@@ -311,7 +314,7 @@ class UserIntegrationSpec extends Specification {
 
         when: "the message is deleted"
         joe.discard() // joe ne doit pas être dans la session pour pouvoir directement supprimer un message
-        message.delete()
+        message.delete(flush: true)
 
         then: "The user is still there, not the message"
         User.exists(joe.id)

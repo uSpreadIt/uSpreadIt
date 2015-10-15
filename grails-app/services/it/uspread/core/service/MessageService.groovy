@@ -268,6 +268,7 @@ class MessageService {
     void userSpreadThisMessage(User user, Message message) {
         message.removeFromReceivedBy(message.getReceivedFor(user))
         message.addToSpreadBy(new Spread(user))
+        message.save([flush: true])
         spreadIt(message, false)
     }
 

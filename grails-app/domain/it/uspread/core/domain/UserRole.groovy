@@ -4,7 +4,6 @@ import org.apache.commons.lang.builder.HashCodeBuilder
 
 /**
  * Sécurité : association entre les utilisateurs et les rôles.
- * Un utilisateur associé à aucun rôle est considéré comme étant un simple utilisateur car il n'aura jamais d'autres roles
  */
 class UserRole implements Serializable {
 
@@ -50,9 +49,9 @@ class UserRole implements Serializable {
     @Override
     int hashCode() {
         HashCodeBuilder builder = new HashCodeBuilder()
-        builder.append(user.id)
-        builder.append(role.id)
-        return builder.toHashCode()
+        if (user) builder.append(user.id)
+        if (role) builder.append(role.id)
+        builder.toHashCode()
     }
 
     static UserRole get(long userId, long roleId) {
@@ -83,7 +82,8 @@ class UserRole implements Serializable {
         }.deleteAll()
 
         if (flush) {
-            UserRole.withSession { it.flush() } }
+            UserRole.withSession({ it.flush() })
+        }
 
         rowCount > 0
     }
@@ -98,7 +98,8 @@ class UserRole implements Serializable {
         }.deleteAll()
 
         if (flush) {
-            UserRole.withSession { it.flush() } }
+            UserRole.withSession({ it.flush() })
+        }
     }
 
     static void removeAll(Role r, boolean flush = false) {
@@ -111,6 +112,7 @@ class UserRole implements Serializable {
         }.deleteAll()
 
         if (flush) {
-            UserRole.withSession { it.flush() } }
+            UserRole.withSession({ it.flush() })
+        }
     }
 }
