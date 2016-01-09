@@ -82,7 +82,7 @@ class JSONMarshaller {
                 output[JSONAttribute.MESSAGE_ID] = msg.id
                 output[JSONAttribute.MESSAGE_DATECREATION] = DATE_FORMAT.format(msg.dateCreated)
 
-                Date date = msg.getDateReception(msg.getSpringSecurityService().currentUser)
+                Date date = msg.getDateReceived(msg.getSpringSecurityService().currentUser)
                 if (date != null) {
                     output[JSONAttribute.MESSAGE_DATERECEPTION] = DATE_FORMAT.format(date)
                 }
@@ -164,7 +164,7 @@ class JSONMarshaller {
                 def output = [:]
                 output[JSONAttribute.MESSAGE_ID] = msg.id
 
-                Date date = msg.getDateReception(msg.getSpringSecurityService().currentUser)
+                Date date = msg.getDateReceived(msg.getSpringSecurityService().currentUser)
                 if (date != null) {
                     output[JSONAttribute.MESSAGE_DATERECEPTION] = DATE_FORMAT.format(date)
                 }

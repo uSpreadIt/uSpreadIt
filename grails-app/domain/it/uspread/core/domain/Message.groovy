@@ -113,12 +113,12 @@ class Message {
 
     /**
      * Indique si l'utilisateur est autorisé à lire ce message<br>
-     * Si auteur ou modérateur ou message reçus/propagé
+     * Si auteur ou modérateur/admin ou message reçus/propagé
      * @param user l'utilisateur en question
      * @return Vrai si autorisé
      */
     boolean isUserAllowedToRead(User user){
-        return author.id == user.id || user?.isModerator() || receivedBy?.any({it.user.id == user.id}) || spreadBy?.any({it.user.id == user.id})
+        return author.id == user.id || user?.isSpecialUser() || receivedBy?.any({it.user.id == user.id}) || spreadBy?.any({it.user.id == user.id})
     }
 
     /**
@@ -127,7 +127,7 @@ class Message {
      * @return Vrai si autorisé
      */
     boolean isUserAllowedToDelete(User user){
-        return author.id == user.id || user?.isModerator()
+        return author.id == user.id || user?.isSpecialUser()
     }
 
     /**
@@ -135,7 +135,7 @@ class Message {
      * @param user Un utilisateur
      * @return Date de réception ou null si non reçus par l'utilisateur
      */
-    Date getDateReception(User user) {
+    Date getDateReceived(User user) {
         Spread spread = receivedBy?.find({ it.user.id == user.id })
         return spread?.date
     }
