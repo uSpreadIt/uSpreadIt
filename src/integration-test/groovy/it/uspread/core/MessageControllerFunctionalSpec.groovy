@@ -29,6 +29,7 @@ class MessageControllerFunctionalSpec extends Specification {
     private static long idMessage1FromUser2
     private static long idMessage2FromUser2_ToReport
     private static long idMessage1FromUser3
+    private static long idMessage1FromUser4
 
     @Shared def clientPublic = new RESTClient(BASE_URL)
     @Shared def clientUser1 = new RESTClient(BASE_URL)
@@ -109,6 +110,7 @@ class MessageControllerFunctionalSpec extends Specification {
         idMessage1FromUser2 = postMessage(clientUser2, "he ho calmos")
         idMessage2FromUser2_ToReport = postMessage(clientUser2, "Fuck")
         idMessage1FromUser3 = postMessage(clientUser3, "Yo")
+        idMessage1FromUser4 = postMessage(clientUser4, null, true) // Un message avec image et sans texte
 
         then: "no assert releved"
     }

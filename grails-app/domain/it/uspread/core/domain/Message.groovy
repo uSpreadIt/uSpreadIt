@@ -60,7 +60,10 @@ class Message {
     }
 
     static constraints = {
-        text(maxsize: TEXT_MAX_LENGTH)
+        text(maxsize: TEXT_MAX_LENGTH, validator: { val, obj ->
+            // Autorisé un texte null que si une image de fond est associé
+            return obj.backgroundImage == null && val != null ||  obj.backgroundImage != null
+        })
         textColor(size: 6..6)
         backgroundColor(nullable: true)
         backgroundImage(nullable: true)
