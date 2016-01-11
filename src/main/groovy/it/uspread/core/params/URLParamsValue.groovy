@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat
 /**
  * Choses utiles pour les valeurs des paramètres d'entrée des requetes rest
  */
-class QueryParams {
+class URLParamsValue {
 
     public static final String MESSAGE_RECEIVED = "RECEIVED"
     public static final String MESSAGE_WRITED = "AUTHOR"

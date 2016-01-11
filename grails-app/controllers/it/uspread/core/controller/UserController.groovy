@@ -6,7 +6,8 @@ import grails.transaction.Transactional
 import it.uspread.core.domain.User
 import it.uspread.core.json.JSONAttribute
 import it.uspread.core.json.JSONMarshaller
-import it.uspread.core.params.QueryParams
+import it.uspread.core.params.URLParamsName
+import it.uspread.core.params.URLParamsValue
 
 import org.springframework.http.HttpStatus
 
@@ -45,7 +46,7 @@ class UserController extends RestfulController<User> {
 
     @Override
     def show() {
-        User user = queryForResource(params.id)
+        User user = queryForResource(params[URLParamsName.ID])
         if (user == null) {
             return renderNotFound()
         }
@@ -89,7 +90,7 @@ class UserController extends RestfulController<User> {
     @Transactional
     @Override
     def update() {
-        User user = queryForResource(params.id)
+        User user = queryForResource(params[URLParamsName.ID])
         if (user == null) {
             return renderNotFound()
         }
@@ -108,7 +109,7 @@ class UserController extends RestfulController<User> {
     @Transactional
     @Override
     def delete() {
-        def user = queryForResource(params.id)
+        def user = queryForResource(params[URLParamsName.ID])
         if (user == null) {
             return renderNotFound()
         }
@@ -123,11 +124,11 @@ class UserController extends RestfulController<User> {
         def userConnected = (User) springSecurityService.currentUser
         if (null != userConnected){
             if (!userConnected.isSpecialUser()) {
-                String device = params.device;
-                String pushToken = params.pushToken
-                if (QueryParams.DEVICE_ANDROID == device && pushToken != null) {
+                String device = params[URLParamsName.USER_DEVISE];
+                String pushToken = params[URLParamsName.USER_PUSHTOKEN]
+                if (URLParamsValue.DEVICE_ANDROID == device && pushToken != null) {
                     androidGcmService.reservePushTokenToUser(userConnected, pushToken)
-                } else if (QueryParams.DEVICE_IOS == device && pushToken != null) {
+                } else if (URLParamsValue.DEVICE_IOS == device && pushToken != null) {
                     iosAPNSService.reservePushTokenToUser(userConnected, pushToken)
                 }
                 return render([status: HttpStatus.ACCEPTED])
@@ -205,7 +206,7 @@ class UserController extends RestfulController<User> {
         def user = (User) springSecurityService.currentUser
 
         // Lecture des paramètres
-        boolean quotaOnly = params.quotaOnly != null ? new Boolean((String)params.quotaOnly).booleanValue() : false
+        boolean quotaOnly = params[URLParamsName.USER_ONLY_QUOTA] != null ? new Boolean((String)params[URLParamsName.USER_ONLY_QUOTA]).booleanValue() : false
 
         JSON.use(quotaOnly ? JSONMarshaller.PUBLIC_STATUS_QUOTA : JSONMarshaller.PUBLIC_STATUS) {
             return respond(messageService.getUserMessagesStatus(user, quotaOnly), [status: HttpStatus.OK])
@@ -221,10 +222,10 @@ class UserController extends RestfulController<User> {
         def user = (User) springSecurityService.currentUser
         String device = request.JSON.opt(JSONAttribute.USER_DEVICE) ?: null
         String pushToken = request.JSON.opt(JSONAttribute.USER_PUSHTOKEN) ?: null
-        if (QueryParams.DEVICE_ANDROID == device && pushToken != null) {
+        if (URLParamsValue.DEVICE_ANDROID == device && pushToken != null) {
             androidGcmService.registerPushToken(user, pushToken)
             return render([status: HttpStatus.ACCEPTED])
-        } else if (QueryParams.DEVICE_IOS == device && pushToken != null) {
+        } else if (URLParamsValue.DEVICE_IOS == device && pushToken != null) {
             iosAPNSService.registerPushToken(user, pushToken)
             return render([status: HttpStatus.ACCEPTED])
         }

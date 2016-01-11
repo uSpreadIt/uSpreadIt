@@ -2,7 +2,7 @@ package it.uspread.core.json
 
 /**
  * Description des attributs JSON que l'on utilise en input et output JSON<br>
- * Utiser des nom pas trop long pour obtimiser le trafic réseaux
+ * Utiser des noms pas trop long pour optimiser le trafic réseaux
  */
 class JSONAttribute {
     public static final String USER_ID = "id"

@@ -7,7 +7,7 @@ import it.uspread.core.domain.Report
 import it.uspread.core.domain.Spread
 import it.uspread.core.domain.User
 import it.uspread.core.params.MessageCriteria
-import it.uspread.core.params.QueryParams
+import it.uspread.core.params.URLParamsValue
 import it.uspread.core.type.ReportType
 
 /**
@@ -39,9 +39,9 @@ class MessageService {
         List<Message> listMessage;
         // Recherche des messages avec critère de date
         if (msgCriteria?.getOperator() != null) {
-            if (QueryParams.OPERATOR_GREATER == msgCriteria.getOperator()) {
+            if (URLParamsValue.OPERATOR_GREATER == msgCriteria.getOperator()) {
                 listMessage = Message.where({ author.id == id && dateCreated > msgCriteria.getDate() }).list(listMap)
-            } else if (QueryParams.OPERATOR_GREATER_OR_EQUALS == msgCriteria.getOperator()) {
+            } else if (URLParamsValue.OPERATOR_GREATER_OR_EQUALS == msgCriteria.getOperator()) {
                 listMessage = Message.where({ author.id == id && dateCreated >= msgCriteria.getDate() }).list(listMap)
             } else {
                 listMessage = Message.where({ author.id == id && dateCreated < msgCriteria.getDate() }).list(listMap)
@@ -69,7 +69,7 @@ class MessageService {
         List<Message> listMessage;
         // Recherche des messages avec critère de date
         if (msgCriteria?.getOperator() != null) {
-            if (QueryParams.OPERATOR_GREATER == msgCriteria.getOperator()) {
+            if (URLParamsValue.OPERATOR_GREATER == msgCriteria.getOperator()) {
                 listMessage =  Message.createCriteria().list(listMap, {
                     receivedBy {
                         eq('user.id', id)
@@ -77,7 +77,7 @@ class MessageService {
                         order('date', 'desc')
                     }
                 })
-            } else if (QueryParams.OPERATOR_GREATER_OR_EQUALS == msgCriteria.getOperator()) {
+            } else if (URLParamsValue.OPERATOR_GREATER_OR_EQUALS == msgCriteria.getOperator()) {
                 listMessage =  Message.createCriteria().list(listMap, {
                     receivedBy {
                         eq('user.id', id)
@@ -122,7 +122,7 @@ class MessageService {
         List<Message> listMessage
         // Recherche des messages avec critère de date
         if (msgCriteria?.getOperator() != null) {
-            if (QueryParams.OPERATOR_GREATER == msgCriteria.getOperator()) {
+            if (URLParamsValue.OPERATOR_GREATER == msgCriteria.getOperator()) {
                 listMessage =  Message.createCriteria().list(listMap, {
                     spreadBy {
                         eq('user.id', id)
@@ -130,7 +130,7 @@ class MessageService {
                         order('date', 'desc')
                     }
                 })
-            } else if (QueryParams.OPERATOR_GREATER_OR_EQUALS == msgCriteria.getOperator()) {
+            } else if (URLParamsValue.OPERATOR_GREATER_OR_EQUALS == msgCriteria.getOperator()) {
                 listMessage =  Message.createCriteria().list(listMap, {
                     spreadBy {
                         eq('user.id', id)
