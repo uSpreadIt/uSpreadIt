@@ -80,11 +80,11 @@ class JSONMarshaller {
             it.registerObjectMarshaller(Message) { Message msg ->
                 def output = [:]
                 output[JSONAttribute.MESSAGE_ID] = msg.id
-                output[JSONAttribute.MESSAGE_DATECREATION] = DATE_FORMAT.format(msg.dateCreated)
+                output[JSONAttribute.MESSAGE_DATECREATED] = DATE_FORMAT.format(msg.dateCreated)
 
                 Date date = msg.getDateReceived(msg.getSpringSecurityService().currentUser)
                 if (date != null) {
-                    output[JSONAttribute.MESSAGE_DATERECEPTION] = DATE_FORMAT.format(date)
+                    output[JSONAttribute.MESSAGE_DATERECEIVED] = DATE_FORMAT.format(date)
                 }
                 date = msg.getDateSpread(msg.getSpringSecurityService().currentUser)
                 if (date != null) {
@@ -96,10 +96,11 @@ class JSONMarshaller {
                 output[JSONAttribute.MESSAGE_TEXTCOLOR] = msg.textColor
                 output[JSONAttribute.MESSAGE_BACKGROUNDTYPE] = msg.backgroundType.name()
                 if (msg.backgroundType == BackgroundType.IMAGE) {
-                    output[JSONAttribute.MESSAGE_IMAGE] = Base64.encodeBase64String(msg.backgroundImage.image)
+                    output[JSONAttribute.MESSAGE_BACKGROUNDIMAGE] = Base64.encodeBase64String(msg.backgroundImage.image)
                 } else {
                     output[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] = msg.backgroundColor
                 }
+                output[JSONAttribute.MESSAGE_LINK] = msg.link
 
                 return output
             }
@@ -110,7 +111,7 @@ class JSONMarshaller {
             it.registerObjectMarshaller(Message) { Message msg ->
                 def output = [:]
                 output[JSONAttribute.MESSAGE_ID] = msg.id
-                output[JSONAttribute.MESSAGE_IMAGE] = Base64.encodeBase64String(msg.backgroundImage.image)
+                output[JSONAttribute.MESSAGE_BACKGROUNDIMAGE] = Base64.encodeBase64String(msg.backgroundImage.image)
                 return output
             }
         }
@@ -120,16 +121,17 @@ class JSONMarshaller {
             it.registerObjectMarshaller(Message) { Message msg ->
                 def output = [:]
                 output[JSONAttribute.MESSAGE_ID] = msg.id
-                output[JSONAttribute.MESSAGE_DATECREATION] = DATE_FORMAT.format(msg.dateCreated)
+                output[JSONAttribute.MESSAGE_DATECREATED] = DATE_FORMAT.format(msg.dateCreated)
                 output[JSONAttribute.MESSAGE_NBSPREAD] = msg.nbSpread
                 output[JSONAttribute.MESSAGE_TEXT] = msg.text
                 output[JSONAttribute.MESSAGE_TEXTCOLOR] = msg.textColor
                 output[JSONAttribute.MESSAGE_BACKGROUNDTYPE] = msg.backgroundType.name()
                 if (msg.backgroundType == BackgroundType.IMAGE) {
-                    output[JSONAttribute.MESSAGE_IMAGE] = Base64.encodeBase64String(msg.backgroundImage.image)
+                    output[JSONAttribute.MESSAGE_BACKGROUNDIMAGE] = Base64.encodeBase64String(msg.backgroundImage.image)
                 } else {
                     output[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] = msg.backgroundColor
                 }
+                output[JSONAttribute.MESSAGE_LINK] = msg.link
                 return output
             }
         }
@@ -150,10 +152,11 @@ class JSONMarshaller {
                 output[JSONAttribute.MESSAGE_TEXTCOLOR] = msg.textColor
                 output[JSONAttribute.MESSAGE_BACKGROUNDTYPE] = msg.backgroundType.name()
                 if (msg.backgroundType == BackgroundType.IMAGE) {
-                    output[JSONAttribute.MESSAGE_IMAGE] = Base64.encodeBase64String(msg.backgroundImage.image)
+                    output[JSONAttribute.MESSAGE_BACKGROUNDIMAGE] = Base64.encodeBase64String(msg.backgroundImage.image)
                 } else {
                     output[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] = msg.backgroundColor
                 }
+                output[JSONAttribute.MESSAGE_LINK] = msg.link
                 return output
             }
         }
@@ -166,17 +169,18 @@ class JSONMarshaller {
 
                 Date date = msg.getDateReceived(msg.getSpringSecurityService().currentUser)
                 if (date != null) {
-                    output[JSONAttribute.MESSAGE_DATERECEPTION] = DATE_FORMAT.format(date)
+                    output[JSONAttribute.MESSAGE_DATERECEIVED] = DATE_FORMAT.format(date)
                 }
 
                 output[JSONAttribute.MESSAGE_TEXT] = msg.text
                 output[JSONAttribute.MESSAGE_TEXTCOLOR] = msg.textColor
                 output[JSONAttribute.MESSAGE_BACKGROUNDTYPE] = msg.backgroundType.name()
                 if (msg.backgroundType == BackgroundType.IMAGE) {
-                    output[JSONAttribute.MESSAGE_IMAGE] = Base64.encodeBase64String(msg.backgroundImage.image)
+                    output[JSONAttribute.MESSAGE_BACKGROUNDIMAGE] = Base64.encodeBase64String(msg.backgroundImage.image)
                 } else {
                     output[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] = msg.backgroundColor
                 }
+                output[JSONAttribute.MESSAGE_LINK] = msg.link
                 return output
             }
         }
@@ -196,7 +200,7 @@ class JSONMarshaller {
             it.registerObjectMarshaller(Message) { Message msg ->
                 def output = [:]
                 output[JSONAttribute.MESSAGE_ID] = msg.id
-                output[JSONAttribute.MESSAGE_DATECREATION] = DATE_FORMAT.format(msg.dateCreated)
+                output[JSONAttribute.MESSAGE_DATECREATED] = DATE_FORMAT.format(msg.dateCreated)
                 return output
             }
         }
@@ -258,17 +262,16 @@ class JSONMarshaller {
             it.registerObjectMarshaller(Message) { Message msg ->
                 def output = [:]
                 output[JSONAttribute.MESSAGE_ID] = msg.id
-                output[JSONAttribute.MESSAGE_DATECREATION] = DATE_FORMAT.format(msg.dateCreated)
+                output[JSONAttribute.MESSAGE_DATECREATED] = DATE_FORMAT.format(msg.dateCreated)
                 output[JSONAttribute.MESSAGE_TEXT] = msg.text
                 output[JSONAttribute.MESSAGE_AUTHOR] = ["${JSONAttribute.USER_ID}": msg.author.id, "${JSONAttribute.USER_USERNAME}": msg.author.username]
                 if (msg.isReported()) {
                     def ReportType reportType = msg.getMainReportType()
-                    if (reportType != null) {
-                        output[JSONAttribute.MESSAGE_MAINREPORTTYPE] = reportType.name()
-                    }
+                    output[JSONAttribute.MESSAGE_MAINREPORTTYPE] = reportType.name()
                     if ( msg.backgroundType == BackgroundType.IMAGE) {
-                        output[JSONAttribute.MESSAGE_IMAGE] = Base64.encodeBase64String(msg.backgroundImage.image)
+                        output[JSONAttribute.MESSAGE_BACKGROUNDIMAGE] = Base64.encodeBase64String(msg.backgroundImage.image)
                     }
+                    output[JSONAttribute.MESSAGE_LINK] = msg.link
                 }
 
                 return output

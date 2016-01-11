@@ -299,10 +299,11 @@ class MessageController extends RestfulController<Message> {
         message.textColor = request.JSON.opt(JSONAttribute.MESSAGE_TEXTCOLOR) ?: '000000'
         message.backgroundType = request.JSON.opt(JSONAttribute.MESSAGE_BACKGROUNDTYPE) ?: BackgroundType.PLAIN
         if (message.backgroundType == BackgroundType.IMAGE) {
-            message.backgroundImage = new Image([image: Base64.decodeBase64(request.JSON.opt(JSONAttribute.MESSAGE_IMAGE))])
+            message.backgroundImage = new Image([image: Base64.decodeBase64(request.JSON.opt(JSONAttribute.MESSAGE_BACKGROUNDIMAGE))])
         } else {
             message.backgroundColor = request.JSON.opt(JSONAttribute.MESSAGE_BACKGROUNDCOLOR) ?:  'FFBB33'
         }
+        message.link = request.JSON.opt(JSONAttribute.MESSAGE_LINK)
         return message
     }
 

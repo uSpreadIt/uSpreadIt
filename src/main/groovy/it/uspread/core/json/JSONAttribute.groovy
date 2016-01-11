@@ -1,12 +1,13 @@
 package it.uspread.core.json
 
 /**
- * Description des attributs JSON que l'on utilise en input et output JSON
+ * Description des attributs JSON que l'on utilise en input et output JSON<br>
+ * Utiser des nom pas trop long pour obtimiser le trafic réseaux
  */
 class JSONAttribute {
     public static final String USER_ID = "id"
-    public static final String USER_USERNAME = "username"
-    public static final String USER_PASSWORD = "password"
+    public static final String USER_USERNAME = "usr"
+    public static final String USER_PASSWORD = "pass"
     public static final String USER_EMAIL = "email"
     public static final String USER_ROLE = "role"
     public static final String USER_REPORTSSENT = "reportsSent"
@@ -17,20 +18,21 @@ class JSONAttribute {
 
     public static final String MESSAGE_ID = "id"
     public static final String MESSAGE_AUTHOR = "author"
-    public static final String MESSAGE_DATECREATION = "dateCreation"
-    public static final String MESSAGE_DATERECEPTION = "dateReception"
+    public static final String MESSAGE_DATECREATED = "dateCreated"
+    public static final String MESSAGE_DATERECEIVED = "dateReceived"
     public static final String MESSAGE_DATESPREAD = "dateSpread"
     public static final String MESSAGE_NBSPREAD = "nbSpread"
-    public static final String MESSAGE_TEXT = "text"
-    public static final String MESSAGE_TEXTCOLOR = "textColor"
-    public static final String MESSAGE_BACKGROUNDTYPE = "backgroundType"
-    public static final String MESSAGE_BACKGROUNDCOLOR = "backgroundColor"
-    public static final String MESSAGE_IMAGE = "image"
+    public static final String MESSAGE_TEXT = "txt"
+    public static final String MESSAGE_TEXTCOLOR = "txtColor"
+    public static final String MESSAGE_BACKGROUNDTYPE = "bgType"
+    public static final String MESSAGE_BACKGROUNDCOLOR = "bgColor"
+    public static final String MESSAGE_BACKGROUNDIMAGE = "img"
+    public static final String MESSAGE_LINK = "link"
     public static final String MESSAGE_MAINREPORTTYPE = "mainReportType"
 
     public static final String STATUS_QUOTAREACHED = "quotaReached"
-    public static final String STATUS_NBMESSAGEWRITED = "nbMessageWrited"
-    public static final String STATUS_NBMESSAGESPREAD = "nbMessageSpread"
-    public static final String STATUS_NBMESSAGEIGNORED = "nbMessageIgnored"
-    public static final String STATUS_NBMESSAGEREPORTED = "nbMessageReported"
+    public static final String STATUS_NBMESSAGEWRITED = "nbMsgWrited"
+    public static final String STATUS_NBMESSAGESPREAD = "nbMsgSpread"
+    public static final String STATUS_NBMESSAGEIGNORED = "nbMsgIgnored"
+    public static final String STATUS_NBMESSAGEREPORTED = "nbMsgReported"
 }

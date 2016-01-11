@@ -193,7 +193,7 @@ class MessageControllerFunctionalSpec extends Specification {
         response.statusCode == HttpStatus.OK.value
         response.json.size() == 7
         response.json.id != null
-        response.json.dateCreation != null
+        response.json.dateCreated != null
         response.json.nbSpread != null
         response.json.text != null
         response.json.textColor != null
@@ -209,7 +209,7 @@ class MessageControllerFunctionalSpec extends Specification {
         response.statusCode == HttpStatus.OK.value
         response.json.size() == 7
         response.json.id != null
-        response.json.dateCreation != null
+        response.json.dateCreated != null
         response.json.nbSpread != null
         response.json.text != null
         response.json.textColor != null

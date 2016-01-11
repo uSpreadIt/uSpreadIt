@@ -11,6 +11,9 @@ class Message {
     /** Nombre de caractère maximal d'un message */
     public static final int TEXT_MAX_LENGTH = 240
 
+    /** Nombre de caractère maximal d'un lien web */
+    public static final int LINK_MAX_LENGTH = 255
+
     transient springSecurityService
 
     /** Auteur */
@@ -29,6 +32,8 @@ class Message {
     String backgroundColor
     /** Image de fond */
     Image backgroundImage
+    /** Lien du message */
+    String link
 
     /** La liste utilisateurs ayant reçus ce message */
     Set<Spread> receivedBy
@@ -53,6 +58,7 @@ class Message {
         textColor(length: 6)
         backgroundType(enumType: 'string')
         backgroundImage(cascade: 'all-delete-orphan')
+        link(length: LINK_MAX_LENGTH)
         receivedBy(cascade: 'all-delete-orphan')
         spreadBy(cascade: 'all-delete-orphan')
         ignoredBy(joinTable: [name: 'message_ignored', key: 'message_id', column: 'user_id'])
@@ -67,6 +73,7 @@ class Message {
         textColor(size: 6..6)
         backgroundColor(nullable: true)
         backgroundImage(nullable: true)
+        link(maxsize: LINK_MAX_LENGTH)
     }
 
     /**

@@ -18,8 +18,8 @@ public class RoleService {
      */
     void setRoleUser(User newUser) {
         Role role = Role.where({ authority == Role.ROLE_USER }).find()
-        UserRole droitsMod = new UserRole(user: newUser, role: role)
-        droitsMod.save()
+        UserRole usrRole = new UserRole(user: newUser, role: role)
+        usrRole.save()
     }
 
     /**
@@ -29,8 +29,19 @@ public class RoleService {
      */
     void setRoleModerator(User newModerator) {
         Role role = Role.where({ authority == Role.ROLE_MODERATOR }).find()
-        UserRole droitsMod = new UserRole(user: newModerator, role: role)
-        droitsMod.save()
+        UserRole usrRole = new UserRole(user: newModerator, role: role)
+        usrRole.save()
+    }
+
+    /**
+     * Applique le rôle {@link Role.ROLE_ADMINISTRATOR} a l'utilisateur
+     * @param newModerator
+     * @return
+     */
+    void setRoleAdministrator(User newAdministrator) {
+        Role role = Role.where({ authority == Role.ROLE_ADMINISTRATOR }).find()
+        UserRole usrRole = new UserRole(user: newAdministrator, role: role)
+        usrRole.save()
     }
 
     /**
