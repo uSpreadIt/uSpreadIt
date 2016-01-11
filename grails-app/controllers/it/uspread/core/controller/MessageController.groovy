@@ -80,9 +80,7 @@ class MessageController extends RestfulController<Message> {
         if (message != null) {
             User userConnected = (User) springSecurityService.currentUser
             if (message.isUserAllowedToRead(userConnected)) {
-                boolean onlyImage = params[URLParamsName.MESSAGE_ONLY_IMAGE] != null ? new Boolean((String)[
-                    URLParamsName.MESSAGE_ONLY_IMAGE
-                ]).booleanValue() : false
+                boolean onlyImage = params[URLParamsName.MESSAGE_ONLY_IMAGE] != null ? new Boolean((String)params[URLParamsName.MESSAGE_ONLY_IMAGE]).booleanValue() : false
                 JSON.use(userConnected.isSpecialUser() ? JSONMarshaller.INTERNAL : (onlyImage ? JSONMarshaller.PUBLIC_MESSAGE_IMAGE : JSONMarshaller.PUBLIC_MESSAGE)) {
                     return respond(queryForResource(params[URLParamsName.ID]), [status: HttpStatus.OK])
                 }

@@ -265,7 +265,7 @@ class JSONMarshaller {
                 output[JSONAttribute.USER_ROLE] = user.isModerator() ? Role.ROLE_MODERATOR.replace('ROLE_', '') : (user.isAdministrator() ? Role.ROLE_ADMINISTRATOR.replace('ROLE_', '') : 'USER')
                 if (!user.isModerator()) {
                     output[JSONAttribute.USER_REPORTSSENT] = user.reportsSent
-                    output[JSONAttribute.USER_REPORTRECEIVED] = user.reportsReceived
+                    output[JSONAttribute.USER_REPORTSRECEIVED] = user.reportsReceived
                     output[JSONAttribute.USER_MODERATIONREQUIRED] = user.isModerationRequired()
                 }
                 return output

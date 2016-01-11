@@ -7,6 +7,7 @@ import it.uspread.core.domain.Report
 import it.uspread.core.domain.Spread
 import it.uspread.core.domain.User
 import it.uspread.core.type.BackgroundType
+import it.uspread.core.type.MessageType
 import it.uspread.core.type.ReportType
 import spock.lang.*
 
@@ -24,6 +25,7 @@ class UserIntegrationSpec extends Specification {
         param['backgroundType'] = BackgroundType.PLAIN
         param['backgroundColor'] = 'FFBB33'
         param['textColor'] = '000000'
+        param['type'] = MessageType.WORLD
         return new Message(param)
     }
 
@@ -84,7 +86,7 @@ class UserIntegrationSpec extends Specification {
         reportedByDude.addToReports( new Report(dude, ReportType.SPAM))
         yop.addToMessages(reportedByDude)
 
-        // TODO ajouter création message avec image
+        // TODO ajouter création message avec image et avec link
 
         when: "users are saved"
         dude.save([flush: true])

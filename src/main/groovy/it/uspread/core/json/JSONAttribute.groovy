@@ -11,7 +11,7 @@ class JSONAttribute {
     public static final String USER_EMAIL = "email"
     public static final String USER_ROLE = "role"
     public static final String USER_REPORTSSENT = "reportsSent"
-    public static final String USER_REPORTRECEIVED = "reportsReceived"
+    public static final String USER_REPORTSRECEIVED = "reportsReceived"
     public static final String USER_MODERATIONREQUIRED = "moderationRequired"
     public static final String USER_PUSHTOKEN = "pushToken"
     public static final String USER_DEVICE = "device"

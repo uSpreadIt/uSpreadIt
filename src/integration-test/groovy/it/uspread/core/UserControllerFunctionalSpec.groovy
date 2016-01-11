@@ -1,6 +1,8 @@
 package it.uspread.core
 
 import grails.test.mixin.integration.Integration
+import it.uspread.core.json.JSONAttribute
+import it.uspread.core.params.URLParamsName
 
 import org.springframework.http.HttpStatus
 
@@ -85,7 +87,7 @@ class UserControllerFunctionalSpec extends Specification {
             when: "POST a pushtoken"
             Response response = clientPublic.post([path: "/users/connected/pushtoken"]) {
                 type(ContentType.JSON)
-                json([pushToken: "AZERTYUIOPQSDFGHJKLM", device: "ANDROID"])
+                json(["$JSONAttribute.USER_PUSHTOKEN": "AZERTYUIOPQSDFGHJKLM", "$JSONAttribute.USER_DEVICE": "ANDROID"])
             }
             false
         } catch(HTTPClientException e) {
@@ -200,7 +202,7 @@ class UserControllerFunctionalSpec extends Specification {
             when: "POST a pushtoken"
             Response response = clientModerator.post([path: "/users/connected/pushtoken"]) {
                 type(ContentType.JSON)
-                json([pushToken: "AZERTYUIOPQSDFGHJKLM", device: "ANDROID"])
+                json(["$JSONAttribute.USER_PUSHTOKEN": "AZERTYUIOPQSDFGHJKLM", "$JSONAttribute.USER_DEVICE": "ANDROID"])
             }
             false
         } catch(HTTPClientException e) {
@@ -213,7 +215,7 @@ class UserControllerFunctionalSpec extends Specification {
         when: "Trying to signup"
         Response response = clientPublic.post([path: "/signup"]) {
             type(ContentType.JSON)
-            json([email:"chuck@norris.fr", username:"chuck", password:"chuck"])
+            json(["$JSONAttribute.USER_EMAIL":"chuck@norris.fr", "$JSONAttribute.USER_USERNAME":"chuck", "$JSONAttribute.USER_PASSWORD":"chuck"])
         }
 
         then: "Look like ok"
@@ -226,14 +228,14 @@ class UserControllerFunctionalSpec extends Specification {
 
         then: "I get the expected user as a JSON"
         response.statusCode == HttpStatus.OK.value
-        response.json.email == "chuck@norris.fr"
+        response.json[JSONAttribute.USER_EMAIL] == "chuck@norris.fr"
     }
 
     void "Login Moderator"() {
         when: "Trying to login"
         Response response = clientModerator.post([path: "/login"]) {
             type(ContentType.JSON)
-            json([username:"mod", password:"mod"])
+            json(["$JSONAttribute.USER_USERNAME":"mod", "$JSONAttribute.USER_PASSWORD":"mod"])
         }
 
         then: "Look like ok"
@@ -242,9 +244,9 @@ class UserControllerFunctionalSpec extends Specification {
 
     void "Login Simple user"() {
         when: "Trying to login"
-        Response response = clientUser1.post([path: "/login?pushToken=AZERTYUIOPQSDFGHJKLM&device=ANDROID"]) {
+        Response response = clientUser1.post([path: "/login?" + URLParamsName.USER_PUSHTOKEN + "=AZERTYUIOPQSDFGHJKLM&" + URLParamsName.USER_DEVISE + "=ANDROID"]) {
             type(ContentType.JSON)
-            json([username:"user1", password:"user1"])
+            json(["$JSONAttribute.USER_USERNAME":"user1", "$JSONAttribute.USER_PASSWORD":"user1"])
         }
         then: "Look like ok"
         response.statusCode == HttpStatus.ACCEPTED.value
@@ -254,7 +256,7 @@ class UserControllerFunctionalSpec extends Specification {
         when: "Trying to create a moderator"
         Response response = clientModerator.post([path: "/users/moderator"]) {
             type(ContentType.JSON)
-            json([email:"modo@free.fr", username:"modo", password:"modo"])
+            json(["$JSONAttribute.USER_EMAIL":"modo@free.fr", "$JSONAttribute.USER_USERNAME":"modo", "$JSONAttribute.USER_PASSWORD":"modo"])
         }
 
         then: "Look like ok"
@@ -267,7 +269,7 @@ class UserControllerFunctionalSpec extends Specification {
 
         then: "I get the expected moderator as a JSON"
         response.statusCode == HttpStatus.OK.value
-        response.json.email == "modo@free.fr"
+        response.json[JSONAttribute.USER_EMAIL] == "modo@free.fr"
     }
 
     void "Moderator GET user with id 2"() {
@@ -277,20 +279,20 @@ class UserControllerFunctionalSpec extends Specification {
         then: "I get the expected user as a JSON"
         response.statusCode == HttpStatus.OK.value
         response.json.size() == 7
-        response.json.id == 2
-        response.json.username == "user2"
-        response.json.email == "user2@42.fr"
-        response.json.role == "USER"
-        response.json.reportsSent == 0
-        response.json.reportsReceived == 1
-        response.json.moderationRequired == true
+        response.json[JSONAttribute.USER_ID] == 2
+        response.json[JSONAttribute.USER_USERNAME] == "user2"
+        response.json[JSONAttribute.USER_EMAIL] == "user2@42.fr"
+        response.json[JSONAttribute.USER_ROLE] == "USER"
+        response.json[JSONAttribute.USER_REPORTSSENT] == 0
+        response.json[JSONAttribute.USER_REPORTSRECEIVED] == 1
+        response.json[JSONAttribute.USER_MODERATIONREQUIRED] == true
     }
 
     void "Moderator Put user with id 1"() {
         when: "Put user with id 1"
         Response response = clientModerator.put([path: "/users/1"]) {
             type(ContentType.JSON)
-            json([username:"user1", email:"jp@toto.fr"])
+            json(["$JSONAttribute.USER_USERNAME":"user1", "$JSONAttribute.USER_EMAIL":"jp@toto.fr"])
         }
 
         then: "Look like ok"
@@ -301,7 +303,7 @@ class UserControllerFunctionalSpec extends Specification {
 
         then: "I get the expected user as a JSON"
         response.statusCode == HttpStatus.OK.value
-        response.json.email == "jp@toto.fr"
+        response.json[JSONAttribute.USER_EMAIL] == "jp@toto.fr"
     }
 
     void "Moderator Delete user with id 7"() {
@@ -327,7 +329,7 @@ class UserControllerFunctionalSpec extends Specification {
 
         then: "I get the list as a JSON"
         response.statusCode == HttpStatus.OK.value
-        response.json[0].username != null
+        response.json[0][JSONAttribute.USER_USERNAME] != null
 
         // TODO ajouter le test des différents critères disponibles
     }
@@ -339,17 +341,17 @@ class UserControllerFunctionalSpec extends Specification {
         then: "I get the expected user as a JSON"
         response.statusCode == HttpStatus.OK.value
         response.json.size() == 4
-        response.json.id == 8
-        response.json.username == "mod"
-        response.json.email == "mod@42.fr"
-        response.json.role == "MODERATOR"
+        response.json[JSONAttribute.USER_ID] == 8
+        response.json[JSONAttribute.USER_USERNAME] == "mod"
+        response.json[JSONAttribute.USER_EMAIL] == "mod@42.fr"
+        response.json[JSONAttribute.USER_ROLE] == "MODERATOR"
     }
 
     void "Moderator Put user connected"() {
         when: "Put user connected"
         Response response = clientModerator.put([path: "/users/connected"]) {
             type(ContentType.JSON)
-            json([username: "mod" ,email: "jpamodo@toto.fr"])
+            json(["$JSONAttribute.USER_USERNAME": "mod" ,"$JSONAttribute.USER_EMAIL": "jpamodo@toto.fr"])
         }
 
         then: "Look like ok"
@@ -360,7 +362,7 @@ class UserControllerFunctionalSpec extends Specification {
 
         then: "I get the expected user as a JSON"
         response.statusCode == HttpStatus.OK.value
-        response.json.email == "jpamodo@toto.fr"
+        response.json[JSONAttribute.USER_EMAIL] == "jpamodo@toto.fr"
     }
 
     void "Moderator Delete user connected"() {
@@ -386,7 +388,7 @@ class UserControllerFunctionalSpec extends Specification {
 
         then: "I get the list as a JSON"
         response.statusCode == HttpStatus.OK.value
-        response.json[0].username != null
+        response.json[0][JSONAttribute.USER_USERNAME] != null
 
         // TODO paufiner ce test en même temps que la fonctionnalité
     }
@@ -398,16 +400,16 @@ class UserControllerFunctionalSpec extends Specification {
         then: "I get the expected user as a JSON"
         response.statusCode == HttpStatus.OK.value
         response.json.size() == 3
-        response.json.id == 2
-        response.json.username == "user2"
-        response.json.email == "user2@42.fr"
+        response.json[JSONAttribute.USER_ID] == 2
+        response.json[JSONAttribute.USER_USERNAME] == "user2"
+        response.json[JSONAttribute.USER_EMAIL] == "user2@42.fr"
     }
 
     void "Simple user Put user connected"() {
         when: "Put user connected"
         Response response = clientUser1.put([path: "/users/connected"]) {
             type(ContentType.JSON)
-            json([username: "user1", email:"jpa@toto.fr"])
+            json(["$JSONAttribute.USER_USERNAME": "user1", "$JSONAttribute.USER_EMAIL":"jpa@toto.fr"])
         }
 
         then: "Look like ok"
@@ -418,7 +420,7 @@ class UserControllerFunctionalSpec extends Specification {
 
         then: "I get the expected user as a JSON"
         response.statusCode == HttpStatus.OK.value
-        response.json.email == "jpa@toto.fr"
+        response.json[JSONAttribute.USER_EMAIL] == "jpa@toto.fr"
     }
 
     void "Simple user delete user connected"() {
@@ -440,12 +442,12 @@ class UserControllerFunctionalSpec extends Specification {
 
     void "Simple user get status"() {
         when: "Get his status"
-        Response response = clientUser1.get([path: "/users/connected/status?quotaOnly=true", accept: ContentType.JSON])
+        Response response = clientUser1.get([path: "/users/connected/status?" + URLParamsName.USER_ONLY_QUOTA + "=true", accept: ContentType.JSON])
 
         then: "Its work"
         response.statusCode == HttpStatus.OK.value
         response.json.size() == 1
-        response.json.quotaReached != null
+        response.json[JSONAttribute.STATUS_QUOTAREACHED] != null
 
         when: "Get his status"
         response = clientUser1.get([path: "/users/connected/status", accept: ContentType.JSON])
@@ -453,18 +455,18 @@ class UserControllerFunctionalSpec extends Specification {
         then: "Its work"
         response.statusCode == HttpStatus.OK.value
         response.json.size() == 5
-        response.json.quotaReached != null
-        response.json.nbMessageWrited != null
-        response.json.nbMessageSpread != null
-        response.json.nbMessageIgnored != null
-        response.json.nbMessageReported != null
+        response.json[JSONAttribute.STATUS_QUOTAREACHED] != null
+        response.json[JSONAttribute.STATUS_NBMESSAGEWRITED] != null
+        response.json[JSONAttribute.STATUS_NBMESSAGESPREAD] != null
+        response.json[JSONAttribute.STATUS_NBMESSAGEIGNORED] != null
+        response.json[JSONAttribute.STATUS_NBMESSAGEREPORTED] != null
     }
 
     void "Simple user post pushtoken"() {
         when: "POST a pushtoken"
         Response response = clientUser1.post([path: "/users/connected/pushtoken"]) {
             type(ContentType.JSON)
-            json([pushToken: "AZERTYUIOPQSDFGHJKLM", device: "ANDROID"])
+            json(["$JSONAttribute.USER_PUSHTOKEN": "AZERTYUIOPQSDFGHJKLM", "$JSONAttribute.USER_DEVICE": "ANDROID"])
         }
 
         then: "Its work"
@@ -477,7 +479,7 @@ class UserControllerFunctionalSpec extends Specification {
 
         then: "I get the list as a JSON"
         response.statusCode == HttpStatus.OK.value
-        response.json[0].username != null
+        response.json[0][JSONAttribute.USER_USERNAME] != null
 
         // TODO paufiner ce test en meme temps que la fonctionnalité
     }

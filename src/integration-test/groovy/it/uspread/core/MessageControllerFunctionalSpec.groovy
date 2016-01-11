@@ -1,7 +1,11 @@
 package it.uspread.core
 
 import grails.test.mixin.integration.Integration
+import it.uspread.core.json.JSONAttribute
+import it.uspread.core.params.URLParamsName
 import it.uspread.core.type.BackgroundType
+import it.uspread.core.type.MessageType
+import it.uspread.core.type.ReportType
 
 import org.apache.commons.codec.binary.Base64
 import org.springframework.http.HttpStatus
@@ -54,28 +58,30 @@ class MessageControllerFunctionalSpec extends Specification {
     }
 
     private Map wrapPlainMessage(Map param) {
-        param['backgroundType'] = BackgroundType.PLAIN.name()
-        param['backgroundColor'] = 'FFBB33'
-        param['textColor'] = '000000'
+        param[JSONAttribute.MESSAGE_BACKGROUNDTYPE] = BackgroundType.PLAIN.name()
+        param[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] = 'FFBB33'
+        param[JSONAttribute.MESSAGE_TEXTCOLOR] = '000000'
+        param[JSONAttribute.MESSAGE_TYPE] = MessageType.WORLD.name()
         return param
     }
 
     private Map wrapImageMessage(Map param) {
-        param['backgroundType'] = BackgroundType.IMAGE.name()
-        param['image'] = Base64.encodeBase64String([0, 0, 0, 0, 0, 1, 0] as byte[])
-        param['textColor'] = '000000'
+        param[JSONAttribute.MESSAGE_BACKGROUNDTYPE] = BackgroundType.IMAGE.name()
+        param[JSONAttribute.MESSAGE_BACKGROUNDIMAGE] = Base64.encodeBase64String([0, 0, 0, 0, 0, 1, 0] as byte[])
+        param[JSONAttribute.MESSAGE_TEXTCOLOR] = '000000'
+        param[JSONAttribute.MESSAGE_TYPE] = MessageType.WORLD.name()
         return param
     }
 
     private long postMessage(RESTClient client, String text, boolean image = false) {
         Response response = client.post([path: "/messages", accept: ContentType.JSON]) {
             type(ContentType.JSON)
-            json(image ? wrapImageMessage([text: text]) : wrapPlainMessage([text: text]))
+            json(image ? wrapImageMessage(["$JSONAttribute.MESSAGE_TEXT": text]) : wrapPlainMessage(["$JSONAttribute.MESSAGE_TEXT": text]))
         }
 
         assert response.statusCode == HttpStatus.CREATED.value
-        assert response.json.id != null
-        return response.json.id
+        assert response.json[JSONAttribute.MESSAGE_ID] != null
+        return response.json[JSONAttribute.MESSAGE_ID]
     }
 
     void "user1 post pushtoken Android"() {
@@ -83,7 +89,7 @@ class MessageControllerFunctionalSpec extends Specification {
         when: "POST a pushtoken"
         Response response = clientUser1.post([path: "/users/connected/pushtoken"]) {
             type(ContentType.JSON)
-            json([pushToken: "APA91bEuKPbl9edxSai9NfV1JMdnQTvhxKYCCrLvXDlg0GHTnEX20wj_QW9MupoZWoQW9MupoZWoQW9MupoZWoQW9MupoZWoQW9MupoZWooVhN8EahuQHzvC179OA5kJW4Oc7ybS2iWi9I2puR8EtDmebihL4bdiig", device: "ANDROID"])
+            json(["$JSONAttribute.USER_PUSHTOKEN": "APA91bEuKPbl9edxSai9NfV1JMdnQTvhxKYCCrLvXDlg0GHTnEX20wj_QW9MupoZWoQW9MupoZWoQW9MupoZWoQW9MupoZWoQW9MupoZWooVhN8EahuQHzvC179OA5kJW4Oc7ybS2iWi9I2puR8EtDmebihL4bdiig", "$JSONAttribute.USER_DEVICE": "ANDROID"])
         }
 
         then: "Its work"
@@ -95,7 +101,7 @@ class MessageControllerFunctionalSpec extends Specification {
         when: "POST a pushtoken"
         Response response = clientUser1.post([path: "/users/connected/pushtoken"]) {
             type(ContentType.JSON)
-            json([pushToken: "00000007bebcf74f9b7c25d48e3358945f67701da5ddb387462c7eaf61bbad78", device: "IOS"])
+            json(["$JSONAttribute.USER_PUSHTOKEN": "00000007bebcf74f9b7c25d48e3358945f67701da5ddb387462c7eaf61bbad78", "$JSONAttribute.USER_DEVICE": "IOS"])
         }
 
         then: "Its work"
@@ -146,9 +152,9 @@ class MessageControllerFunctionalSpec extends Specification {
         then: "Status code is"
         response.statusCode == HttpStatus.ACCEPTED.value
         response.json.size() == 3
-        response.json.id != null
-        response.json.nbSpread != null
-        response.json.dateSpread != null
+        response.json[JSONAttribute.MESSAGE_ID] != null
+        response.json[JSONAttribute.MESSAGE_NBSPREAD] != null
+        response.json[JSONAttribute.MESSAGE_DATESPREAD] != null
     }
 
     void "user 2 spread"() {
@@ -160,9 +166,9 @@ class MessageControllerFunctionalSpec extends Specification {
         then: "Status code is"
         response.statusCode == HttpStatus.ACCEPTED.value
         response.json.size() == 3
-        response.json.id != null
-        response.json.nbSpread != null
-        response.json.dateSpread != null
+        response.json[JSONAttribute.MESSAGE_ID] != null
+        response.json[JSONAttribute.MESSAGE_NBSPREAD] != null
+        response.json[JSONAttribute.MESSAGE_DATESPREAD] != null
     }
 
     void "user 3 ignores"() {
@@ -177,7 +183,7 @@ class MessageControllerFunctionalSpec extends Specification {
 
     void "user 4 reports"() {
         when: "Message is reported by user4"
-        Response response = clientUser4.post([path: "/messages/"+idMessage2FromUser2_ToReport+"/report?type=SPAM"]) {
+        Response response = clientUser4.post([path: "/messages/"+idMessage2FromUser2_ToReport+"/report?" + URLParamsName.MESSAGE_REPORTTYPE + "=" + ReportType.SPAM.name()]) {
             type(ContentType.JSON)
         }
 
@@ -191,14 +197,15 @@ class MessageControllerFunctionalSpec extends Specification {
 
         then: "Status code is"
         response.statusCode == HttpStatus.OK.value
-        response.json.size() == 7
-        response.json.id != null
-        response.json.dateCreated != null
-        response.json.nbSpread != null
-        response.json.text != null
-        response.json.textColor != null
-        response.json.backgroundType != null
-        response.json.backgroundColor != null
+        response.json.size() == 8
+        response.json[JSONAttribute.MESSAGE_ID] != null
+        response.json[JSONAttribute.MESSAGE_DATECREATED] != null
+        response.json[JSONAttribute.MESSAGE_NBSPREAD] != null
+        response.json[JSONAttribute.MESSAGE_TEXT] != null
+        response.json[JSONAttribute.MESSAGE_TEXTCOLOR] != null
+        response.json[JSONAttribute.MESSAGE_BACKGROUNDTYPE] != null
+        response.json[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] != null
+        response.json[JSONAttribute.MESSAGE_TYPE] != null
     }
 
     void "user 1 get a specific IMAGE message"() {
@@ -207,25 +214,26 @@ class MessageControllerFunctionalSpec extends Specification {
 
         then: "Status code is"
         response.statusCode == HttpStatus.OK.value
-        response.json.size() == 7
-        response.json.id != null
-        response.json.dateCreated != null
-        response.json.nbSpread != null
-        response.json.text != null
-        response.json.textColor != null
-        response.json.backgroundType != null
-        response.json.image != null
+        response.json.size() == 8
+        response.json[JSONAttribute.MESSAGE_ID] != null
+        response.json[JSONAttribute.MESSAGE_DATECREATED] != null
+        response.json[JSONAttribute.MESSAGE_NBSPREAD] != null
+        response.json[JSONAttribute.MESSAGE_TEXT] != null
+        response.json[JSONAttribute.MESSAGE_TEXTCOLOR] != null
+        response.json[JSONAttribute.MESSAGE_BACKGROUNDTYPE] != null
+        response.json[JSONAttribute.MESSAGE_BACKGROUNDIMAGE] != null
+        response.json[JSONAttribute.MESSAGE_TYPE] != null
     }
 
     void "user 1 get a specific IMAGE message but only the image"() {
         when: "Message is got by user1"
-        Response response = clientUser1.get([path: "/messages/"+idMessage2FromUser1+"?onlyImage=true", accept: ContentType.JSON])
+        Response response = clientUser1.get([path: "/messages/"+idMessage2FromUser1+"?" + URLParamsName.MESSAGE_ONLY_IMAGE + "=true", accept: ContentType.JSON])
 
         then: "Status code is"
         response.statusCode == HttpStatus.OK.value
         response.json.size() == 2
-        response.json.id != null
-        response.json.image != null
+        response.json[JSONAttribute.MESSAGE_ID] != null
+        response.json[JSONAttribute.MESSAGE_BACKGROUNDIMAGE] != null
     }
 
     void "user 1 delete one of his message"() {
@@ -251,7 +259,7 @@ class MessageControllerFunctionalSpec extends Specification {
 
         then: "Status code is"
         response.statusCode == HttpStatus.OK.value
-        response.json.size() == 2
+        response.json.size() == 4
     }
 
     void "user 1 gets his messages spread"() {
@@ -278,7 +286,7 @@ class MessageControllerFunctionalSpec extends Specification {
 
         then: "Status code is"
         response.statusCode == HttpStatus.OK.value
-        response.json.size() == 2
+        response.json.size() == 4
     }
 
     void "mod gets user2 message spread"() {
@@ -355,7 +363,7 @@ class MessageControllerFunctionalSpec extends Specification {
 
         try {
             when: "A user try to report a message he has writed"
-            Response response = clientUser1.post([path: "/messages/"+idMessage1FromUser1+"/report?type=SPAM"]) {
+            Response response = clientUser1.post([path: "/messages/"+idMessage1FromUser1+"/report?" + URLParamsName.MESSAGE_REPORTTYPE + "=" + ReportType.SPAM.name()]) {
                 type(ContentType.JSON)
             }
             false
@@ -366,7 +374,7 @@ class MessageControllerFunctionalSpec extends Specification {
 
         try {
             when: "A user try to report a message he has already reported"
-            Response response = clientUser4.post([path: "/messages/"+idMessage2FromUser2_ToReport+"/report?type=SPAM"]) {
+            Response response = clientUser4.post([path: "/messages/"+idMessage2FromUser2_ToReport+"/report?" + URLParamsName.MESSAGE_REPORTTYPE + "=" + ReportType.SPAM.name()]) {
                 type(ContentType.JSON)
             }
             false
