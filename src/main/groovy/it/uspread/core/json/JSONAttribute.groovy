@@ -28,6 +28,8 @@ class JSONAttribute {
     public static final String MESSAGE_BACKGROUNDCOLOR = "bgColor"
     public static final String MESSAGE_BACKGROUNDIMAGE = "img"
     public static final String MESSAGE_LINK = "link"
+    public static final String MESSAGE_TYPE = "type"
+    public static final String MESSAGE_LOCATION = "location"
     public static final String MESSAGE_MAINREPORTTYPE = "mainReportType"
 
     public static final String STATUS_QUOTAREACHED = "quotaReached"

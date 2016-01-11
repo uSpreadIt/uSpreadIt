@@ -12,6 +12,7 @@ import it.uspread.core.params.MessageCriteria
 import it.uspread.core.params.URLParamsName
 import it.uspread.core.params.URLParamsValue
 import it.uspread.core.type.BackgroundType
+import it.uspread.core.type.MessageType
 import it.uspread.core.type.ReportType
 
 import org.apache.commons.codec.binary.Base64
@@ -307,6 +308,8 @@ class MessageController extends RestfulController<Message> {
             message.backgroundColor = request.JSON.opt(JSONAttribute.MESSAGE_BACKGROUNDCOLOR) ?:  'FFBB33'
         }
         message.link = request.JSON.opt(JSONAttribute.MESSAGE_LINK)
+        message.type = request.JSON.opt(JSONAttribute.MESSAGE_TYPE) ?: MessageType.WORLD
+        message.location = request.JSON.opt(JSONAttribute.MESSAGE_LOCATION)
         return message
     }
 

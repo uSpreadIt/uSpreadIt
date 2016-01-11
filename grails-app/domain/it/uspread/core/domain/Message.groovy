@@ -1,6 +1,7 @@
 package it.uspread.core.domain
 
 import it.uspread.core.type.BackgroundType
+import it.uspread.core.type.MessageType
 import it.uspread.core.type.ReportType
 
 /**
@@ -13,6 +14,9 @@ class Message {
 
     /** Nombre de caractère maximal d'un lien web */
     public static final int LINK_MAX_LENGTH = 255
+
+    /** Nombre de caractère maximal d'une localisation GPS (TODO le nombre est mis au pif) */
+    public static final int LOCATION_MAX_LENGTH = 100
 
     transient springSecurityService
 
@@ -34,6 +38,10 @@ class Message {
     Image backgroundImage
     /** Lien du message */
     String link
+    /** Type du message */
+    MessageType type
+    /** Localisation GPS */
+    String location
 
     /** La liste utilisateurs ayant reçus ce message */
     Set<Spread> receivedBy
@@ -59,6 +67,8 @@ class Message {
         backgroundType(enumType: 'string')
         backgroundImage(cascade: 'all-delete-orphan')
         link(length: LINK_MAX_LENGTH)
+        type(enumType: 'string')
+        location(length: LOCATION_MAX_LENGTH)
         receivedBy(cascade: 'all-delete-orphan')
         spreadBy(cascade: 'all-delete-orphan')
         ignoredBy(joinTable: [name: 'message_ignored', key: 'message_id', column: 'user_id'])
@@ -73,7 +83,9 @@ class Message {
         textColor(size: 6..6)
         backgroundColor(nullable: true)
         backgroundImage(nullable: true)
-        link(maxsize: LINK_MAX_LENGTH)
+        link(nullable: true, maxsize: LINK_MAX_LENGTH)
+        type(maxsize: LOCATION_MAX_LENGTH)
+        location(nullable: true)
     }
 
     /**

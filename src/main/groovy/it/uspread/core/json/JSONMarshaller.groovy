@@ -100,7 +100,10 @@ class JSONMarshaller {
                 } else {
                     output[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] = msg.backgroundColor
                 }
-                output[JSONAttribute.MESSAGE_LINK] = msg.link
+                if (msg.link != null) {
+                    output[JSONAttribute.MESSAGE_LINK] = msg.link
+                }
+                output[JSONAttribute.MESSAGE_TYPE] = msg.type.name()
 
                 return output
             }
@@ -131,7 +134,10 @@ class JSONMarshaller {
                 } else {
                     output[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] = msg.backgroundColor
                 }
-                output[JSONAttribute.MESSAGE_LINK] = msg.link
+                if (msg.link != null) {
+                    output[JSONAttribute.MESSAGE_LINK] = msg.link
+                }
+                output[JSONAttribute.MESSAGE_TYPE] = msg.type.name()
                 return output
             }
         }
@@ -156,7 +162,10 @@ class JSONMarshaller {
                 } else {
                     output[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] = msg.backgroundColor
                 }
-                output[JSONAttribute.MESSAGE_LINK] = msg.link
+                if (msg.link != null) {
+                    output[JSONAttribute.MESSAGE_LINK] = msg.link
+                }
+                output[JSONAttribute.MESSAGE_TYPE] = msg.type.name()
                 return output
             }
         }
@@ -180,7 +189,10 @@ class JSONMarshaller {
                 } else {
                     output[JSONAttribute.MESSAGE_BACKGROUNDCOLOR] = msg.backgroundColor
                 }
-                output[JSONAttribute.MESSAGE_LINK] = msg.link
+                if (msg.link != null) {
+                    output[JSONAttribute.MESSAGE_LINK] = msg.link
+                }
+                output[JSONAttribute.MESSAGE_TYPE] = msg.type.name()
                 return output
             }
         }
@@ -271,7 +283,10 @@ class JSONMarshaller {
                     if ( msg.backgroundType == BackgroundType.IMAGE) {
                         output[JSONAttribute.MESSAGE_BACKGROUNDIMAGE] = Base64.encodeBase64String(msg.backgroundImage.image)
                     }
-                    output[JSONAttribute.MESSAGE_LINK] = msg.link
+                    if (msg.link != null) {
+                        output[JSONAttribute.MESSAGE_LINK] = msg.link
+                    }
+                    output[JSONAttribute.MESSAGE_TYPE] = msg.type.name()
                 }
 
                 return output
