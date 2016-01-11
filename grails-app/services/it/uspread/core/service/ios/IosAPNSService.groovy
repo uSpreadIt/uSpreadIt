@@ -1,13 +1,7 @@
 package it.uspread.core.service.ios
 
 import grails.transaction.Transactional
-import grails.util.Environment
 import it.uspread.core.domain.User
-
-import org.grails.io.support.ClassPathResource
-
-import com.notnoop.apns.APNS
-import com.notnoop.apns.ApnsService
 
 /**
  * Service du système de notification PUSH Apple.
@@ -15,10 +9,10 @@ import com.notnoop.apns.ApnsService
 @Transactional
 class IosAPNSService {
 
-    private ApnsService service
+   // private ApnsService service
 
     IosAPNSService() {
-        def certPath = null
+        /*def certPath = null
         def certPass = null
         switch (Environment.current) {
             case Environment.DEVELOPMENT:
@@ -36,7 +30,7 @@ class IosAPNSService {
                 break
         }
 
-        service = APNS.newService().withCert(certPath, certPass).withSandboxDestination().build();
+        service = APNS.newService().withCert(certPath, certPass).withSandboxDestination().build();*/
     }
 
     /**
@@ -89,7 +83,7 @@ class IosAPNSService {
     }
 
     private void push(String token, String message) {
-        String payload = APNS.newPayload().alertBody(message).build();
-        service.push(token, payload);
+        /*String payload = APNS.newPayload().alertBody(message).build();
+        service.push(token, payload);*/
     }
 }
