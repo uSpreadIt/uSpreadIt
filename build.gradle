@@ -54,7 +54,7 @@ dependencies {
     compile "org.springframework.boot:spring-boot-starter-logging"
     compile "org.springframework.boot:spring-boot-starter-actuator"
     compile "org.springframework.boot:spring-boot-autoconfigure"
-    compile "org.springframework.boot:spring-boot-starter-tomcat"
+    compile "org.springframework.boot:spring-boot-starter-jetty"
     compile "org.grails:grails-dependencies"
     compile "org.grails:grails-web-boot"
 
@@ -74,7 +74,7 @@ dependencies {
     runtime "postgresql:postgresql:8.4-702.jdbc3"
     runtime "org.hibernate:hibernate-validator:5.0.3.Final"
     
-    provided "org.springframework.boot:spring-boot-starter-tomcat"
+    provided "org.springframework.boot:spring-boot-starter-jetty"
 
     testCompile "org.grails:grails-plugin-testing"
     testCompile "org.grails.plugins:geb"

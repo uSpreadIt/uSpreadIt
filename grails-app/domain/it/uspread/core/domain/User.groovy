@@ -1,6 +1,5 @@
 package it.uspread.core.domain
 
-
 /**
  * Modèle de l'utilisateur
  */

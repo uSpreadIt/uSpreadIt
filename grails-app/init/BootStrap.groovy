@@ -46,13 +46,13 @@ class BootStrap {
                 roleAdministrator.save([failOnError: true])
 
                 // Création du modérateur originel  (FIXME à remplacer plus tard plutôt par un administrateur)
-                def mod = new User(username: 'mod', password: 'mod', email:"mod@free.fr", specialUser: true)
+                def mod = new User(username: 'mod', password: 'mod', email:"mod@42.fr", specialUser: true)
                 mod.save([failOnError: true])
                 UserRole.create(mod, roleModerator)
 
                 // création de plein d'users de test (FIXME temporaire)
                 for (int i = 1; i <= 5; i++){
-                    def user = new User(username: 'user'+i, password: 'user'+i, email:"user"+i+"@free.fr").save([failOnError: true])
+                    def user = new User(username: 'user'+i, password: 'user'+i, email:"user"+i+"@42.fr").save([failOnError: true])
                     UserRole.create(user, roleUser)
                 }
             }
