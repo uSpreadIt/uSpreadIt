@@ -127,6 +127,10 @@ environments:
             username: flhfdphnpvipkn
             password: RbAYHQ-Vb0YYlRnDfGF_asXpff
             maxActive: 20
+            initialSize: 1
+            minIdle: 1
+            maxIdle: 25
+            maxWait: 10000
             validationQuery: SELECT 1
             validationQueryTimeout: 3
             validationInterval: 15000
