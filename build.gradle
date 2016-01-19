@@ -75,7 +75,7 @@ dependencies {
     console "org.grails:grails-console"
     
     runtime "org.hibernate:hibernate-validator:5.0.3.Final"
-    compile 'org.grails.plugins:spring-security-core:3.0.3'
+    compile 'org.grails.plugins:spring-security-core:3.0.0.M1'
     
     // utile pour la Prod Heroku uniquement
     runtime 'org.postgresql:postgresql:9.4-1201-jdbc4'
