@@ -132,7 +132,10 @@ environments:
             validationInterval: 15000
             testOnBorrow: true
             testWhileIdle: true
-            testOnReturn: false
+            testOnReturn: true
+            minEvictableIdleTimeMillis: 1800000
+            timeBetweenEvictionRunsMillis: 1800000
+            numTestsPerEvictionRun: 3
 
 #Spring Security Core plugin config (https://grails-plugins.github.io/grails-spring-security-core/guide/single.html) :
 grails:
