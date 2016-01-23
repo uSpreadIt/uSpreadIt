@@ -8,7 +8,7 @@ class Role implements Serializable {
     private static final long serialVersionUID = 1
 
     /** Role d'un utilisateur */
-    public static final String ROLE_USER = "ROLE_USER"
+    public static final String ROLE_PUBLIC = "ROLE_PUBLIC"
     /** Role d'un modérateur */
     public static final String ROLE_MODERATOR = "ROLE_MODERATOR"
     /** Role d'un administrateur */

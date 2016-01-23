@@ -282,10 +282,10 @@ class UserControllerFunctionalSpec extends Specification {
         response.json[JSONAttribute.USER_ID] == 2
         response.json[JSONAttribute.USER_USERNAME] == "user2"
         response.json[JSONAttribute.USER_EMAIL] == "user2@42.fr"
-        response.json[JSONAttribute.USER_ROLE] == "USER"
+        response.json[JSONAttribute.USER_ROLE] == "PUBLIC"
         response.json[JSONAttribute.USER_REPORTSSENT] == 0
-        response.json[JSONAttribute.USER_REPORTSRECEIVED] == 1
-        response.json[JSONAttribute.USER_MODERATIONREQUIRED] == true
+        response.json[JSONAttribute.USER_REPORTSRECEIVED] == 0
+        response.json[JSONAttribute.USER_MODERATIONREQUIRED] == false
     }
 
     void "Moderator Put user with id 1"() {
@@ -343,7 +343,7 @@ class UserControllerFunctionalSpec extends Specification {
         response.json.size() == 4
         response.json[JSONAttribute.USER_ID] == 8
         response.json[JSONAttribute.USER_USERNAME] == "mod"
-        response.json[JSONAttribute.USER_EMAIL] == "mod@42.fr"
+        response.json[JSONAttribute.USER_EMAIL] == "mod@uspread.it"
         response.json[JSONAttribute.USER_ROLE] == "MODERATOR"
     }
 
@@ -446,16 +446,18 @@ class UserControllerFunctionalSpec extends Specification {
 
         then: "Its work"
         response.statusCode == HttpStatus.OK.value
-        response.json.size() == 1
-        response.json[JSONAttribute.STATUS_QUOTAREACHED] != null
+        response.json.size() == 2
+        response.json[JSONAttribute.STATUS_WORLDQUOTAREACHED] != null
+        response.json[JSONAttribute.STATUS_LOCALQUOTAREACHED] != null
 
         when: "Get his status"
         response = clientUser1.get([path: "/users/connected/status", accept: ContentType.JSON])
 
         then: "Its work"
         response.statusCode == HttpStatus.OK.value
-        response.json.size() == 5
-        response.json[JSONAttribute.STATUS_QUOTAREACHED] != null
+        response.json.size() == 6
+        response.json[JSONAttribute.STATUS_WORLDQUOTAREACHED] != null
+        response.json[JSONAttribute.STATUS_LOCALQUOTAREACHED] != null
         response.json[JSONAttribute.STATUS_NBMESSAGEWRITED] != null
         response.json[JSONAttribute.STATUS_NBMESSAGESPREAD] != null
         response.json[JSONAttribute.STATUS_NBMESSAGEIGNORED] != null

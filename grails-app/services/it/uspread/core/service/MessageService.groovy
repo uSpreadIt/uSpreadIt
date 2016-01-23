@@ -8,6 +8,9 @@ import it.uspread.core.domain.Spread
 import it.uspread.core.domain.User
 import it.uspread.core.params.MessageCriteria
 import it.uspread.core.params.URLParamsValue
+import it.uspread.core.service.android.AndroidGcmService
+import it.uspread.core.service.ios.IosAPNSService
+import it.uspread.core.type.MessageType
 import it.uspread.core.type.ReportType
 
 /**
@@ -16,12 +19,9 @@ import it.uspread.core.type.ReportType
 @Transactional
 class MessageService {
 
-    def iosAPNSService
-    def androidGcmService
-
-    // TODO à paramétrer
-    private static final int MAX_MESSAGES_PER_DAY = 1000
-    private static final int SPREAD_SIZE = 10
+    SettingService settingService
+    IosAPNSService iosAPNSService
+    AndroidGcmService androidGcmService
 
     /**
      * Recherche les messages écrits par un utilisateur
@@ -183,7 +183,8 @@ class MessageService {
      */
     Status getUserMessagesStatus(User user, boolean quotaOnly) {
         Status status = new Status()
-        status.setQuotaReached(isMessageCreationLimitReached(user))
+        status.worldQuotaReached = isMessageCreationLimitReached(user, MessageType.WORLD)
+        status.localQuotaReached = isMessageCreationLimitReached(user, MessageType.LOCAL)
         if (!quotaOnly) {
             status.setNbMessageWrited(Message.createCriteria().count({ eq('author.id', user.id) }))
             status.setNbMessageSpread(Message.createCriteria().count({ spreadBy{ eq('user.id', user.id) } }))
@@ -194,38 +195,77 @@ class MessageService {
     }
 
     /**
-     * Indique si le quota de nouveau message de l'utilisateur est atteint.<br>
-     * Sur les dernières 24 heures on limite à 2 messages max.
-     * TODO Cette vérification devra être géré de façon atomique (possible en prenant en compte la scalabilité des serveurs ?)
+     * Indique si la limite de quota de création de nouveau message de l'utilisateur est atteinte : Pour les dernières 24H écoulé.<br>
+     * FIXME Le gars qui tente simultanément depuis plusieurs clients d'envoyer son message peut théoriquement troller cette limite une fois par jour (Est ce génant ?)
      * @return true si quota atteint
      */
-    boolean isMessageCreationLimitReached(User user) {
+    boolean isMessageCreationLimitReached(User user, MessageType messageType) {
         def startDate = (new Date()).minus(1);
-        def nbMessage = Message.where({ author.id == user.id && dateCreated > startDate }).count()
-        return nbMessage >= MAX_MESSAGES_PER_DAY
+        def nbMessage = Message.where({ type == messageType && author.id == user.id && dateCreated > startDate }).count()
+        switch (messageType) {
+            case MessageType.WORLD :
+                if (user.premiumUser) {
+                    return nbMessage >= settingService.getSetting().maxCreateWorldMessageByDayForPremiumUser
+                } else {
+                    return nbMessage >= settingService.getSetting().maxCreateWorldMessageByDayForUser
+                }
+                break
+            case MessageType.LOCAL :
+                if (user.premiumUser) {
+                    return nbMessage >= settingService.getSetting().maxCreateLocalMessageByDayForPremiumUser
+                } else {
+                    return nbMessage >= settingService.getSetting().maxCreateLocalMessageByDayForUser
+                }
+                break
+            default :
+                return true
+                break
+        }
     }
 
     /**
      * Propagation d'un message
      * @param message le message à propager
-     * @param initialSpread pour distinguer la création d'un nouveau message de la propagation
+     * @param initialSpread pour distinguer d'une part la propagation issu de la création d'un nouveau message et d'autre part les propagations suivantes
      */
     void spreadIt(Message message, boolean initialSpread) {
+        // Détermination du nombre de propagation à effectuer
+        def spreadSize
+        switch (message.type) {
+            case MessageType.WORLD :
+                if (initialSpread) {
+                    spreadSize = settingService.getSetting().nbUserForInitialWorldSpread
+                } else {
+                    spreadSize = settingService.getSetting().nbUserForWorldSpread
+                }
+                break
+            case MessageType.LOCAL :
+                if (initialSpread) {
+                    spreadSize = settingService.getSetting().nbUserForInitialLocalSpread
+                } else {
+                    spreadSize = settingService.getSetting().nbUserForLocalSpread
+                }
+                break
+            default :
+                spreadSize = 10
+                break
+        }
+
         // Select spreadSize users order by lastReceivedMessageDate asc
         List<User> recipients
         if (initialSpread) {
-            recipients = User.findAllBySpecialUserAndIdNotEqual(
-                    false, message.authorId, [max: SPREAD_SIZE, sort: 'lastReceivedMessageDate', order: 'asc'])
+            recipients = User.findAllByPublicUserAndIdNotEqual(
+                    true, message.authorId, [max: spreadSize, sort: 'lastReceivedMessageDate', order: 'asc'])
         } else {
             // Un message signalé est aussi ignoré donc pas nécessaire d'utiliser la collection des éléments reporté
             def usersWhoReceivedThisMessage = message.ignoredBy.collect({ it.id })
             usersWhoReceivedThisMessage.addAll(message.receivedBy.collect({ it.user.id }))
             usersWhoReceivedThisMessage.addAll(message.spreadBy.collect({ it.user.id }))
 
-            recipients = User.findAllBySpecialUserAndIdNotEqualAndIdNotInList(
-                    false, message.authorId, usersWhoReceivedThisMessage, [max: SPREAD_SIZE, sort: 'lastReceivedMessageDate', order: 'asc'])
+            recipients = User.findAllByPublicUserAndIdNotEqualAndIdNotInList(
+                    true, message.authorId, usersWhoReceivedThisMessage, [max: spreadSize, sort: 'lastReceivedMessageDate', order: 'asc'])
         }
-        recipients = recipients.size() >= SPREAD_SIZE ? recipients[0..SPREAD_SIZE - 1] : recipients
+        recipients = recipients.size() >= spreadSize ? recipients[0..spreadSize - 1] : recipients
         Date now = new Date()
         recipients.each {
             it.lastReceivedMessageDate = now

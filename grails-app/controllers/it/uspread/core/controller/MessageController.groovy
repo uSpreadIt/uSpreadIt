@@ -81,7 +81,7 @@ class MessageController extends RestfulController<Message> {
             User userConnected = (User) springSecurityService.currentUser
             if (message.isUserAllowedToRead(userConnected)) {
                 boolean onlyImage = params[URLParamsName.MESSAGE_ONLY_IMAGE] != null ? new Boolean((String)params[URLParamsName.MESSAGE_ONLY_IMAGE]).booleanValue() : false
-                JSON.use(userConnected.isSpecialUser() ? JSONMarshaller.INTERNAL : (onlyImage ? JSONMarshaller.PUBLIC_MESSAGE_IMAGE : JSONMarshaller.PUBLIC_MESSAGE)) {
+                JSON.use(userConnected.publicUser ? (onlyImage ? JSONMarshaller.PUBLIC_MESSAGE_IMAGE : JSONMarshaller.PUBLIC_MESSAGE) : JSONMarshaller.INTERNAL) {
                     return respond(queryForResource(params[URLParamsName.ID]), [status: HttpStatus.OK])
                 }
             } else {
@@ -105,12 +105,13 @@ class MessageController extends RestfulController<Message> {
     def save() {
         def userConnected = (User) springSecurityService.currentUser
 
+        Message newMessage = createResource()
+
         // Vérification du quota
-        if (messageService.isMessageCreationLimitReached(userConnected)) {
+        if (messageService.isMessageCreationLimitReached(userConnected, newMessage.type)) {
             return render([status: 550, text: 'Message Quota reached'])
         }
 
-        Message newMessage = createResource()
         // Association de l'auteur du message (Car non renseigné dans le JSON)
         newMessage.author = userConnected
 

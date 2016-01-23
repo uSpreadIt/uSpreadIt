@@ -8,6 +8,7 @@ import it.uspread.core.json.JSONAttribute
 import it.uspread.core.json.JSONMarshaller
 import it.uspread.core.params.URLParamsName
 import it.uspread.core.params.URLParamsValue
+import it.uspread.core.service.UserService
 
 import org.springframework.http.HttpStatus
 
@@ -20,7 +21,7 @@ class UserController extends RestfulController<User> {
     static responseFormats = ['json']
 
     def springSecurityService
-    def userService
+    UserService userService
     def messageService
     def roleService
     def androidGcmService
@@ -64,14 +65,21 @@ class UserController extends RestfulController<User> {
     @Transactional
     @Override
     def save() {
+        // Vérification du quota
+        if (userService.isLimitReached()) {
+            return render([status: 551, text: 'User Quota reached'])
+        }
+
         User newUser = createResource()
+        newUser.publicUser = true
+        newUser.premiumUser = false
         newUser.validate()
         if (newUser.hasErrors()) {
             return renderBadRequest()
         }
 
         newUser.save([flush:true])
-        roleService.setRoleUser(newUser)
+        roleService.setRolePublic(newUser)
 
         return render([status: HttpStatus.CREATED])
     }
@@ -123,7 +131,7 @@ class UserController extends RestfulController<User> {
         // FIXME le code changera quand on aura fixé le système de login
         def userConnected = (User) springSecurityService.currentUser
         if (null != userConnected){
-            if (!userConnected.isSpecialUser()) {
+            if (userConnected.publicUser) {
                 String device = params[URLParamsName.USER_DEVISE];
                 String pushToken = params[URLParamsName.USER_PUSHTOKEN]
                 if (URLParamsValue.DEVICE_ANDROID == device && pushToken != null) {
@@ -146,7 +154,7 @@ class UserController extends RestfulController<User> {
      */
     def showUserConnected() {
         def userConnected = (User) springSecurityService.currentUser
-        JSON.use(userConnected.isSpecialUser() ? JSONMarshaller.INTERNAL : JSONMarshaller.PUBLIC_USER) {
+        JSON.use(userConnected.publicUser ? JSONMarshaller.PUBLIC_USER : JSONMarshaller.INTERNAL) {
             return respond(userService.getUserFromId(userConnected.id), [status: HttpStatus.OK])
         }
     }
@@ -186,7 +194,8 @@ class UserController extends RestfulController<User> {
     @Transactional
     def saveModerator() {
         User newModerator = createResource()
-        newModerator.specialUser = true
+        newModerator.publicUser = false
+        newModerator.premiumUser = false
         newModerator.validate()
         if (newModerator.hasErrors()) {
             return renderBadRequest()

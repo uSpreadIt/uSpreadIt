@@ -186,15 +186,15 @@ grails:
                 '/rest/signup':                    permitAll
                 '/rest/login*':                    isAuthenticated()
                 '/rest/users/connected':           isAuthenticated()
-                '/rest/users/connected/pushtoken': hasRole('ROLE_USER')
-                '/rest/users/connected/status*':   hasRole('ROLE_USER')
+                '/rest/users/connected/pushtoken': hasRole('ROLE_PUBLIC')
+                '/rest/users/connected/status*':   hasRole('ROLE_PUBLIC')
                 '/rest/users/topusers':            isAuthenticated()
                 '/rest/users*/**':                 hasAnyRole('ROLE_MODERATOR', 'ROLE_ADMINISTRATOR')
-                '/rest/messages/*/spread':         hasRole('ROLE_USER')
-                '/rest/messages/*/ignore':         hasRole('ROLE_USER')
-                '/rest/messages/*/report*':        hasRole('ROLE_USER')
+                '/rest/messages/*/spread':         hasRole('ROLE_PUBLIC')
+                '/rest/messages/*/ignore':         hasRole('ROLE_PUBLIC')
+                '/rest/messages/*/report*':        hasRole('ROLE_PUBLIC')
                 '/rest/messages/reported*':        hasAnyRole('ROLE_MODERATOR', 'ROLE_ADMINISTRATOR')
-                '/rest/messages*':                 hasRole('ROLE_USER')
+                '/rest/messages*':                 hasRole('ROLE_PUBLIC')
                 '/rest/messages/**':               isAuthenticated()
             filterChain: # Il y a par défaut une liste de filter appliqué qu'on peut référencer avec le mot clé JOINED_FILTERS
                 chainMap:

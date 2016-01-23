@@ -43,8 +43,11 @@ class User implements Serializable {
     /** Score TODO de la conception à faire */
     long score
 
-    /** Indique que l'utilisateur n'est pas un simple utilisateur */
-    boolean specialUser
+    /** Indique que l'utilisateur est "Premium" */
+    boolean premiumUser
+
+    /** Indique que l'utilisateur est un utilisateur public (Présence pour optimisation) */
+    boolean publicUser
 
     /** La liste des messages écrits par l'utilisateur */
     Set<Message> messages

@@ -139,7 +139,7 @@ class Message {
      * @return Vrai si autorisé
      */
     boolean isUserAllowedToRead(User user){
-        return author.id == user.id || user?.isSpecialUser() || receivedBy?.any({it.user.id == user.id}) || spreadBy?.any({it.user.id == user.id})
+        return author.id == user.id || !(user.publicUser) || receivedBy?.any({it.user.id == user.id}) || spreadBy?.any({it.user.id == user.id})
     }
 
     /**
@@ -148,7 +148,7 @@ class Message {
      * @return Vrai si autorisé
      */
     boolean isUserAllowedToDelete(User user){
-        return author.id == user.id || user?.isSpecialUser()
+        return author.id == user.id || !(user.publicUser)
     }
 
     /**

@@ -12,18 +12,18 @@ import it.uspread.core.domain.UserRole
 public class RoleService {
 
     /**
-     * Applique le rôle {@link Role.ROLE_USER} a l'utilisateur
+     * Applique le rôle {@link Role.ROLE_PUBLIC} à l'utilisateur
      * @param newModerator
      * @return
      */
-    void setRoleUser(User newUser) {
-        Role role = Role.where({ authority == Role.ROLE_USER }).find()
+    void setRolePublic(User newUser) {
+        Role role = Role.where({ authority == Role.ROLE_PUBLIC }).find()
         UserRole usrRole = new UserRole(user: newUser, role: role)
         usrRole.save()
     }
 
     /**
-     * Applique le rôle {@link Role.ROLE_MODERATOR} a l'utilisateur
+     * Applique le rôle {@link Role.ROLE_MODERATOR} à l'utilisateur
      * @param newModerator
      * @return
      */
@@ -34,7 +34,7 @@ public class RoleService {
     }
 
     /**
-     * Applique le rôle {@link Role.ROLE_ADMINISTRATOR} a l'utilisateur
+     * Applique le rôle {@link Role.ROLE_ADMINISTRATOR} à l'utilisateur
      * @param newModerator
      * @return
      */
@@ -50,7 +50,6 @@ public class RoleService {
      * @return
      */
     void clearRole(User userToClear) {
-        userToClear.specialUser = false
         UserRole.where({ user == userToClear }).each({ it.delete() })
     }
 }

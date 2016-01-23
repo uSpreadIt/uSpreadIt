@@ -32,7 +32,8 @@ class JSONAttribute {
     public static final String MESSAGE_LOCATION = "location"
     public static final String MESSAGE_MAINREPORTTYPE = "mainReportType"
 
-    public static final String STATUS_QUOTAREACHED = "quotaReached"
+    public static final String STATUS_WORLDQUOTAREACHED = "worldQuotaReached"
+    public static final String STATUS_LOCALQUOTAREACHED = "localQuotaReached"
     public static final String STATUS_NBMESSAGEWRITED = "nbMsgWrited"
     public static final String STATUS_NBMESSAGESPREAD = "nbMsgSpread"
     public static final String STATUS_NBMESSAGEIGNORED = "nbMsgIgnored"

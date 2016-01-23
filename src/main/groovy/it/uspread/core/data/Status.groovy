@@ -5,7 +5,8 @@ package it.uspread.core.data
  */
 class Status {
 
-    boolean quotaReached
+    boolean worldQuotaReached
+    boolean localQuotaReached
     long nbMessageWrited
     long nbMessageSpread
     long nbMessageIgnored

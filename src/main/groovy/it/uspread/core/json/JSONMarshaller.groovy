@@ -3,7 +3,6 @@ package it.uspread.core.json
 import grails.converters.JSON
 import it.uspread.core.data.Status
 import it.uspread.core.domain.Message
-import it.uspread.core.domain.Role
 import it.uspread.core.domain.User
 import it.uspread.core.type.BackgroundType
 import it.uspread.core.type.ReportType
@@ -232,7 +231,8 @@ class JSONMarshaller {
         JSON.createNamedConfig(PUBLIC_STATUS) {
             it.registerObjectMarshaller(Status) { Status status ->
                 def output = [:]
-                output[JSONAttribute.STATUS_QUOTAREACHED] = status.quotaReached
+                output[JSONAttribute.STATUS_WORLDQUOTAREACHED] = status.worldQuotaReached
+                output[JSONAttribute.STATUS_LOCALQUOTAREACHED] = status.localQuotaReached
                 output[JSONAttribute.STATUS_NBMESSAGEWRITED] = status.nbMessageWrited
                 output[JSONAttribute.STATUS_NBMESSAGESPREAD] = status.nbMessageSpread
                 output[JSONAttribute.STATUS_NBMESSAGEIGNORED] = status.nbMessageIgnored
@@ -245,7 +245,8 @@ class JSONMarshaller {
         JSON.createNamedConfig(PUBLIC_STATUS_QUOTA) {
             it.registerObjectMarshaller(Status) { Status status ->
                 def output = [:]
-                output[JSONAttribute.STATUS_QUOTAREACHED] = status.quotaReached
+                output[JSONAttribute.STATUS_WORLDQUOTAREACHED] = status.worldQuotaReached
+                output[JSONAttribute.STATUS_LOCALQUOTAREACHED] = status.localQuotaReached
                 return output
             }
         }
@@ -262,7 +263,7 @@ class JSONMarshaller {
                 output[JSONAttribute.USER_ID] = user.id
                 output[JSONAttribute.USER_USERNAME] = user.username
                 output[JSONAttribute.USER_EMAIL] = user.email
-                output[JSONAttribute.USER_ROLE] = user.isModerator() ? Role.ROLE_MODERATOR.replace('ROLE_', '') : (user.isAdministrator() ? Role.ROLE_ADMINISTRATOR.replace('ROLE_', '') : 'USER')
+                output[JSONAttribute.USER_ROLE] = user.isModerator() ? 'MODERATOR' : (user.isAdministrator() ? 'ADMINISTRATOR' : 'PUBLIC')
                 if (!user.isModerator()) {
                     output[JSONAttribute.USER_REPORTSSENT] = user.reportsSent
                     output[JSONAttribute.USER_REPORTSRECEIVED] = user.reportsReceived

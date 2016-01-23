@@ -10,8 +10,9 @@ import it.uspread.core.domain.User
 @Transactional
 class UserService {
 
-    def messageService
-    def roleService
+    SettingService settingService
+    MessageService messageService
+    RoleService roleService
 
     // TODO à paramétrer
     private static final int TOP_SIZE = 50;
@@ -81,6 +82,14 @@ class UserService {
         roleService.clearRole(user)
 
         user.delete([flush: true])
+    }
+
+    /**
+     * Indique si il n'est plus possible de créer de nouvel utilisateur
+     * @return true si limite atteinte
+     */
+    boolean isLimitReached() {
+        return User.where({publicUser == true}).count() >= settingService.getSetting().maxUser
     }
 
     /**
