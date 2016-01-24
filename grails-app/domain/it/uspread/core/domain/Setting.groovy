@@ -28,6 +28,7 @@ class Setting {
 
     static mapping = {
         version(true)
+        cache(usage: 'nonstrict-read-write')
         table('setting')
         id([generator:'sequence', params:[sequence:'setting_sequence']])
     }
