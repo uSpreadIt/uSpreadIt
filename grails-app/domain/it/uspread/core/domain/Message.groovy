@@ -1,6 +1,7 @@
 package it.uspread.core.domain
 
 import it.uspread.core.type.BackgroundType
+import it.uspread.core.type.Language
 import it.uspread.core.type.MessageType
 import it.uspread.core.type.ReportType
 
@@ -15,17 +16,19 @@ class Message {
     /** Nombre de caractère maximal d'un lien web */
     public static final int LINK_MAX_LENGTH = 255
 
-    /** Nombre de caractère maximal d'une localisation GPS (TODO le nombre est mis au pif) */
-    public static final int LOCATION_MAX_LENGTH = 100
+    /** Nombre de caractère maximal d'une geolocalisation */
+    public static final int LOCATION_MAX_LENGTH = 25
 
     transient springSecurityService
 
     /** Auteur */
     User author
-    /** Nombre de propagation */
-    long nbSpread
+    /** Type du message */
+    MessageType type
     /** Date de création du message */
     Date dateCreated // Ne pas renommer car ce nom est un nom spécial détécté par Grails cf autoTimestamp
+    /** Nombre de propagation */
+    long nbSpread
     /** Texte du message */
     String text
     /** Couleur du texte (code couleur HTML sans le '#') */
@@ -36,11 +39,11 @@ class Message {
     String backgroundColor
     /** Image de fond */
     Image backgroundImage
+    /** Language probable indentifié */
+    Language language
     /** Lien du message */
     String link
-    /** Type du message */
-    MessageType type
-    /** Localisation GPS */
+    /** Géolocalisation du lieu de création du message (latitude,longitude) */
     String location
 
     /** La liste utilisateurs ayant reçus ce message */
@@ -60,14 +63,16 @@ class Message {
 
     static mapping = {
         version(true)
+        table('message')
         id([generator:'sequence', params:[sequence:'message_sequence']])
-        author(index: 'author_idx')
+        author(index: 'idx_message_author')
+        type(enumType: 'string', length: 5, index: 'idx_message_type')
         text(length: TEXT_MAX_LENGTH)
         textColor(length: 6)
-        backgroundType(enumType: 'string')
+        backgroundType(enumType: 'string', length: 10)
         backgroundImage(cascade: 'all-delete-orphan')
+        language(enumType: 'string', length: 2)
         link(length: LINK_MAX_LENGTH)
-        type(enumType: 'string')
         location(length: LOCATION_MAX_LENGTH)
         receivedBy(cascade: 'all-delete-orphan')
         spreadBy(cascade: 'all-delete-orphan')
@@ -83,6 +88,7 @@ class Message {
         textColor(size: 6..6)
         backgroundColor(nullable: true)
         backgroundImage(nullable: true)
+        language(nullable: true)
         link(nullable: true, maxsize: LINK_MAX_LENGTH)
         location(nullable: true, maxsize: LOCATION_MAX_LENGTH)
     }

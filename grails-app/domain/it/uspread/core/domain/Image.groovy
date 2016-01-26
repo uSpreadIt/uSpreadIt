@@ -15,6 +15,7 @@ class Image {
 
     static mapping = {
         version(false)
+        table('image')
         id([generator:'sequence', params:[sequence:'image_sequence']])
     }
 

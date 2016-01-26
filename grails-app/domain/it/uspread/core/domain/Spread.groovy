@@ -20,6 +20,7 @@ class Spread implements Serializable {
     static belongsTo = Message
 
     static mapping = {
+        table('spread')
         id([generator:'sequence', params:[sequence:'spread_sequence']])
         messageReceived(index: 'messageReceived_idx')
         messageSpread(index: 'messageSpread_idx')

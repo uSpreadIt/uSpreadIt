@@ -20,10 +20,11 @@ class Report implements Serializable {
 
     static mapping = {
         version(false)
+        table('report')
         id([generator:'sequence', params:[sequence:'report_sequence']])
         message(index: 'message_idx')
         reporter(index: 'reporter_idx')
-        type(enumType: 'string')
+        type(enumType: 'string', length: 15)
     }
 
     static constraints = {

@@ -4,6 +4,7 @@ import it.uspread.core.domain.Setting
 import it.uspread.core.domain.User
 import it.uspread.core.domain.UserRole
 import it.uspread.core.json.JSONMarshaller
+import it.uspread.core.type.Language
 
 class BootStrap {
 
@@ -46,7 +47,7 @@ class BootStrap {
 
                 // création de plein d'users de test (FIXME temporaire : à supprimer)
                 for (int i = 1; i <= 5; i++){
-                    def user = new User(username: 'user'+i, password: 'user'+i, email:"user"+i+"@42.fr", publicUser: true)
+                    def user = new User(username: 'user'+i, password: 'user'+i, email:"user"+i+"@42.fr", preferredLanguage: Language.FR, publicUser: true)
                     user.save([failOnError: true])
                     UserRole.create(user, rolePublic)
                 }
@@ -79,7 +80,7 @@ class BootStrap {
 
             // création de 7 users (Les 2 derniers sont pour des tests de suppression)
             for (int i = 1; i <= 7; i++){
-                def user = new User(username: 'user'+i, password: 'user'+i, email:"user"+i+"@42.fr", publicUser: true)
+                def user = new User(username: 'user'+i, password: 'user'+i, email:"user"+i+"@42.fr", preferredLanguage: Language.FR, publicUser: true)
                 user.save()
                 UserRole.create(user, rolePublic)
             }
