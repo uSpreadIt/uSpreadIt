@@ -7,6 +7,7 @@ import it.uspread.core.domain.Report
 import it.uspread.core.domain.Spread
 import it.uspread.core.domain.User
 import it.uspread.core.type.BackgroundType
+import it.uspread.core.type.Language
 import it.uspread.core.type.MessageType
 import it.uspread.core.type.ReportType
 import spock.lang.*
@@ -31,7 +32,7 @@ class UserIntegrationSpec extends Specification {
 
     void "A user creates a message"() {
         given: "A user and his message"
-        def joe = new User(username: 'joe', password: 'joe', email: 'joe@gmail.com')
+        def joe = new User(username: 'joe', password: 'joe', email: 'joe@gmail.com', preferredLanguage: Language.FR, publicUser: true)
         def message = createNewPlainMessage(text: 'hello')
         joe.addToMessages(message)
 
@@ -46,8 +47,8 @@ class UserIntegrationSpec extends Specification {
 
     void "Test lots of messages creations"() {
         given: "Existing users and their messages"
-        def dude = new User(username: 'dude', password: 'dude', email: "dudeNoris@42.fr")
-        def yop = new User(username: 'yop', password: 'yop', email: "yop@free.fr")
+        def dude = new User(username: 'dude', password: 'dude', email: "dudeNoris@42.fr", preferredLanguage: Language.FR, publicUser: true)
+        def yop = new User(username: 'yop', password: 'yop', email: "yop@free.fr", preferredLanguage: Language.FR, publicUser: true)
         dude.save(flush: true)
         yop.save(flush: true)
 
@@ -106,7 +107,7 @@ class UserIntegrationSpec extends Specification {
 
     void "List messages writed by dude (And saved by message.save action)"() {
         given: "An existing user and his message"
-        def dude = new User(username: 'dude', password: 'dude', email: "dudeNoris@42.fr")
+        def dude = new User(username: 'dude', password: 'dude', email: "dudeNoris@42.fr", preferredLanguage: Language.FR, publicUser: true)
         dude.save(flush: true)
 
         def messageNotSent = createNewPlainMessage(text: "Un message de dude")
@@ -124,10 +125,10 @@ class UserIntegrationSpec extends Specification {
     void "List messages joe sent to jim"() {
         given: "a message sent from joe to jim"
         // joe
-        def joe = new User(username: 'joe', password: 'joe', email: 'joe@gmail.com')
+        def joe = new User(username: 'joe', password: 'joe', email: 'joe@gmail.com', preferredLanguage: Language.FR, publicUser: true)
         joe.save(flush: true)
         // jim
-        def jim = new User(username: 'jim', password: 'jim', email: 'jim@gmail.com')
+        def jim = new User(username: 'jim', password: 'jim', email: 'jim@gmail.com', preferredLanguage: Language.FR, publicUser: true)
         jim.save(flush: true)
 
         def message = createNewPlainMessage(text: 'hello jim')
@@ -151,10 +152,10 @@ class UserIntegrationSpec extends Specification {
     void "List messages spread by jim"() {
         given: "a message from joe spread by jim"
         // joe
-        def joe = new User(username: 'joe', password: 'joe', email: 'joe@gmail.com')
+        def joe = new User(username: 'joe', password: 'joe', email: 'joe@gmail.com', preferredLanguage: Language.FR, publicUser: true)
         joe.save(flush: true)
         // jim
-        def jim = new User(username: 'jim', password: 'jim', email: 'jim@gmail.com')
+        def jim = new User(username: 'jim', password: 'jim', email: 'jim@gmail.com', preferredLanguage: Language.FR, publicUser: true)
         jim.save(flush: true)
 
         def message = createNewPlainMessage(text: 'hello jim')
@@ -178,10 +179,10 @@ class UserIntegrationSpec extends Specification {
     void "List messages ignored by jim"() {
         given: "a message from joe ignored by jim"
         // joe
-        def joe = new User(username: 'joe', password: 'joe', email: 'joe@gmail.com')
+        def joe = new User(username: 'joe', password: 'joe', email: 'joe@gmail.com', preferredLanguage: Language.FR, publicUser: true)
         joe.save(flush: true)
         // jim
-        def jim = new User(username: 'jim', password: 'jim', email: 'jim@gmail.com')
+        def jim = new User(username: 'jim', password: 'jim', email: 'jim@gmail.com', preferredLanguage: Language.FR, publicUser: true)
         jim.save(flush: true)
 
         def message = createNewPlainMessage(text: 'hello jim')
@@ -205,10 +206,10 @@ class UserIntegrationSpec extends Specification {
     void "List messages reported by jim"() {
         given: "a message from joe reported by jim"
         // joe
-        def joe = new User(username: 'joe', password: 'joe', email: 'joe@gmail.com')
+        def joe = new User(username: 'joe', password: 'joe', email: 'joe@gmail.com', preferredLanguage: Language.FR, publicUser: true)
         joe.save(flush: true)
         // jim
-        def jim = new User(username: 'jim', password: 'jim', email: 'jim@gmail.com')
+        def jim = new User(username: 'jim', password: 'jim', email: 'jim@gmail.com', preferredLanguage: Language.FR, publicUser: true)
         jim.save(flush: true)
 
         def message = createNewPlainMessage(text: 'hello jim')
@@ -231,8 +232,8 @@ class UserIntegrationSpec extends Specification {
 
     void "Deleting a user deletes the messages he wrote"() {
         given: "An existing user and his message"
-        def joe = new User(username: 'joe', password: 'joe', email: 'joe@gmail.com')
-        def jim = new User(username: 'jim', password: 'jim', email: 'jim@gmail.com')
+        def joe = new User(username: 'joe', password: 'joe', email: 'joe@gmail.com', preferredLanguage: Language.FR, publicUser: true)
+        def jim = new User(username: 'jim', password: 'jim', email: 'jim@gmail.com', preferredLanguage: Language.FR, publicUser: true)
         joe.save(flush: true)
         jim.save(flush: true)
 
@@ -293,7 +294,7 @@ class UserIntegrationSpec extends Specification {
 
     void "Deleting a message don't delete the author 1"() {
         given: "An existing user and his message"
-        def joe = new User(username: 'joe', password: 'joe', email: 'joe@gmail.com')
+        def joe = new User(username: 'joe', password: 'joe', email: 'joe@gmail.com', preferredLanguage: Language.FR, publicUser: true)
         def message = createNewPlainMessage(text: 'hello')
         joe.addToMessages(message)
         joe.save(flush: true)
@@ -309,7 +310,7 @@ class UserIntegrationSpec extends Specification {
 
     void "Deleting a message don't delete the author 2"() {
         given: "An existing user and his message"
-        def joe = new User(username: 'joe', password: 'joe', email: 'joe@gmail.com')
+        def joe = new User(username: 'joe', password: 'joe', email: 'joe@gmail.com', preferredLanguage: Language.FR, publicUser: true)
         def message = createNewPlainMessage(text: 'hello')
         joe.addToMessages(message)
         joe.save(flush: true)

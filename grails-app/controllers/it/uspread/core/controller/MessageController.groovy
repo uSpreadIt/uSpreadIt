@@ -1,6 +1,7 @@
 package it.uspread.core.controller
 
 import grails.converters.JSON
+import grails.plugin.springsecurity.SpringSecurityService
 import grails.rest.RestfulController
 import grails.transaction.Transactional
 import it.uspread.core.domain.Image
@@ -11,6 +12,8 @@ import it.uspread.core.json.JSONMarshaller
 import it.uspread.core.params.MessageCriteria
 import it.uspread.core.params.URLParamsName
 import it.uspread.core.params.URLParamsValue
+import it.uspread.core.service.MessageService
+import it.uspread.core.service.UserService
 import it.uspread.core.type.BackgroundType
 import it.uspread.core.type.MessageType
 import it.uspread.core.type.ReportType
@@ -26,9 +29,10 @@ class MessageController extends RestfulController<Message> {
     static scope = 'singleton'
     static responseFormats = ['json']
 
-    def springSecurityService
-    def messageService
-    def userService
+    SpringSecurityService springSecurityService
+
+    MessageService messageService
+    UserService userService
 
     MessageController() {
         super(Message)
@@ -42,7 +46,7 @@ class MessageController extends RestfulController<Message> {
         def userConnected = (User) springSecurityService.currentUser
 
         // Lecture des paramètres
-        String query = params[URLParamsName.MESSAGE_QUERY]
+        String msgAsked = params[URLParamsName.MESSAGE_ASKED]
         boolean onlyDynamicVal = params[URLParamsName.MESSAGE_ONLY_DYNAMICVALUE] != null ? new Boolean((String)params[URLParamsName.MESSAGE_ONLY_DYNAMICVALUE]).booleanValue() : false
         // Vérifier que si le critère date est donné alors op est fourni
         if (params[URLParamsName.MESSAGE_DATE] == null && params[URLParamsName.MESSAGE_OPERATOR] != null || params[URLParamsName.MESSAGE_OPERATOR] == null && params[URLParamsName.MESSAGE_DATE] != null) {
@@ -51,19 +55,19 @@ class MessageController extends RestfulController<Message> {
         MessageCriteria msgCriteria = new MessageCriteria(params[URLParamsName.MESSAGE_COUNT], params[URLParamsName.MESSAGE_DATE], params[URLParamsName.MESSAGE_OPERATOR])
 
         // Si on liste les message reçus par l'utilisateur
-        if (URLParamsValue.MESSAGE_RECEIVED == query) {
+        if (URLParamsValue.MESSAGE_RECEIVED == msgAsked) {
             JSON.use(onlyDynamicVal ? JSONMarshaller.PUBLIC_MESSAGE_LIST_DYNAMIC : JSONMarshaller.PUBLIC_MESSAGE_LIST_RECEIVED) {
                 return respond(messageService.getMessagesReceivedByUserId(userConnected.id, msgCriteria), [status: HttpStatus.OK])
             }
         }
         // Si on liste les messages écrits par l'utilisateur
-        else if (URLParamsValue.MESSAGE_WRITED == query) {
+        else if (URLParamsValue.MESSAGE_WRITED == msgAsked) {
             JSON.use(onlyDynamicVal ? JSONMarshaller.PUBLIC_MESSAGE_LIST_DYNAMIC : JSONMarshaller.PUBLIC_MESSAGE_LIST_WRITED) {
                 return respond(messageService.getMessagesWritedByAuthorId(userConnected.id, msgCriteria), [status: HttpStatus.OK])
             }
         }
         // Si on liste les message propagé par l'utilisateur
-        else if (URLParamsValue.MESSAGE_SPREAD == query) {
+        else if (URLParamsValue.MESSAGE_SPREAD == msgAsked) {
             JSON.use(onlyDynamicVal ? JSONMarshaller.PUBLIC_MESSAGE_LIST_DYNAMIC : JSONMarshaller.PUBLIC_MESSAGE_LIST_SPREAD) {
                 return respond(messageService.getMessagesSpreadByUserId(userConnected.id, msgCriteria), [status: HttpStatus.OK])
             }
@@ -298,16 +302,17 @@ class MessageController extends RestfulController<Message> {
     @Override
     protected getObjectToBind() {
         Message message = new Message()
+        message.type = request.JSON.opt(JSONAttribute.MESSAGE_TYPE) ?: MessageType.WORLD
         message.text = request.JSON.opt(JSONAttribute.MESSAGE_TEXT)
         message.textColor = request.JSON.opt(JSONAttribute.MESSAGE_TEXTCOLOR) ?: '000000'
         message.backgroundType = request.JSON.opt(JSONAttribute.MESSAGE_BACKGROUNDTYPE) ?: BackgroundType.PLAIN
         if (message.backgroundType == BackgroundType.IMAGE) {
-            message.backgroundImage = new Image([image: Base64.decodeBase64(request.JSON.opt(JSONAttribute.MESSAGE_BACKGROUNDIMAGE))])
+            message.backgroundImage = new Image([image: Base64.decodeBase64(request.JSON.get(JSONAttribute.MESSAGE_BACKGROUNDIMAGE))])
         } else {
             message.backgroundColor = request.JSON.opt(JSONAttribute.MESSAGE_BACKGROUNDCOLOR) ?:  'FFBB33'
         }
+        message.language = request.JSON.opt(JSONAttribute.MESSAGE_LANGUAGE)
         message.link = request.JSON.opt(JSONAttribute.MESSAGE_LINK)
-        message.type = request.JSON.opt(JSONAttribute.MESSAGE_TYPE) ?: MessageType.WORLD
         message.location = request.JSON.opt(JSONAttribute.MESSAGE_LOCATION)
         return message
     }

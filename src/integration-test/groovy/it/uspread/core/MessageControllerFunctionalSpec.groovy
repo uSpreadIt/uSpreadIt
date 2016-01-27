@@ -246,7 +246,7 @@ class MessageControllerFunctionalSpec extends Specification {
 
     void "user 1 gets his messages"() {
         when: "Messages are got by user1"
-        Response response = clientUser1.get([path: "/messages?query=AUTHOR", accept: ContentType.JSON])
+        Response response = clientUser1.get([path: "/messages?" + URLParamsName.MESSAGE_ASKED + "=AUTHOR", accept: ContentType.JSON])
 
         then: "Status code is"
         response.statusCode == HttpStatus.OK.value
@@ -255,7 +255,7 @@ class MessageControllerFunctionalSpec extends Specification {
 
     void "user 1 gets his messages received"() {
         when: "Messages are got by user1"
-        Response response = clientUser1.get([path: "/messages?query=RECEIVED", accept: ContentType.JSON])
+        Response response = clientUser1.get([path: "/messages?" + URLParamsName.MESSAGE_ASKED + "=RECEIVED", accept: ContentType.JSON])
 
         then: "Status code is"
         response.statusCode == HttpStatus.OK.value
@@ -264,7 +264,7 @@ class MessageControllerFunctionalSpec extends Specification {
 
     void "user 1 gets his messages spread"() {
         when: "Messages are got by user1"
-        Response response = clientUser1.get([path: "/messages?query=SPREAD", accept: ContentType.JSON])
+        Response response = clientUser1.get([path: "/messages?" + URLParamsName.MESSAGE_ASKED + "=SPREAD", accept: ContentType.JSON])
 
         then: "Status code is"
         response.statusCode == HttpStatus.OK.value

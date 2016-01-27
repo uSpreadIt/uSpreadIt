@@ -1,6 +1,7 @@
 package it.uspread.core.controller
 
 import grails.converters.JSON
+import grails.plugin.springsecurity.SpringSecurityService
 import grails.rest.RestfulController
 import grails.transaction.Transactional
 import it.uspread.core.domain.User
@@ -8,7 +9,11 @@ import it.uspread.core.json.JSONAttribute
 import it.uspread.core.json.JSONMarshaller
 import it.uspread.core.params.URLParamsName
 import it.uspread.core.params.URLParamsValue
+import it.uspread.core.service.MessageService
+import it.uspread.core.service.RoleService
 import it.uspread.core.service.UserService
+import it.uspread.core.service.android.AndroidGcmService
+import it.uspread.core.service.ios.IosAPNSService
 
 import org.springframework.http.HttpStatus
 
@@ -20,12 +25,13 @@ class UserController extends RestfulController<User> {
     static scope = 'singleton'
     static responseFormats = ['json']
 
-    def springSecurityService
+    SpringSecurityService springSecurityService
+
     UserService userService
-    def messageService
-    def roleService
-    def androidGcmService
-    def iosAPNSService
+    MessageService messageService
+    RoleService roleService
+    AndroidGcmService androidGcmService
+    IosAPNSService iosAPNSService
 
     UserController() {
         super(User)
@@ -132,7 +138,7 @@ class UserController extends RestfulController<User> {
         def userConnected = (User) springSecurityService.currentUser
         if (null != userConnected){
             if (userConnected.publicUser) {
-                String device = params[URLParamsName.USER_DEVISE];
+                String device = params[URLParamsName.USER_DEVICE];
                 String pushToken = params[URLParamsName.USER_PUSHTOKEN]
                 if (URLParamsValue.DEVICE_ANDROID == device && pushToken != null) {
                     androidGcmService.reservePushTokenToUser(userConnected, pushToken)
@@ -269,12 +275,21 @@ class UserController extends RestfulController<User> {
     }
 
     /**
-     * Renseigne l'utilisateur a partir des donnée fournie
+     * Renseigne ou met à jour l'utilisateur a partir des données qui seraient fournie (Ne touche pas ce qui n'est pas fourni)
      * @param user
      */
     private void updateFromRequest(User user) {
         user.username = request.JSON.opt(JSONAttribute.USER_USERNAME) ?: user.username
         user.password = request.JSON.opt(JSONAttribute.USER_PASSWORD) ?: user.password
         user.email = request.JSON.opt(JSONAttribute.USER_EMAIL) ?: user.email
+        user.preferredLanguage = request.JSON.opt(JSONAttribute.USER_PREFLANGUAGE) ?: user.preferredLanguage
+        if (request.JSON.has(JSONAttribute.USER_LOCATION)) {
+            user.location = request.JSON.get(JSONAttribute.USER_LOCATION)
+            if (user.location?.trim().isEmpty()) {
+                user.location = null
+            }
+            user.located = user.location != null
+        }
+        user.messageLocated = request.JSON.opt(JSONAttribute.USER_MESSAGELOCATED) ?: user.messageLocated
     }
 }

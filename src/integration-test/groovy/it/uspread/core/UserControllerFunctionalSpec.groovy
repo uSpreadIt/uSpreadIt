@@ -3,6 +3,7 @@ package it.uspread.core
 import grails.test.mixin.integration.Integration
 import it.uspread.core.json.JSONAttribute
 import it.uspread.core.params.URLParamsName
+import it.uspread.core.type.Language
 
 import org.springframework.http.HttpStatus
 
@@ -215,7 +216,7 @@ class UserControllerFunctionalSpec extends Specification {
         when: "Trying to signup"
         Response response = clientPublic.post([path: "/signup"]) {
             type(ContentType.JSON)
-            json(["$JSONAttribute.USER_EMAIL":"chuck@norris.fr", "$JSONAttribute.USER_USERNAME":"chuck", "$JSONAttribute.USER_PASSWORD":"chuck"])
+            json(["$JSONAttribute.USER_EMAIL":"chuck@norris.fr", "$JSONAttribute.USER_USERNAME":"chuck", "$JSONAttribute.USER_PASSWORD":"chuck", "$JSONAttribute.USER_PREFLANGUAGE":Language.FR.name()])
         }
 
         then: "Look like ok"
@@ -244,7 +245,7 @@ class UserControllerFunctionalSpec extends Specification {
 
     void "Login Simple user"() {
         when: "Trying to login"
-        Response response = clientUser1.post([path: "/login?" + URLParamsName.USER_PUSHTOKEN + "=AZERTYUIOPQSDFGHJKLM&" + URLParamsName.USER_DEVISE + "=ANDROID"]) {
+        Response response = clientUser1.post([path: "/login?" + URLParamsName.USER_PUSHTOKEN + "=AZERTYUIOPQSDFGHJKLM&" + URLParamsName.USER_DEVICE + "=ANDROID"]) {
             type(ContentType.JSON)
             json(["$JSONAttribute.USER_USERNAME":"user1", "$JSONAttribute.USER_PASSWORD":"user1"])
         }
@@ -399,10 +400,12 @@ class UserControllerFunctionalSpec extends Specification {
 
         then: "I get the expected user as a JSON"
         response.statusCode == HttpStatus.OK.value
-        response.json.size() == 3
+        response.json.size() == 5
         response.json[JSONAttribute.USER_ID] == 2
         response.json[JSONAttribute.USER_USERNAME] == "user2"
         response.json[JSONAttribute.USER_EMAIL] == "user2@42.fr"
+        response.json[JSONAttribute.USER_PREFLANGUAGE] == Language.FR.name()
+        response.json[JSONAttribute.USER_MESSAGELOCATED] == false
     }
 
     void "Simple user Put user connected"() {
