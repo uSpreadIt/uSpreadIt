@@ -5,11 +5,11 @@ package it.uspread.core.domain
  */
 class Image {
 
-    /** Taille maximale d'une image en octet */
-    public static final int IMAGE_MAX_SIZE = 1048576
+    /** Taille maximale d'une image en "caractère Base64 compressé" */
+    public static final int IMAGE_MAX_SIZE = 300000
 
-    /** Image de fond encodé en PNG */
-    byte[] image
+    /** Image de fond au fromat JPG (Compression 80) encodé en Base64 et enfin zippé */
+    String image
 
     static belongsTo = Message
 
@@ -20,7 +20,7 @@ class Image {
     }
 
     static constraints = {
-        image(maxSize: IMAGE_MAX_SIZE)
+        image(length: IMAGE_MAX_SIZE)
     }
 
 }

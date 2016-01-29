@@ -400,10 +400,11 @@ class UserControllerFunctionalSpec extends Specification {
 
         then: "I get the expected user as a JSON"
         response.statusCode == HttpStatus.OK.value
-        response.json.size() == 5
+        response.json.size() == 7
         response.json[JSONAttribute.USER_ID] == 2
         response.json[JSONAttribute.USER_USERNAME] == "user2"
         response.json[JSONAttribute.USER_EMAIL] == "user2@42.fr"
+        response.json[JSONAttribute.USER_ACCOUNTVERIFIED] == false
         response.json[JSONAttribute.USER_PREFLANGUAGE] == Language.FR.name()
         response.json[JSONAttribute.USER_MESSAGELOCATED] == false
     }

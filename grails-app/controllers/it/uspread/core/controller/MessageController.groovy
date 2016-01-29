@@ -18,7 +18,6 @@ import it.uspread.core.type.BackgroundType
 import it.uspread.core.type.MessageType
 import it.uspread.core.type.ReportType
 
-import org.apache.commons.codec.binary.Base64
 import org.springframework.http.HttpStatus
 
 /**
@@ -43,11 +42,11 @@ class MessageController extends RestfulController<Message> {
      */
     @Override
     def index() {
-        def userConnected = (User) springSecurityService.currentUser
+        User userConnected = (User) springSecurityService.currentUser
 
         // Lecture des paramètres
         String msgAsked = params[URLParamsName.MESSAGE_ASKED]
-        boolean onlyDynamicVal = params[URLParamsName.MESSAGE_ONLY_DYNAMICVALUE] != null ? new Boolean((String)params[URLParamsName.MESSAGE_ONLY_DYNAMICVALUE]).booleanValue() : false
+        boolean onlyDynamicVal = params[URLParamsName.MESSAGE_ONLY_DYNAMICVALUE] != null ? Boolean.parseBoolean((String)params[URLParamsName.MESSAGE_ONLY_DYNAMICVALUE]) : false
         // Vérifier que si le critère date est donné alors op est fourni
         if (params[URLParamsName.MESSAGE_DATE] == null && params[URLParamsName.MESSAGE_OPERATOR] != null || params[URLParamsName.MESSAGE_OPERATOR] == null && params[URLParamsName.MESSAGE_DATE] != null) {
             return renderBadRequest()
@@ -84,7 +83,7 @@ class MessageController extends RestfulController<Message> {
         if (message != null) {
             User userConnected = (User) springSecurityService.currentUser
             if (message.isUserAllowedToRead(userConnected)) {
-                boolean onlyImage = params[URLParamsName.MESSAGE_ONLY_IMAGE] != null ? new Boolean((String)params[URLParamsName.MESSAGE_ONLY_IMAGE]).booleanValue() : false
+                boolean onlyImage = params[URLParamsName.MESSAGE_ONLY_IMAGE] != null ? Boolean.parseBoolean((String)params[URLParamsName.MESSAGE_ONLY_IMAGE]) : false
                 JSON.use(userConnected.publicUser ? (onlyImage ? JSONMarshaller.PUBLIC_MESSAGE_IMAGE : JSONMarshaller.PUBLIC_MESSAGE) : JSONMarshaller.INTERNAL) {
                     return respond(queryForResource(params[URLParamsName.ID]), [status: HttpStatus.OK])
                 }
@@ -107,7 +106,7 @@ class MessageController extends RestfulController<Message> {
     @Transactional
     @Override
     def save() {
-        def userConnected = (User) springSecurityService.currentUser
+        User userConnected = (User) springSecurityService.currentUser
 
         Message newMessage = createResource()
 
@@ -173,7 +172,7 @@ class MessageController extends RestfulController<Message> {
      */
     @Transactional
     def spread() {
-        def userConnected = (User) springSecurityService.currentUser
+        User userConnected = (User) springSecurityService.currentUser
 
         // Lecture des paramètres
         def messageId = new Long(params[URLParamsName.MESSAGE_ID])
@@ -195,14 +194,14 @@ class MessageController extends RestfulController<Message> {
      */
     @Transactional
     def ignore() {
-        def userConnected = (User) springSecurityService.currentUser
+        User userConnected = (User) springSecurityService.currentUser
 
         // Lecture des paramètres
         def messageId = new Long(params[URLParamsName.MESSAGE_ID])
 
         // On vérifie que le message a bien été reçu par l'utilisateur
-        def (boolean receivedByThisUser, Message message) = messageService.isMessageReceivedByUser(userConnected, messageId)
-        if (receivedByThisUser) {
+        def (boolean receivedOrSpreadByThisUser, Message message) = messageService.isMessageReceivedOrSpreadByUser(userConnected, messageId)
+        if (receivedOrSpreadByThisUser) {
             messageService.userIgnoreThisMessage(userConnected, message)
             return render([status: HttpStatus.ACCEPTED])
         } else {
@@ -215,7 +214,7 @@ class MessageController extends RestfulController<Message> {
      */
     @Transactional
     def report() {
-        def userConnected = (User) springSecurityService.currentUser
+        User userConnected = (User) springSecurityService.currentUser
 
         // Lecture des paramètres
         def messageId = new Long(params[URLParamsName.MESSAGE_ID])
@@ -237,11 +236,11 @@ class MessageController extends RestfulController<Message> {
     }
 
     /**
-     * Liste les messages écrits par l'utilisateur donné
+     * Liste les messages écrits par l'utilisateur donné (Inaccessible niveau sécurité par les utilistateurs publics)
      */
     def indexUserMsg() {
         // Lecture des paramètres
-        Long userId = ((String) params[URLParamsName.USER_ID]).toLong()
+        Long userId = Long.parseLong((String) params[URLParamsName.USER_ID])
 
         JSON.use(JSONMarshaller.INTERNAL) {
             return respond(messageService.getMessagesWritedByAuthorId(userId, null), [status: HttpStatus.OK])
@@ -249,11 +248,11 @@ class MessageController extends RestfulController<Message> {
     }
 
     /**
-     * Liste les messages reçus par l'utilisateur donné
+     * Liste les messages reçus par l'utilisateur donné (Inaccessible niveau sécurité par les utilistateurs publics)
      */
     def indexUserMsgReceived() {
         // Lecture des paramètres
-        Long userId = ((String) params[URLParamsName.USER_ID]).toLong()
+        Long userId = Long.parseLong((String) params[URLParamsName.USER_ID])
 
         JSON.use(JSONMarshaller.INTERNAL) {
             return respond(messageService.getMessagesReceivedByUserId(userId, null), [status: HttpStatus.OK])
@@ -261,11 +260,11 @@ class MessageController extends RestfulController<Message> {
     }
 
     /**
-     * Liste les messages propagé par l'utilisateur donné
+     * Liste les messages propagé par l'utilisateur donné (Inaccessible niveau sécurité par les utilistateurs publics)
      */
     def indexUserMsgSpread() {
         // Lecture des paramètres
-        Long userId = ((String) params[URLParamsName.USER_ID]).toLong()
+        Long userId = Long.parseLong((String) params[URLParamsName.USER_ID])
 
         JSON.use(JSONMarshaller.INTERNAL) {
             return respond(messageService.getMessagesSpreadByUserId(userId, null), [status: HttpStatus.OK])
@@ -273,7 +272,7 @@ class MessageController extends RestfulController<Message> {
     }
 
     /**
-     * Liste tous les messages signalés
+     * Liste tous les messages signalés (Inaccessible niveau sécurité par les utilistateurs publics)
      */
     def indexMsgReported() {
         if (params[URLParamsName.USER_USERNAME]) {
@@ -307,7 +306,7 @@ class MessageController extends RestfulController<Message> {
         message.textColor = request.JSON.opt(JSONAttribute.MESSAGE_TEXTCOLOR) ?: '000000'
         message.backgroundType = request.JSON.opt(JSONAttribute.MESSAGE_BACKGROUNDTYPE) ?: BackgroundType.PLAIN
         if (message.backgroundType == BackgroundType.IMAGE) {
-            message.backgroundImage = new Image([image: Base64.decodeBase64(request.JSON.get(JSONAttribute.MESSAGE_BACKGROUNDIMAGE))])
+            message.backgroundImage = new Image([image: request.JSON.get(JSONAttribute.MESSAGE_BACKGROUNDIMAGE)])
         } else {
             message.backgroundColor = request.JSON.opt(JSONAttribute.MESSAGE_BACKGROUNDCOLOR) ?:  'FFBB33'
         }

@@ -169,7 +169,7 @@ class MessageService {
         if (user) {
             return (List<Message>) Message.createCriteria().list({
                 eq('author.id', user.id)
-                and(reports({ isNotNull('id') }))
+                reports({ isNotNull('id') })
             })
         } else {
             return (List<Message>) Message.createCriteria().list({ reports({ isNotNull('id') }) })
@@ -290,17 +290,35 @@ class MessageService {
      * @return Le résultat du test et le message
      */
     List isMessageReceivedByUser(User user, Long messageId) {
-        List<Message> messagesReceivedByCurrentUser = (List<Message>) Message.createCriteria().list {
+        List<Message> query = (List<Message>) Message.createCriteria().list {
+            eq('id', messageId)
             receivedBy { eq('user.id', user.id) }
         }
-        boolean receivedByThisUser = false
+        boolean receivedByThisUser = !query.isEmpty()
         Message message = null
-        for (Message m : messagesReceivedByCurrentUser) {
-            if (m.id == messageId) {
-                message = m
-                receivedByThisUser = true
-                break
+        if (receivedByThisUser) {
+            message = query.get(0)
+        }
+        return [receivedByThisUser, message]
+    }
+
+    /**
+     * Indique si le message a été reçus ou bien propagé par l'utilisateur
+     * @param user l'utilisateur concerné
+     * @param messageId l'id du message concerné
+     * @return Le résultat du test et le message
+     */
+    List isMessageReceivedOrSpreadByUser(User user, Long messageId) {
+        List<Message> query = (List<Message>) Message.createCriteria().list {
+            eq('id', messageId)
+            or{receivedBy { eq('user.id', user.id) }
+               spreadBy { eq('user.id', user.id) }
             }
+        }
+        boolean receivedByThisUser = !query.isEmpty()
+        Message message = null
+        if (receivedByThisUser) {
+            message = query.get(0)
         }
         return [receivedByThisUser, message]
     }

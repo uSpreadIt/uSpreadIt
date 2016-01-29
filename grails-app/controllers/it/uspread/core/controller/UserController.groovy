@@ -38,7 +38,7 @@ class UserController extends RestfulController<User> {
     }
 
     /**
-     * Liste les utilisateurs
+     * Liste les utilisateurs (Inaccessible niveau sécurité par les utilistateurs publics)
      */
     @Override
     def index(Integer max) {
@@ -51,6 +51,9 @@ class UserController extends RestfulController<User> {
         }
     }
 
+    /**
+     * Retourne les informations d'un utilisateur  (Inaccessible niveau sécurité par les utilistateurs publics)
+     */
     @Override
     def show() {
         User user = queryForResource(params[URLParamsName.ID])
@@ -78,7 +81,6 @@ class UserController extends RestfulController<User> {
 
         User newUser = createResource()
         newUser.publicUser = true
-        newUser.premiumUser = false
         newUser.validate()
         if (newUser.hasErrors()) {
             return renderBadRequest()
@@ -101,6 +103,10 @@ class UserController extends RestfulController<User> {
         // Non nécessaire pour le moment
     }
 
+
+    /**
+     * Met à jour les informations d'un utilisateur  (Inaccessible niveau sécurité par les utilistateurs publics)
+     */
     @Transactional
     @Override
     def update() {
@@ -135,7 +141,7 @@ class UserController extends RestfulController<User> {
 
     def login() {
         // FIXME le code changera quand on aura fixé le système de login
-        def userConnected = (User) springSecurityService.currentUser
+        User userConnected = (User) springSecurityService.currentUser
         if (null != userConnected){
             if (userConnected.publicUser) {
                 String device = params[URLParamsName.USER_DEVICE];
@@ -159,7 +165,7 @@ class UserController extends RestfulController<User> {
      * Retourne les infos de l'utilisateur connecté
      */
     def showUserConnected() {
-        def userConnected = (User) springSecurityService.currentUser
+        User userConnected = (User) springSecurityService.currentUser
         JSON.use(userConnected.publicUser ? JSONMarshaller.PUBLIC_USER : JSONMarshaller.INTERNAL) {
             return respond(userService.getUserFromId(userConnected.id), [status: HttpStatus.OK])
         }
@@ -170,7 +176,7 @@ class UserController extends RestfulController<User> {
      */
     @Transactional
     def updateUserConnected(){
-        def userConnected = (User) springSecurityService.currentUser
+        User userConnected = (User) springSecurityService.currentUser
 
         updateFromRequest(userConnected)
 
@@ -188,7 +194,7 @@ class UserController extends RestfulController<User> {
      */
     @Transactional
     def deleteUserConnected(){
-        def userConnected = (User) springSecurityService.currentUser
+        User userConnected = (User) springSecurityService.currentUser
         userService.deleteUser(userConnected)
         return render([status: HttpStatus.ACCEPTED])
     }
@@ -201,7 +207,6 @@ class UserController extends RestfulController<User> {
     def saveModerator() {
         User newModerator = createResource()
         newModerator.publicUser = false
-        newModerator.premiumUser = false
         newModerator.validate()
         if (newModerator.hasErrors()) {
             return renderBadRequest()
@@ -218,10 +223,10 @@ class UserController extends RestfulController<User> {
      * @return
      */
     def showStatus() {
-        def user = (User) springSecurityService.currentUser
+        User user = (User) springSecurityService.currentUser
 
         // Lecture des paramètres
-        boolean quotaOnly = params[URLParamsName.USER_ONLY_QUOTA] != null ? new Boolean((String)params[URLParamsName.USER_ONLY_QUOTA]).booleanValue() : false
+        boolean quotaOnly = params[URLParamsName.USER_ONLY_QUOTA] != null ? Boolean.parseBoolean((String)params[URLParamsName.USER_ONLY_QUOTA]) : false
 
         JSON.use(quotaOnly ? JSONMarshaller.PUBLIC_STATUS_QUOTA : JSONMarshaller.PUBLIC_STATUS) {
             return respond(messageService.getUserMessagesStatus(user, quotaOnly), [status: HttpStatus.OK])
@@ -234,7 +239,7 @@ class UserController extends RestfulController<User> {
      */
     @Transactional
     def savePushToken() {
-        def user = (User) springSecurityService.currentUser
+        User user = (User) springSecurityService.currentUser
         String device = request.JSON.opt(JSONAttribute.USER_DEVICE) ?: null
         String pushToken = request.JSON.opt(JSONAttribute.USER_PUSHTOKEN) ?: null
         if (URLParamsValue.DEVICE_ANDROID == device && pushToken != null) {
@@ -275,7 +280,7 @@ class UserController extends RestfulController<User> {
     }
 
     /**
-     * Renseigne ou met à jour l'utilisateur a partir des données qui seraient fournie (Ne touche pas ce qui n'est pas fourni)
+     * Renseigne ou met à jour l'utilisateur a partir des données qui seraient fournie dans le JSON (Ne touche pas ce qui n'est pas fourni)
      * @param user
      */
     private void updateFromRequest(User user) {

@@ -36,7 +36,7 @@ class BootStrap {
                 roleAdministrator.save([failOnError: true])
 
                 // Création de l'administrateur originel // FIXME par principe changer le mot de passe et l'user
-                def admin = new User(username: 'admin', password: 'admin', email:"admin@uspread.it", publicUser: false)
+                def admin = new User(username: 'admin', password: 'admin', email:"admin@uspread.it", accountVerified: true, publicUser: false)
                 admin.save([failOnError: true])
                 UserRole.create(admin, roleAdministrator)
 

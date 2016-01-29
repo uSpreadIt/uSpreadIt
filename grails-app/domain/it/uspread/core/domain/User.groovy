@@ -38,6 +38,11 @@ class User implements Serializable {
     /** Email */
     String email
 
+    /** Date de création de l'utilisateur */
+    Date dateCreated // Ne pas renommer car ce nom est un nom spécial détécté par Grails cf autoTimestamp
+    /** Indique si le compte utilisateur a été vérifié (validation de l'email donné) */
+    boolean accountVerified
+
     /** Langue préféré de l'utilisateur */
     Language preferredLanguage
 

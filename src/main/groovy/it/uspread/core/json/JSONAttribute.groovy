@@ -10,6 +10,8 @@ class JSONAttribute {
     public static final String USER_PASSWORD = "pass"
     public static final String USER_EMAIL = "email"
     public static final String USER_ROLE = "role"
+    public static final String USER_DATECREATED = "created"
+    public static final String USER_ACCOUNTVERIFIED = "verified"
     public static final String USER_PREFLANGUAGE = "lang"
     public static final String USER_LOCATION = "loc"
     public static final String USER_MESSAGELOCATED = "msgLoc"
