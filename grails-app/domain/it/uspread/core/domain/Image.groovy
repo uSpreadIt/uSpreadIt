@@ -17,10 +17,11 @@ class Image {
         version(false)
         table('image')
         id([generator:'sequence', params:[sequence:'image_sequence']])
+        image(length: IMAGE_MAX_SIZE)
     }
 
     static constraints = {
-        image(length: IMAGE_MAX_SIZE)
+        image(maxsize: IMAGE_MAX_SIZE)
     }
 
 }
