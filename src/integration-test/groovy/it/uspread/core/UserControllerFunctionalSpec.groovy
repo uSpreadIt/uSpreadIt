@@ -378,8 +378,7 @@ class UserControllerFunctionalSpec extends Specification {
             clientModerator_ToDelete.get([path: "/users/connected", accept: ContentType.JSON])
             false
         } catch(HTTPClientException e) {
-            then: "is not found"
-            e.response.statusCode == HttpStatus.UNAUTHORIZED.value
+            then: "is not possible"
         }
     }
 
@@ -439,8 +438,7 @@ class UserControllerFunctionalSpec extends Specification {
             clientUser6_ToDelete.get([path: "/users/connected", accept: ContentType.JSON])
             false
         } catch(HTTPClientException e) {
-            then: "is not found"
-            e.response.statusCode == HttpStatus.UNAUTHORIZED.value
+            then: "is not possible"
         }
     }
 

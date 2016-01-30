@@ -114,8 +114,8 @@ class UserIntegrationSpec extends Specification {
         messageNotSent.author = dude
 
         when: "the message is saved"
-        dude.discard() // dude ne doit plus être dans la session afin qu'il soit rechargé
         messageNotSent.save([flush: true])
+        dude.discard() // dude ne doit plus être dans la session afin qu'il soit rechargé
 
         then: "so user own this message"
         Message.exists(messageNotSent.id)
