@@ -40,6 +40,7 @@ class UrlMappings {
             "/users/connected"(controller:"user", action:"deleteUserConnected", method:"DELETE")
             "/users/connected/pushtoken"(controller:"user", action:"savePushToken", method:"POST")
             "/users/connected/status"(controller:"user", action:"showStatus", method:"GET")
+			"/users/connected/password"(controller:"user", action:"changePassword", method:"PUT")
 
             "/users/moderator"(controller:"user", action:"saveModerator", method:"POST")
             "/users"(resources:"user", excludes:["create", "edit", "patch", "save"])

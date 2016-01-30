@@ -253,6 +253,28 @@ class UserController extends RestfulController<User> {
             return renderBadRequest()
         }
     }
+	
+	/**
+	 * Changement du mot de passe de l'utilisateur connecté
+	 * @return
+	 */
+	@Transactional
+	def changePassword() {
+		User user = (User) springSecurityService.currentUser
+		String oldPassword = request.JSON.opt(JSONAttribute.USER_OLD_PASSWORD)
+		String newPassword = request.JSON.opt(JSONAttribute.USER_PASSWORD)
+		if (springSecurityService.passwordEncoder.isPasswordValid(user.password, oldPassword, null)) {
+			user.password = newPassword
+			user.validate()
+			if (user.hasErrors()) {
+				return renderBadRequest()
+			}
+			return render([status: HttpStatus.ACCEPTED])
+		}
+		else {
+			return renderForbidden()
+		}
+	}
 
     def indexTopUsers() {
         JSON.use(JSONMarshaller.PUBLIC_USER_SCORE) {

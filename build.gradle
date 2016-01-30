@@ -1,3 +1,5 @@
+import org.gradle.internal.os.OperatingSystem
+
 buildscript {
     ext {
         grailsVersion = project.grailsVersion
@@ -102,3 +104,33 @@ tasks.stage.doLast() {
     delete fileTree(dir: "build/libs", exclude: "*.war")
 }
 war.mustRunAfter clean
+
+if (OperatingSystem.current().isWindows()) {
+	task pathingJar(type: Jar) {
+		dependsOn configurations.runtime
+		appendix = 'pathing'
+
+		doFirst {
+			manifest {
+				// Build the Class-Path for absolute paths based on runtime dependencies.
+				attributes "Class-Path": configurations.runtime.files.collect {
+					it.toURL().toString().replaceFirst(/file:\/+/, '/')
+				}.join(' ')
+			}
+		}
+
+		// assetCompile will be execute for all Jar-type tasks
+		// (see https://github.com/bertramdev/asset-pipeline/blob/master/asset-pipeline-gradle/src/main/groovy/asset/pipeline/gradle/AssetPipelinePlugin.groovy#L85)
+		// at least exclude the assets from pathing jar
+		exclude { it.file.absolutePath.contains('assetCompile') }
+	}
+
+	// This gradle task will be called by `grails run-app`.
+	bootRun {
+		dependsOn pathingJar
+		doFirst {
+			// Add the compiled app classed to the classpath of the pathing jar. Probably there is a gradle variable for them?
+			classpath = files("$buildDir/classes/main", "$buildDir/resources/main", "$projectDir/gsp-classes", pathingJar.archivePath)
+		}
+	}
+}

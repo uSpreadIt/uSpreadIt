@@ -168,6 +168,8 @@ grails:
                   access: hasRole('ROLE_PUBLIC')
                 - pattern: '/rest/users/connected/status*'
                   access: hasRole('ROLE_PUBLIC')
+                - pattern: '/rest/users/connected/password'
+                  access: isAuthenticated()
                 - pattern: '/rest/users/topusers'
                   access: isAuthenticated()
                 - pattern: '/rest/users*/**'
