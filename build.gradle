@@ -81,6 +81,8 @@ dependencies {
     
     // Utile pour la Prod Heroku uniquement
     runtime 'org.postgresql:postgresql:9.4-1201-jdbc4'
+    compile 'org.eclipse.jetty:jetty-runner:9.2.11.v20150529'
+    compile 'com.github.jsimone:webapp-runner:7.0.57.2'
     
     // Utile en Dev/Test uniquement
     provided "org.springframework.boot:spring-boot-starter-tomcat"
@@ -102,3 +104,12 @@ tasks.stage.doLast() {
     delete fileTree(dir: "build/libs", exclude: "*.war")
 }
 war.mustRunAfter clean
+
+task copyToLib(type: Copy) {
+    into "$buildDir/server"
+    from(configurations.compile) {
+        include "webapp-runner*"
+    }
+}
+
+stage.dependsOn(copyToLib)
