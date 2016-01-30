@@ -1,8 +1,10 @@
 ---
 grails:
-    profile: web
+    profile: rest-api
     codegen:
-        defaultPackage: uspreadit
+        defaultPackage: it.uspread.core
+    spring:
+        transactionManagement: false
 info:
     app:
         name: '@info.app.name@'
@@ -38,7 +40,6 @@ grails:
               - application/json
               - text/json
             multipartForm: multipart/form-data
-            pdf: application/pdf
             rss: application/rss+xml
             text: text/plain
             hal:
@@ -65,6 +66,9 @@ grails:
                 scriptlets: html
                 taglib: none
                 staticparts: none
+endpoints:
+    jmx:
+        unique-names: true
 ---
 hibernate:
     cache:
@@ -72,10 +76,6 @@ hibernate:
         use_second_level_cache: true
         use_query_cache: false
         region.factory_class: 'org.hibernate.cache.ehcache.EhCacheRegionFactory'
-
-endpoints:
-    jmx:
-        unique-names: true
 
 dataSource:
     pooled: true
@@ -90,35 +90,13 @@ environments:
             dbCreate: create-drop
             url: jdbc:h2:mem:devDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
     test:
-        grails:
-            gorm:
-                failOnError: true
         dataSource:
             dbCreate: update
             url: jdbc:h2:mem:testDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+        grails:
+            gorm:
+                failOnError: true
     production:
-        #default grails
-        #dataSource:
-        #    dbCreate: update
-        #    url: jdbc:h2:./prodDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
-        #    properties:
-        #        jmxEnabled: true
-        #        initialSize: 5
-        #        maxActive: 50
-        #        minIdle: 5
-        #        maxIdle: 25
-        #        maxWait: 10000
-        #        maxAge: 600000
-        #        timeBetweenEvictionRunsMillis: 5000
-        #        minEvictableIdleTimeMillis: 60000
-        #        validationQuery: SELECT 1
-        #        validationQueryTimeout: 3
-        #        validationInterval: 15000
-        #        testOnBorrow: true
-        #        testWhileIdle: true
-        #        testOnReturn: false
-        #        jdbcInterceptors: ConnectionState
-        #        defaultTransactionIsolation: 2 # TRANSACTION_READ_COMMITTED
         dataSource:
             dbCreate: update
             dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -170,42 +148,76 @@ grails:
                 nameField: authority
             securityConfigType: InterceptUrlMap
             interceptUrlMap:
-                '/':                               permitAll
-                '/index':                          permitAll
-                '/index.gsp':                      permitAll
-                '/error':                          permitAll
-                '/notfound':                       permitAll
-                '/shutdown':                       permitAll
-                '/assets/**':                      permitAll
-                '/**/js/**':                       permitAll
-                '/**/css/**':                      permitAll
-                '/**/images/**':                   permitAll
-                '/**/favicon.ico':                 permitAll
-                '/login/**':                       permitAll
-                '/logout/**':                      permitAll
-                '/rest/signup':                    permitAll
-                '/rest/login*':                    isAuthenticated()
-                '/rest/users/connected':           isAuthenticated()
-                '/rest/users/connected/pushtoken': hasRole('ROLE_PUBLIC')
-                '/rest/users/connected/status*':   hasRole('ROLE_PUBLIC')
-                '/rest/users/topusers':            isAuthenticated()
-                '/rest/users*/**':                 hasAnyRole('ROLE_MODERATOR', 'ROLE_ADMINISTRATOR')
-                '/rest/messages/*/spread':         hasRole('ROLE_PUBLIC')
-                '/rest/messages/*/ignore':         hasRole('ROLE_PUBLIC')
-                '/rest/messages/*/report*':        hasRole('ROLE_PUBLIC')
-                '/rest/messages/reported*':        hasAnyRole('ROLE_MODERATOR', 'ROLE_ADMINISTRATOR')
-                '/rest/messages*':                 hasRole('ROLE_PUBLIC')
-                '/rest/messages/**':               isAuthenticated()
+                - pattern: '/'
+                  access: permitAll
+                - pattern: '/index'
+                  access: permitAll
+                - pattern: '/index.gsp'
+                  access: permitAll
+                - pattern: '/error'
+                  access: permitAll
+                - pattern: '/notfound'
+                  access: permitAll
+                - pattern: '/shutdown'
+                  access: permitAll
+                - pattern: '/user/denied'
+                  access: permitAll
+                - pattern: '/assets/**'
+                  access: permitAll
+                - pattern: '/**/js/**'
+                  access: permitAll
+                - pattern: '/**/css/**'
+                  access: permitAll
+                - pattern: '/**/images/**'
+                  access: permitAll
+                - pattern: '/**/favicon.ico'
+                  access: permitAll
+                - pattern: '/login/**'
+                  access: permitAll
+                - pattern: '/logout/**'
+                  access: permitAll
+                - pattern: '/rest/signup'
+                  access: permitAll
+                - pattern: '/rest/login*'
+                  access: isAuthenticated()
+                - pattern: '/rest/users/connected'
+                  access: isAuthenticated()
+                - pattern: '/rest/users/connected/pushtoken'
+                  access: hasRole('ROLE_PUBLIC')
+                - pattern: '/rest/users/connected/status*'
+                  access: hasRole('ROLE_PUBLIC')
+                - pattern: '/rest/users/topusers'
+                  access: isAuthenticated()
+                - pattern: '/rest/users*/**'
+                  access: hasAnyRole('ROLE_MODERATOR', 'ROLE_ADMINISTRATOR')
+                - pattern: '/rest/messages/*/spread'
+                  access: hasRole('ROLE_PUBLIC')
+                - pattern: '/rest/messages/*/ignore'
+                  access: hasRole('ROLE_PUBLIC')
+                - pattern: '/rest/messages/*/report*'
+                  access: hasRole('ROLE_PUBLIC')
+                - pattern: '/rest/messages/reported*'
+                  access: hasAnyRole('ROLE_MODERATOR', 'ROLE_ADMINISTRATOR')
+                - pattern: '/rest/messages*'
+                  access: hasRole('ROLE_PUBLIC')
+                - pattern: '/rest/messages/**'
+                  access: isAuthenticated()
             filterChain: # Il y a par défaut une liste de filter appliqué qu'on peut référencer avec le mot clé JOINED_FILTERS
                 chainMap:
-                    '/rest/**': 'JOINED_FILTERS,-exceptionTranslationFilter'
-                    '/**':      'JOINED_FILTERS,-basicAuthenticationFilter,-basicExceptionTranslationFilter' # Utise l'authentification par formulaire en dehors de l'api REST
+                    - pattern: '/rest/**'
+                      filters: 'JOINED_FILTERS,-exceptionTranslationFilter'
+                    - pattern:  '/**'
+                      filters: 'JOINED_FILTERS,-basicAuthenticationFilter,-basicExceptionTranslationFilter' # Utise l'authentification par formulaire en dehors de l'api REST
             portMapper:
                 httpPort: 8080
                 httpsPort: 8443
             #secureChannel:
-            #       definition:
-            #           '/rest/**':   REQUIRES_SECURE_CHANNEL
-            #           '/login/**':  REQUIRES_SECURE_CHANNEL
-            #           '/logout/**': REQUIRES_SECURE_CHANNEL
-            #           '/**':        ANY_CHANNEL
+            #    definition:
+            #        - pattern: '/rest/**'
+            #          access: REQUIRES_SECURE_CHANNEL
+            #        - pattern: '/login/**'
+            #          access: REQUIRES_SECURE_CHANNEL
+            #        - pattern: '/logout/**'
+            #          access: REQUIRES_SECURE_CHANNEL
+            #        - pattern: '/**'
+            #          access: ANY_CHANNEL
