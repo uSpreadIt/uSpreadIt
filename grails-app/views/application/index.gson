@@ -1,0 +1,13 @@
+import grails.core.*
+import grails.util.*
+import grails.plugins.*
+import org.grails.core.artefact.*
+
+json {
+	message "Welcome to Grails!"
+    environment Environment.current.name
+    grailsversion GrailsUtil.grailsVersion
+    groovyversion GroovySystem.getVersion()
+    jvmversion System.getProperty('java.version')
+    reloadingagentenabled Environment.reloadingAgentEnabled
+}

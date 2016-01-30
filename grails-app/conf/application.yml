@@ -150,31 +150,13 @@ grails:
             interceptUrlMap:
                 - pattern: '/'
                   access: permitAll
-                - pattern: '/index'
+                - pattern: '/application/index'
                   access: permitAll
-                - pattern: '/index.gsp'
+                - pattern: '/application/notFound'
                   access: permitAll
-                - pattern: '/error'
+                - pattern: '/application/serverError'
                   access: permitAll
-                - pattern: '/notfound'
-                  access: permitAll
-                - pattern: '/shutdown'
-                  access: permitAll
-                - pattern: '/user/denied'
-                  access: permitAll
-                - pattern: '/assets/**'
-                  access: permitAll
-                - pattern: '/**/js/**'
-                  access: permitAll
-                - pattern: '/**/css/**'
-                  access: permitAll
-                - pattern: '/**/images/**'
-                  access: permitAll
-                - pattern: '/**/favicon.ico'
-                  access: permitAll
-                - pattern: '/login/**'
-                  access: permitAll
-                - pattern: '/logout/**'
+                - pattern: '/errors/_errors'
                   access: permitAll
                 - pattern: '/rest/signup'
                   access: permitAll

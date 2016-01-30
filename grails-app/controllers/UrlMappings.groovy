@@ -14,10 +14,9 @@ class UrlMappings {
         //
         // Donc on utilisera le prefixe show pour le nommage de l'action pour le cas de retourner un élément. Et index pour retourner plusieurs éléments
 
-        "/"(view:"/index")
-        "400"(view:"/error")
-        "404"(view:'/notFound')
-        "500"(view:"/error")
+        "/"(view: '/application/index')
+        "500"(view: '/application/serverError')
+        "404"(view: '/application/notFound')
 
         // API Rest
         group("/rest", {
